@@ -1,27 +1,29 @@
 {
-  "name": "backend",
+  "name": "clinic-management-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
-  },
-  "keywords": [],
-  "author": "",
+  "description": "Backend for Clinic Management Dashboard",
   "license": "ISC",
+  "author": "",
   "type": "commonjs",
+  "main": "dist/app.js",
+  "scripts": {
+    "dev": "tsx watch src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
-    "body-parser": "^2.2.0",
+    "@supabase/supabase-js": "^2.45.0",
     "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "helmet": "^8.1.0",
-    "morgan": "^1.10.1"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-async-errors": "^3.1.1"
   },
   "devDependencies": {
-    "@types/express": "^5.0.5",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.3"
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.10",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
   }
 }

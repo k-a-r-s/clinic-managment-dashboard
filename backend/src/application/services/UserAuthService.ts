@@ -4,6 +4,7 @@ import { IAuthRepository } from "../../domain/repositories/IAuthRepository";
 import { IUserRepository } from "../../domain/repositories/IUserRepository";
 import { IUserAuthService } from "../../domain/services/IUserAuthService";
 import { Logger } from "../../shared/utils/logger";
+import { LoginResponseDto } from "../dto/LoginResponseDto";
 
 export class UserAuthService implements IUserAuthService {
    constructor(
@@ -11,37 +12,38 @@ export class UserAuthService implements IUserAuthService {
       private authRepository: IAuthRepository
    ) { }
 
-   async loginUser(email: string, password: string) {
-      try {
-         Logger.info("🔐 Login attempt", { email });
+   async loginUser(email: string, password: string): Promise<LoginResponseDto> {
+      Logger.info("🔐 Login attempt", { email });
 
-         const { data, error } = await this.authRepository.login(email, password);
+      const authResponse = await this.authRepository.login(email, password);
 
-         if (error) {
-            Logger.error("❌ Login failed", { email, error: error.message });
-            throw new DatabaseError(error);
-         }
+      // Get full user profile from database
+      const profile = await this.userRepository.findByAuthUUID(authResponse.user.id);
 
-         const user = data.user;
-         if (!user) {
-            Logger.error("❌ User not found", { email });
-            throw new DatabaseError("User not found");
-         }
-
-         const access_token = data.session?.access_token;
-         const refresh_token = data.session?.refresh_token;
-
-         if (!access_token || !refresh_token) {
-            Logger.error("❌ Missing tokens", { email, userId: user.id });
-            throw AuthError.invalidToken();
-         }
-
-         Logger.info("✅ Login successful", { email, userId: user.id });
-         return access_token;
-      } catch (error) {
-         Logger.error("❌ Login exception", { email, error: (error as any).message });
-         throw error;
+      if (!profile) {
+         Logger.error("❌ Profile not found", { userId: authResponse.user.id });
+         throw new DatabaseError("User profile not found");
       }
+
+      Logger.info("✅ Login successful", { email, userId: profile.getId(), role: profile.getRole() });
+
+      return new LoginResponseDto(
+         authResponse.access_token,
+         authResponse.refresh_token,
+         authResponse.expires_in || 3600,
+         authResponse.token_type || 'Bearer',
+         {
+            id: profile.getId(),
+            email: profile.getEmail(),
+            firstName: profile.getFirstName(),
+            lastName: profile.getLastName(),
+            role: profile.getRole()
+         }
+      );
+   }
+
+   async signupUser(email: string, password: string, firstName: string, lastName: string, role: 'admin' | 'doctor' | 'receptionist' = 'doctor') {
+
    }
 
    refreshToken(refreshToken: string) {

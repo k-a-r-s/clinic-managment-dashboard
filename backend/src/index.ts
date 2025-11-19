@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import { errorHandler } from './interface/middlewares/errorHanlder';
 import { authMiddleware } from './interface/middlewares/authMiddleware';
 import { Logger } from './shared/utils/logger';
-
+import authRouter from './interface/routes/auth.route';
 
 
 const app = express();
@@ -14,12 +14,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Sample route
-app.get('/', authMiddleware, (req, res) => {
+app.get('/',  (req, res) => {
   res.send('Hello, World!');
 });
 
-app.use(errorHandler);
+// This mounts all auth routes at /auth prefix
+app.use('/auth', authRouter);
 
+app.use(errorHandler);
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

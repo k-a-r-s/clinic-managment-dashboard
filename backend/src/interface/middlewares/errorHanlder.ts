@@ -2,6 +2,8 @@ import { AuthError } from "../../domain/errors/AuthError";
 import { AppError } from "../../domain/errors/AppError";
 import { ErrorTypes } from "../../domain/errors/ErrorTypes";
 import { Logger } from "../../shared/utils/logger";
+import { ValidationError } from "../../domain/errors/ValidationError";
+import { DatabaseError } from "../../domain/errors/DatabaseError";
 
 export const errorHandler = (err: any, req: any, res: any, next: any) => {
     // Check for AuthError first (more specific)
@@ -26,6 +28,28 @@ export const errorHandler = (err: any, req: any, res: any, next: any) => {
             ErrorType: ErrorTypes.ValidationError,
             context: err.context,
             UserMessage: err.message,
+        });
+    }
+    if (err instanceof ValidationError) {
+        return res.status(400).json(
+            {
+                success: false,
+                errorType: ErrorTypes.ValidationError,
+                UserMessage: err.message,
+                data: null,
+                details: err.details,
+            },
+        );
+    }
+    if (err instanceof DatabaseError) {
+        Logger.warn(`Database error: ${err.message}`, { details: err.details, hint: err.hint });
+        return res.status(err.status).json({
+            success: false,
+            data: null,
+            ErrorType: ErrorTypes.DatabaseError,
+            UserMessage: err.message,
+            details: err.details,
+            hint: err.hint,
         });
     }
 

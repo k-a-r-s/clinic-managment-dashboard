@@ -7,4 +7,5 @@ export enum ErrorTypes {
     InternalServerError = 'InternalServerError',
     AuthenticationError = 'AuthenticationError',
     AppError = 'AppError',
+    DatabaseError = 'DatabaseError',
 }

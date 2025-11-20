@@ -4,21 +4,19 @@ export class User {
     private firstName: string;
     private lastName: string;
     private role: "admin" | "doctor" | "receptionist";
-
     constructor(
         id: string,
         email: string,
         firstName: string,
         lastName: string,
-        role: string  // ✅ Accept string
+        role: string,  // ✅ Accept string
     ) {
         // Validate role at construction time
         const validRoles = ["admin", "doctor", "receptionist"] as const;
-        
+
         if (!validRoles.includes(role as any)) {
             throw new Error(`Invalid role: ${role}. Must be one of: ${validRoles.join(", ")}`);
         }
-
         this.id = id;
         this.email = email;
         this.firstName = firstName;
@@ -32,7 +30,6 @@ export class User {
     getFirstName(): string { return this.firstName; }
     getLastName(): string { return this.lastName; }
     getRole(): "admin" | "doctor" | "receptionist" { return this.role; }
-    getPassword(): string { return ""; }
     static fromDataBase(data: {
         id: string;
         email: string;
@@ -47,5 +44,14 @@ export class User {
             data.last_name,
             data.role  // Validation happens in constructor
         );
+    }
+    toJSON() {
+        return {
+            id: this.id,
+            email: this.email,
+            firstName: this.firstName,
+            lastName: this.lastName,
+            role: this.role
+        };
     }
 }

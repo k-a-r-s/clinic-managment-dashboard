@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthError } from '../../domain/errors/AuthError';
-import { supabase } from '../../infrastructure/database/supabase';
+import { supabaseAdmin } from '../../infrastructure/database/supabase';
 import { UserRepository } from '../../infrastructure/repositories/UserRepository';
 import { Logger } from '../../shared/utils/logger';
 
@@ -36,21 +36,23 @@ export const authMiddleware = async (
 
         const token = parts[1];
 
-        // 3. Verify token with Supabase using public client
-        const { data: { user }, error } = await supabase.auth.getUser(token);
+        // 3. ✅ Verify token with Supabase admin client
+        const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
 
         if (error || !user) {
-            Logger.error('Token verification failed', { error: error?.message });
+            Logger.error('🔴 Token verification failed', { error: error?.message, token: token.substring(0, 20) + '...' });
             const err = AuthError.invalidToken('Invalid or expired token');
             return next(err);
         }
+
+        Logger.debug('✅ Token verified', { userId: user.id });
 
         // 4. Get user profile from database using repository
         const userRepository = new UserRepository();
         const userProfile = await userRepository.findByAuthUUID(user.id);
 
         if (!userProfile) {
-            Logger.error('User profile not found in database', { userId: user.id });
+            Logger.error('🔴 User profile not found in database', { userId: user.id });
             const err = AuthError.invalidToken('User profile not found');
             return next(err);
         }
@@ -64,10 +66,10 @@ export const authMiddleware = async (
             role: userProfile.getRole()
         };
 
-        Logger.info(`User authenticated: ${req.user.id} (role: ${req.user.role})`);
+        Logger.info(`✅ User authenticated: ${req.user.id} (role: ${req.user.role})`);
         next();
     } catch (error) {
-        Logger.error('Auth middleware error', { error });
+        Logger.error('🔴 Auth middleware error', { error });
         const err = AuthError.invalidToken('Authentication failed');
         next(err);
     }

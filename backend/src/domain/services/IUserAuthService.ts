@@ -4,6 +4,5 @@ import { User } from "../entities/User";
 export interface IUserAuthService {
     loginUser(email: string, password: string): Promise<LoginResponseDto>;
     logoutUser(userId: string): Promise<void>;
-    refreshToken(refreshToken: string): Promise<LoginResponseDto>;
-    createUser(user: User): Promise<User>;
+    createUser(user: User, password: string): Promise<User>;  // ✅ Add password parameter
 }

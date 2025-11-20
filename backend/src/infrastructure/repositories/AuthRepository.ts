@@ -8,8 +8,8 @@ import { User } from "../../domain/entities/User";
 export class AuthRepository implements IAuthRepository {
     async login(email: string, password: string) {
         const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
+            email: email,           // ✅ Use the parameter
+            password: password      // ✅ Use the parameter
         });
         if (error) {
             Logger.error("❌ Login failed", { email, error: error.message });
@@ -26,9 +26,9 @@ export class AuthRepository implements IAuthRepository {
         const user = new User(
             supabaseUser.id,
             supabaseUser.email || "",
-            supabaseUser.user_metadata?.firstName || "",
-            supabaseUser.user_metadata?.lastName || "",
-            supabaseUser.user_metadata?.role || "user"
+            supabaseUser.user_metadata?.first_name || "",  // ✅ snake_case
+            supabaseUser.user_metadata?.last_name || "",   // ✅ snake_case
+            supabaseUser.user_metadata?.role || "doctor"   // ✅ Match what you stored
         );
 
         const access_token = data.session?.access_token;
@@ -40,6 +40,8 @@ export class AuthRepository implements IAuthRepository {
             Logger.error("❌ Tokens not found");
             throw new DatabaseError("Tokens not found");
         }
+
+        Logger.info("✅ Login successful", { email, userId: supabaseUser.id });
 
         return {
             access_token,
@@ -67,13 +69,13 @@ export class AuthRepository implements IAuthRepository {
         });
 
         if (error) {
-            Logger.error("❌ Refresh token failed", { refreshToken, error: error.message });
+            Logger.error("❌ Refresh token failed", { error: error.message });
             throw new DatabaseError(error);
         }
 
         const supabaseUser = data.session?.user;
         if (!supabaseUser) {
-            Logger.error("❌ User not found during token refresh", { refreshToken });
+            Logger.error("❌ User not found during token refresh");
             throw new DatabaseError("User not found");
         }
 
@@ -81,9 +83,9 @@ export class AuthRepository implements IAuthRepository {
         const user = new User(
             supabaseUser.id,
             supabaseUser.email || "",
-            supabaseUser.user_metadata?.firstName || "",
-            supabaseUser.user_metadata?.lastName || "",
-            supabaseUser.user_metadata?.role || "user"
+            supabaseUser.user_metadata?.first_name || "",  // ✅ snake_case
+            supabaseUser.user_metadata?.last_name || "",   // ✅ snake_case
+            supabaseUser.user_metadata?.role || "doctor"   // ✅ Match what you stored
         );
 
         const access_token = data.session?.access_token;
@@ -103,6 +105,5 @@ export class AuthRepository implements IAuthRepository {
             token_type,
             user
         };
-
     }
 }

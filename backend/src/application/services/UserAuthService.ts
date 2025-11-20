@@ -67,10 +67,10 @@ export class UserAuthService implements IUserAuthService {
       );
    }
 
-   async createUser(user: User): Promise<User> {
+   async createUser(user: User, password: string): Promise<User> {
       Logger.info("🔐 User creation attempt", { email: user.getEmail() });
 
-      const createdUser = await this.userRepository.createUser(user);
+      const createdUser = await this.userRepository.createUser(user, password);
 
       Logger.info("✅ User created successfully", { email: createdUser.getEmail() });
 

@@ -15,17 +15,9 @@ export class UserRepository implements IUserRepository {
 
             const { data, error } = await supabase
                 .from('profiles')
-                .select(`
-                    id,
-                    email,
-                    first_name,
-                    last_name,
-                    role,
-                    created_at,
-                    updated_at
-                `)
+                .select('id, email, first_name, last_name, role')
                 .eq('id', authUUID)
-                .single();
+                .maybeSingle();  // ✅ Use maybeSingle() instead of single()
 
             if (error) {
                 Logger.warn("⚠️ User profile not found", { authUUID, error: error.message });
@@ -54,12 +46,13 @@ export class UserRepository implements IUserRepository {
     }
 
 
-    async createUser(user: User): Promise<User> {
+    async createUser(user: User,password: string): Promise<User> {
         Logger.debug("📝 Creating new user", { email: user.getEmail() });
 
         const { data, error } = await supabaseAdmin.auth.admin.createUser({
             email: user.getEmail(),
-            password: user.getPassword(),
+            password: password,
+            email_confirm: true,
             user_metadata: {
                 first_name: user.getFirstName(),
                 last_name: user.getLastName(),
@@ -84,7 +77,7 @@ export class UserRepository implements IUserRepository {
         // Validate role before inserting
         const userRole = user.getRole();
         const validRoles = ["admin", "doctor", "receptionist"] as const;
-        
+
         if (!validRoles.includes(userRole as any)) {
             throw new Error(`Invalid role: ${userRole}. Must be one of: ${validRoles.join(", ")}`);
         }
@@ -107,7 +100,7 @@ export class UserRepository implements IUserRepository {
         }
 
         Logger.debug("✅ User profile created successfully", { email: user.getEmail(), userId });
-        
+
         return new User(
             userId,
             user.getEmail(),

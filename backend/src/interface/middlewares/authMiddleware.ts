@@ -1,14 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthError } from '../../domain/errors/AuthError';
-import { CreateSupabaseClient } from '../../infrastructure/database/supabase';
+import { supabase } from '../../infrastructure/database/supabase';
+import { UserRepository } from '../../infrastructure/repositories/UserRepository';
 import { Logger } from '../../shared/utils/logger';
 
 export interface AuthRequest extends Request {
     user?: {
         id: string;
         email: string;
+        firstName: string;
+        lastName: string;
         role: string;
-        userId: number;  // Add local user ID from database
     };
 }
 
@@ -34,9 +36,8 @@ export const authMiddleware = async (
 
         const token = parts[1];
 
-        // 3. Verify token with Supabase
-        const supabase = CreateSupabaseClient(token);
-        const { data: { user }, error } = await supabase.auth.getUser();
+        // 3. Verify token with Supabase using public client
+        const { data: { user }, error } = await supabase.auth.getUser(token);
 
         if (error || !user) {
             Logger.error('Token verification failed', { error: error?.message });
@@ -44,28 +45,26 @@ export const authMiddleware = async (
             return next(err);
         }
 
-        // 4. Get user role from database (using authenticated client)
-        const { data: userData, error: dbError } = await supabase
-            .from('users')
-            .select('id, email, role_id, roles(name)')
-            .eq('auth_uuid', user.id)
-            .single();
+        // 4. Get user profile from database using repository
+        const userRepository = new UserRepository();
+        const userProfile = await userRepository.findByAuthUUID(user.id);
 
-        if (dbError || !userData) {
-            Logger.error('User not found in database', { error: dbError?.message });
-            const err = AuthError.invalidToken('User not found');
+        if (!userProfile) {
+            Logger.error('User profile not found in database', { userId: user.id });
+            const err = AuthError.invalidToken('User profile not found');
             return next(err);
         }
 
         // 5. Attach user to request
         req.user = {
-            id: user.id,
-            email: user.email || '',
-            role: userData.roles?.length ? userData.roles[0]?.name : 'patient',
-            userId: userData.id,  // Store local database user ID
+            id: userProfile.getId(),
+            email: userProfile.getEmail(),
+            firstName: userProfile.getFirstName(),
+            lastName: userProfile.getLastName(),
+            role: userProfile.getRole()
         };
 
-        Logger.info(`User authenticated: ${user.id} (${userData.id})`);
+        Logger.info(`User authenticated: ${req.user.id} (role: ${req.user.role})`);
         next();
     } catch (error) {
         Logger.error('Auth middleware error', { error });
@@ -74,22 +73,3 @@ export const authMiddleware = async (
     }
 };
 
-// Role-based access control middleware
-export const requireRole = (allowedRoles: string[]) => {
-    return (req: AuthRequest, res: Response, next: NextFunction) => {
-        if (!req.user) {
-            const err = AuthError.invalidToken('User not authenticated');
-            return next(err);
-        }
-
-        if (!allowedRoles.includes(req.user.role)) {
-            return res.status(403).json({
-                success: false,
-                error: `Access denied. Required roles: ${allowedRoles.join(', ')}`,
-            });
-        }
-
-        Logger.info(`User ${req.user.userId} authorized for role: ${req.user.role}`);
-        next();
-    };
-};

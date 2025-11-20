@@ -1,6 +1,6 @@
 import { User } from "../../domain/entities/User";
 import { IUserRepository } from "../../domain/repositories/IUserRepository";
-import { supabase } from "../database/supabase";
+import { supabase, supabaseAdmin } from "../database/supabase";
 import { DatabaseError } from "../../domain/errors/DatabaseError";
 import { Logger } from "../../shared/utils/logger";
 
@@ -53,6 +53,71 @@ export class UserRepository implements IUserRepository {
         }
     }
 
-   
+
+    async createUser(user: User): Promise<User> {
+        Logger.debug("📝 Creating new user", { email: user.getEmail() });
+
+        const { data, error } = await supabaseAdmin.auth.admin.createUser({
+            email: user.getEmail(),
+            password: user.getPassword(),
+            user_metadata: {
+                first_name: user.getFirstName(),
+                last_name: user.getLastName(),
+                role: user.getRole()
+            }
+        });
+
+        if (error) {
+            Logger.error("❌ Error creating auth user", { email: user.getEmail(), error: error.message });
+            throw new DatabaseError(error as any);
+        }
+
+        const userId = data.user?.id;
+
+        if (!userId) {
+            Logger.error("❌ User ID not returned after creation", { email: user.getEmail() });
+            throw new DatabaseError("User ID not returned after creation");
+        }
+
+        Logger.debug("✅ User created in auth table", { email: user.getEmail(), userId });
+
+        // Validate role before inserting
+        const userRole = user.getRole();
+        const validRoles = ["admin", "doctor", "receptionist"] as const;
+        
+        if (!validRoles.includes(userRole as any)) {
+            throw new Error(`Invalid role: ${userRole}. Must be one of: ${validRoles.join(", ")}`);
+        }
+
+        const role = userRole as typeof validRoles[number];
+
+        const { data: profileData, error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .insert({
+                id: userId,
+                email: user.getEmail(),
+                first_name: user.getFirstName(),
+                last_name: user.getLastName(),
+                role  // ✅ Now properly typed
+            });
+
+        if (profileError) {
+            Logger.error("❌ Error creating user profile", { email: user.getEmail(), error: profileError });
+            throw new DatabaseError(profileError as any);
+        }
+
+        Logger.debug("✅ User profile created successfully", { email: user.getEmail(), userId });
+        
+        return new User(
+            userId,
+            user.getEmail(),
+            user.getFirstName(),
+            user.getLastName(),
+            role  // ✅ Use validated role
+        );
+    }
+
 
 }
+
+

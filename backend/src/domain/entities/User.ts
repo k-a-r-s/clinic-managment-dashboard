@@ -10,13 +10,20 @@ export class User {
         email: string,
         firstName: string,
         lastName: string,
-        role: "admin" | "doctor" | "receptionist"
+        role: string  // ✅ Accept string
     ) {
+        // Validate role at construction time
+        const validRoles = ["admin", "doctor", "receptionist"] as const;
+        
+        if (!validRoles.includes(role as any)) {
+            throw new Error(`Invalid role: ${role}. Must be one of: ${validRoles.join(", ")}`);
+        }
+
         this.id = id;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.role = role;
+        this.role = role as typeof validRoles[number];
     }
 
     // Getters
@@ -24,15 +31,21 @@ export class User {
     getEmail(): string { return this.email; }
     getFirstName(): string { return this.firstName; }
     getLastName(): string { return this.lastName; }
-    getRole(): string { return this.role; }
-
+    getRole(): "admin" | "doctor" | "receptionist" { return this.role; }
+    getPassword(): string { return ""; }
     static fromDataBase(data: {
         id: string;
         email: string;
         first_name: string;
         last_name: string;
-        role: "admin" | "doctor" | "receptionist";
+        role: string;
     }) {
-        return new User(data.id, data.email, data.first_name, data.last_name, data.role);
+        return new User(
+            data.id,
+            data.email,
+            data.first_name,
+            data.last_name,
+            data.role  // Validation happens in constructor
+        );
     }
 }

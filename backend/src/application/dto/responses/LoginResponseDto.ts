@@ -1,17 +1,13 @@
+import { User } from "../../../domain/entities/User";
+
 export class LoginResponseDto {
     constructor(
         public accessToken: string,
         public refreshToken: string,
         public expiresIn: number,
         public tokenType: string,
-        public user: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-            role: string;
-        }
-    ) {}
+        public user: User
+    ) { }
 
     toJSON() {
         return {
@@ -22,7 +18,13 @@ export class LoginResponseDto {
                 refreshToken: this.refreshToken,
                 expiresIn: this.expiresIn,
                 tokenType: this.tokenType,
-                user: this.user
+                user: {
+                    id: this.user.getId(),
+                    email: this.user.getEmail(),
+                    firstName: this.user.getFirstName(),
+                    lastName: this.user.getLastName(),
+                    role: this.user.getRole()
+                }
             }
         };
     }

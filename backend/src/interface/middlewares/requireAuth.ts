@@ -12,7 +12,10 @@ export const requireRole = (allowedRoles: string[]) => {
         }
 
         if (!allowedRoles.includes(req.user.role)) {
-            return next(AuthError.forbidden('User does not have the required role'));
+            return res.status(403).json({
+                success: false,
+                error: `Access denied. Required roles: ${allowedRoles.join(', ')}`,
+            });
         }
 
         Logger.info(`User ${req.user.id} authorized for role: ${req.user.role}`);

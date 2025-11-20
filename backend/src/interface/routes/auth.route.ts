@@ -2,10 +2,13 @@ import { Router } from "express";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper";
 import { AuthController } from "../controllers/authController";
 import { validate } from "../middlewares/Validate";
-import { LoginDto } from "../../application/dto/LoginDto";
+import { LoginDto } from "../../application/dto/requests/LoginDto";
 import { UserAuthService } from "../../application/services/UserAuthService";
 import { UserRepository } from "../../infrastructure/repositories/UserRepository";
 import { AuthRepository } from "../../infrastructure/repositories/AuthRepository";
+import { authMiddleware } from "../middlewares/authMiddleware";
+import { CreateUserDtoSchema } from "../../application/dto/requests/CreateUserDto";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router = Router();
 
@@ -15,11 +18,7 @@ const authRepository = new AuthRepository();
 const userAuthService = new UserAuthService(userRepository, authRepository);
 const authController = new AuthController(userAuthService);
 
-// ✅ Now call instance methods
-router.post(
-    "/sign-up",
-    asyncWrapper((req, res) => authController.signUp(req, res))
-);
+
 
 router.post(
     "/login",
@@ -29,7 +28,16 @@ router.post(
 
 router.post(
     "/logout",
+    authMiddleware,
     asyncWrapper((req, res) => authController.logout(req, res))
 );
+
+router.post(
+    "/create-user",
+    authMiddleware,
+    requireRole(['admin']),
+    validate(CreateUserDtoSchema),
+    asyncWrapper((req, res) => authController.createUser(req, res))
+)
 
 export default router;

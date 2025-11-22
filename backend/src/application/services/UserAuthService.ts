@@ -6,6 +6,7 @@ import { IUserRepository } from "../../domain/repositories/IUserRepository";
 import { IUserAuthService } from "../../domain/services/IUserAuthService";
 import { Logger } from "../../shared/utils/logger";
 import { LoginResponseDto } from "../dto/responses/LoginResponseDto";
+import { RefreshTokenResponseDto } from "../dto/responses/RefreshTokenResponseDto";
 
 export class UserAuthService implements IUserAuthService {
    constructor(
@@ -43,27 +44,17 @@ export class UserAuthService implements IUserAuthService {
       await this.authRepository.logout(userId);
    }
 
-   async refreshToken(refreshToken: string): Promise<LoginResponseDto> {
+   async refreshToken(refreshToken: string): Promise<RefreshTokenResponseDto> {
       Logger.info("🔄 Refresh token attempt", { refreshToken });
 
       const authResponse = await this.authRepository.refreshToken(refreshToken);
 
-      // Get full user profile from database
-      const profile = await this.userRepository.findByAuthUUID(authResponse.user.getId());
+      Logger.info("✅ Refresh token successful", { access_token: authResponse.access_token });
 
-      if (!profile) {
-         Logger.error("❌ Profile not found", { userId: authResponse.user.getId() });
-         throw new DatabaseError("User profile not found");
-      }
-
-      Logger.info("✅ Refresh token successful", { email: profile.getEmail(), userId: profile.getId() });
-
-      return new LoginResponseDto(
+      return new RefreshTokenResponseDto(
          authResponse.access_token,
-         authResponse.refresh_token,
          authResponse.expires_in || 3600,
-         authResponse.token_type || 'Bearer',
-         profile
+         authResponse.token_type || 'Bearer'
       );
    }
 

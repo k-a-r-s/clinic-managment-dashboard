@@ -1,520 +1,530 @@
-# Clinic Management Dashboard - Backend Architecture
+# Clean Architecture - Clinic Management Dashboard Backend
 
-## 📋 Project Overview
+## Overview
 
-A **clean architecture-based** backend for a clinic management system built with **Node.js/Express**, **TypeScript**, and **Supabase** (PostgreSQL + Auth).
-
----
-
-## 🏗️ Architecture Layers
-
-### **1. Domain Layer** (`domain/`)
-Core business logic and entities - **no framework dependencies**
-
-```
-domain/
-├── entities/
-│   └── User.ts                 # Core user entity
-├── errors/
-│   ├── AppError.ts             # Base error class
-│   ├── AuthError.ts            # Authentication-specific errors
-│   └── ErrorTypes.ts           # Error type constants
-├── repositories/               # Repository interfaces (contracts)
-└── services/
-    └── TokenService.ts         # JWT token business logic
-```
-
-**Purpose:** Defines what the app does, independent of frameworks.
+This backend follows **Clean Architecture** principles to ensure the codebase is:
+- ✅ Independent of frameworks
+- ✅ Testable
+- ✅ Independent of UI
+- ✅ Independent of databases
+- ✅ Independent of external agencies
 
 ---
 
-### **2. Application Layer** (`application/`)
-Use cases and business orchestration - **depends only on domain**
+## Architecture Layers
 
 ```
-application/
-├── dto/                        # Data Transfer Objects
-│   ├── CreateUserDto.ts
-│   ├── LoginDto.ts
-│   └── UserResponseDto.ts
-├── services/                   # Application services (use cases)
-│   ├── AuthService.ts          # Authentication orchestration
-│   ├── UserAuthService.ts      # User auth workflows
-│   └── UserManagementService.ts
-└── use-cases/                  # Specific use case handlers (optional)
-    ├── LoginUseCase.ts
-    ├── RegisterUseCase.ts
-    └── LogoutUseCase.ts
+┌─────────────────────────────────────────┐
+│         Interface Layer (Web)            │  ← Controllers, Routes, Middleware
+├─────────────────────────────────────────┤
+│      Application Layer (Use Cases)       │  ← Services, DTOs
+├─────────────────────────────────────────┤
+│       Domain Layer (Business Logic)      │  ← Entities, Interfaces
+├─────────────────────────────────────────┤
+│     Infrastructure Layer (Data Access)   │  ← Repositories, Database
+├─────────────────────────────────────────┤
+│      Shared/Utilities Layer (Cross-cut)  │  ← Logger, Error Handling
+└─────────────────────────────────────────┘
 ```
 
-**Purpose:** Orchestrates domain entities and repositories to fulfill business requirements.
+### Dependency Flow
+```
+Interface → Application → Domain ← Infrastructure
+                           ↑
+                         Shared
+```
+
+**Key Rule:** Inner layers (Domain) never depend on outer layers (Infrastructure)
 
 ---
 
-### **3. Infrastructure Layer** (`infrastructure/`)
-Framework-specific implementations - **depends on domain interfaces**
+## Directory Structure
 
 ```
-infrastructure/
-├── database/
-│   ├── supabase.ts             # Supabase client initialization
-│   ├── rls_rules.md            # Row-level security documentation
-│   └── migrations/
-│       ├── 001_database_v1.sql # Initial schema
-│       └── 002_adding_rls.sql  # RLS policies
-└── repositories/
-    └── UserRepository.ts       # Implements IUserRepository interface
+src/
+├── domain/                          # 🎯 Business Logic Layer
+│   ├── entities/
+│   │   └── User.ts                 # Core business entity
+│   ├── repositories/
+│   │   ├── IUserRepository.ts      # User repository interface (contract)
+│   │   └── IAuthRepository.ts      # Auth repository interface (contract)
+│   ├── services/
+│   │   └── IUserAuthService.ts     # Business logic interface
+│   └── errors/
+│       ├── AppError.ts             # Base error class
+│       ├── AuthError.ts            # Auth-specific errors
+│       ├── DatabaseError.ts        # Database-specific errors
+│       ├── ValidationError.ts      # Validation errors
+│       └── ErrorTypes.ts           # Error type constants
+│
+├── application/                     # 🔧 Use Cases & DTOs Layer
+│   ├── services/
+│   │   └── UserAuthService.ts      # Business logic implementation
+│   └── dto/
+│       ├── requests/
+│       │   ├── LoginDto.ts         # Login request DTO
+│       │   ├── CreateUserDto.ts    # Create user request DTO
+│       │   └── RefreshTokenDto.ts  # Refresh token request DTO
+│       └── responses/
+│           ├── AuthResponse.ts     # Auth response DTO
+│           └── LoginResponseDto.ts # Login response DTO
+│
+├── infrastructure/                  # 💾 Data Access Layer
+│   ├── database/
+│   │   ├── supabase.ts            # Supabase client initialization
+│   │   ├── migrations/            # Database migrations
+│   │   │   ├── 001_database_v1.sql
+│   │   │   ├── 002_adding_rls.sql
+│   │   │   └── 003_convert_users_id_to_uuid.sql
+│   │   └── rls_rules.md           # RLS policy documentation
+│   └── repositories/
+│       ├── UserRepository.ts       # User data access (implements IUserRepository)
+│       └── AuthRepository.ts       # Auth data access (implements IAuthRepository)
+│
+├── interface/                       # 🌐 Web/Presentation Layer
+│   ├── controllers/
+│   │   └── authController.ts      # HTTP request handlers
+│   ├── middlewares/
+│   │   ├── authMiddleware.ts      # Authentication middleware
+│   │   ├── errorHanlder.ts        # Global error handler
+│   │   ├── requireAuth.ts         # Authorization middleware
+│   │   └── Validate.ts            # Request validation middleware
+│   └── routes/
+│       └── auth.route.ts          # Route definitions
+│
+├── shared/                          # 🔧 Cross-Cutting Concerns
+│   ├── scripts/
+│   │   └── init.ts                # Database initialization script
+│   └── utils/
+│       ├── logger.ts              # Logging utility
+│       └── asyncWrapper.ts        # Async route wrapper
+│
+└── index.ts                         # Application entry point
 ```
-
-**Purpose:** Implements domain interfaces using specific technologies (Supabase, PostgreSQL).
 
 ---
 
-### **4. Interface Layer** (`interface/`)
-HTTP handling and external API - **depends on application layer**
+## Layer Responsibilities
 
-```
-interface/
-├── controllers/
-│   └── authController.ts       # Auth HTTP handlers (static methods)
-├── routes/
-│   └── auth.route.ts           # Route definitions
-├── middlewares/
-│   ├── authMiddleware.ts       # JWT verification & role-based access
-│   ├── errorHandler.ts         # Global error handler
-│   └── requireAuth.ts          # Authentication requirement
-└── validators/                 # (Optional) Request validation
-```
+### 1. **Domain Layer** (Business Logic)
+**Location:** `src/domain/`
 
-**Purpose:** Handles HTTP requests/responses and routes.
+**Responsibility:**
+- Define core business entities (User, Role, etc.)
+- Define business rules and constraints
+- Create interfaces that other layers depend on
+- Contain no external dependencies
+
+**Files:**
+- `entities/User.ts` - Core User entity with business logic
+- `repositories/IUserRepository.ts` - Contract that repositories must follow
+- `services/IUserAuthService.ts` - Contract for authentication service
+- `errors/` - Custom error types
+
+**Example - User Entity:**
+```typescript
+export class User {
+    private id: string;
+    private email: string;
+    private role: "admin" | "doctor" | "receptionist";
+
+    constructor(id, email, firstName, lastName, role) {
+        // Business rule: validate role
+        if (!["admin", "doctor", "receptionist"].includes(role)) {
+            throw new Error("Invalid role");
+        }
+        this.role = role;
+    }
+    
+    getRole(): string {
+        return this.role;
+    }
+}
+```
 
 ---
 
-### **5. Shared Layer** (`shared/`)
-Cross-cutting utilities used across all layers
+### 2. **Application Layer** (Use Cases)
+**Location:** `src/application/`
 
-```
-shared/
-└── utils/
-    ├── asyncWrapper.ts         # Async error handler wrapper
-    └── logger.ts               # Logging utility
-```
+**Responsibility:**
+- Implement business use cases
+- Coordinate between domain and infrastructure
+- Handle DTOs (Data Transfer Objects) for API requests/responses
+- Orchestrate data flow
 
-**Purpose:** Reusable utilities, logging, helpers.
+**Files:**
+- `services/UserAuthService.ts` - Implements IUserAuthService
+- `dto/requests/` - Input validation schemas
+- `dto/responses/` - Output data structures
+
+**Example - Use Case Flow:**
+```typescript
+async createUser(user: User, password: string): Promise<User> {
+    // 1. Validate business rules (Domain)
+    if (!password || password.length < 6) {
+        throw new Error("Invalid password");
+    }
+    
+    // 2. Call repository to persist (Infrastructure)
+    const result = await this.userRepository.createUser(user, password);
+    
+    // 3. Return to controller
+    return result;
+}
+```
 
 ---
 
-### **6. Configuration** (`config/`)
-Dependency injection and app setup
+### 3. **Domain Entities**
+**Location:** `src/domain/`
 
-```
-config/
-└── container.ts                # IoC container for dependency injection
-```
+**Responsibility:**
+- Represent core business objects
+- Encapsulate business logic
+- Validate business rules
 
-**Purpose:** Centralizes dependency management and configuration.
+**Example:**
+```typescript
+// User is a domain entity with pure business logic
+const user = new User(id, email, firstName, lastName, "doctor");
+user.getRole(); // Business-safe operation
+```
 
 ---
 
-## 🔐 Authentication & Authorization Flow
+### 4. **Infrastructure Layer** (Data Access)
+**Location:** `src/infrastructure/`
 
-### **Authentication Process**
+**Responsibility:**
+- Implement repository interfaces
+- Handle database operations
+- Manage external service calls (Supabase, APIs, etc.)
+- Convert database models to domain entities
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. Client sends login request with email & password          │
-└────────────────┬────────────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 2. AuthController.login() → AuthService.login()             │
-│    - Calls Supabase Auth signInWithPassword()                │
-│    - Receives JWT token & user UUID                          │
-└────────────────┬────────────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 3. Server returns JWT token to client                        │
-└────────────────┬────────────────────────────────────────────┘
-                 │
-        (Client stores token)
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 4. Client includes token: Authorization: Bearer <token>      │
-└────────────────┬────────────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 5. authMiddleware verifies token                             │
-│    - Validates Bearer format                                 │
-│    - Calls supabase.auth.getUser(token)                      │
-│    - Looks up user in database (auth_uuid → user.id)         │
-│    - Fetches role from users.role_id → roles table           │
-│    - Attaches user object to request                         │
-└────────────────┬────────────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 6. (Optional) requireRole() checks authorization             │
-│    - Verifies user.role is in allowed roles list             │
-│    - Allows or denies request based on role                  │
-└────────────────┬────────────────────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 7. Controller processes authenticated request                │
-└─────────────────────────────────────────────────────────────┘
+**Files:**
+- `repositories/UserRepository.ts` - Implements IUserRepository
+- `repositories/AuthRepository.ts` - Implements IAuthRepository
+- `database/supabase.ts` - Database client setup
+
+**Example - Repository Implementation:**
+```typescript
+export class UserRepository implements IUserRepository {
+    async createUser(user: User, password: string): Promise<User> {
+        // Database-specific logic (Supabase)
+        const { data, error } = await supabaseAdmin.auth.admin.createUser({
+            email: user.getEmail(),
+            password: password
+        });
+        
+        // Convert to domain entity and return
+        return new User(data.user.id, ...);
+    }
+}
 ```
 
-### **Request Object Enrichment**
+---
+
+### 5. **Interface/Presentation Layer** (Web)
+**Location:** `src/interface/`
+
+**Responsibility:**
+- Handle HTTP requests/responses
+- Route incoming requests
+- Apply middleware (auth, validation, error handling)
+- Return HTTP responses
+
+**Files:**
+- `controllers/authController.ts` - Request handlers
+- `routes/auth.route.ts` - Route definitions
+- `middlewares/` - Cross-cutting concerns
+
+**Example - Controller:**
+```typescript
+async createUser(req: Request, res: Response) {
+    const { email, password, firstName, lastName, role } = req.body;
+    
+    // 1. Create domain entity
+    const user = new User('', email, firstName, lastName, role);
+    
+    // 2. Call use case
+    const result = await this.userAuthService.createUser(user, password);
+    
+    // 3. Return response
+    res.json({
+        status: 201,
+        success: true,
+        data: result.toJSON()
+    });
+}
+```
+
+---
+
+### 6. **Shared Layer** (Cross-Cutting Concerns)
+**Location:** `src/shared/`
+
+**Responsibility:**
+- Provide utilities used across all layers
+- Logging
+- Error handling
+- Helper functions
+
+**Files:**
+- `utils/logger.ts` - Centralized logging
+- `utils/asyncWrapper.ts` - Async error wrapper
+- `scripts/init.ts` - Database initialization
+
+---
+
+## Data Flow Examples
+
+### Example 1: User Login
+
+```
+1. HTTP Request
+   POST /auth/login
+   { email: "user@example.com", password: "pass123" }
+         ↓
+2. Interface Layer (Controller)
+   authController.login(req, res)
+   ├─ Extract email & password from request
+   ├─ Call userAuthService.loginUser(email, password)
+         ↓
+3. Application Layer (Service)
+   UserAuthService.loginUser(email, password)
+   ├─ Validate input (DTO validation)
+   ├─ Call authRepository.login(email, password)
+         ↓
+4. Infrastructure Layer (Repository)
+   AuthRepository.login(email, password)
+   ├─ Call Supabase Auth API
+   ├─ Create User domain entity from response
+   ├─ Return User to service
+         ↓
+5. Application Layer
+   ├─ Format response with tokens
+   ├─ Return LoginResponseDto
+         ↓
+6. Interface Layer
+   ├─ Convert to JSON
+   ├─ Return HTTP 200 response
+         ↓
+7. HTTP Response
+   {
+     "access_token": "...",
+     "user": { "id": "...", "email": "...", "role": "..." }
+   }
+```
+
+### Example 2: Create User (Admin Only)
+
+```
+1. HTTP Request
+   POST /auth/create-user
+   Headers: { Authorization: "Bearer <token>" }
+   Body: { email, password, firstName, lastName, role }
+         ↓
+2. Middleware Chain
+   ├─ authMiddleware → Verify token & load user
+   ├─ requireRole(['admin']) → Check authorization
+   ├─ validate(CreateUserDtoSchema) → Validate request body
+         ↓
+3. Interface Layer (Controller)
+   authController.createUser(req, res)
+   ├─ Extract data from validated request
+   ├─ Create User domain entity
+   ├─ Call userAuthService.createUser(user, password)
+         ↓
+4. Application Layer (Service)
+   UserAuthService.createUser(user, password)
+   ├─ Validate business rules
+   ├─ Call userRepository.createUser(user, password)
+         ↓
+5. Infrastructure Layer (Repository)
+   UserRepository.createUser(user, password)
+   ├─ Create user in Supabase Auth
+   ├─ Create profile in Supabase Database
+   ├─ Return User entity
+         ↓
+6. Application Layer
+   ├─ Return User entity
+         ↓
+7. Interface Layer
+   ├─ Convert to JSON response
+   ├─ Return HTTP 201 response
+         ↓
+8. HTTP Response
+   { "status": 201, "success": true, "data": { ... } }
+```
+
+---
+
+## Design Patterns Used
+
+### 1. **Repository Pattern**
+Abstracts data access logic behind interfaces.
 
 ```typescript
-// After authMiddleware, req.user contains:
-{
-    id: string;           // UUID from Supabase Auth
-    email: string;        // User email
-    role: string;         // Role name (admin, doctor, receptionist, patient)
-    userId: number;       // Local database user ID (used for RLS)
+// Domain defines the contract
+export interface IUserRepository {
+    createUser(user: User, password: string): Promise<User>;
+    findByAuthUUID(authUUID: string): Promise<User | null>;
+}
+
+// Infrastructure implements it
+export class UserRepository implements IUserRepository {
+    // Implementation details
+}
+```
+
+### 2. **Dependency Injection**
+Dependencies are injected rather than created.
+
+```typescript
+export class UserAuthService {
+    constructor(
+        private userRepository: IUserRepository,
+        private authRepository: IAuthRepository
+    ) { }
+    // Service uses injected dependencies
+}
+```
+
+### 3. **DTO (Data Transfer Object)**
+Separates API contracts from domain entities.
+
+```typescript
+// Request DTO
+export const CreateUserDtoSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(6),
+    firstName: z.string(),
+    lastName: z.string(),
+    role: z.enum(['admin', 'doctor', 'receptionist'])
+});
+
+// Response DTO
+export class LoginResponseDto {
+    constructor(
+        public access_token: string,
+        public refresh_token: string,
+        public user: User
+    ) { }
+}
+```
+
+### 4. **Service Layer Pattern**
+Business logic encapsulated in services.
+
+```typescript
+// UserAuthService orchestrates use cases
+async loginUser(email: string, password: string): Promise<LoginResponseDto> {
+    // Complex business logic here
+    const authResult = await this.authRepository.login(email, password);
+    return new LoginResponseDto(...);
 }
 ```
 
 ---
 
-## 🔒 Security Architecture
+## Benefits of This Architecture
 
-### **Row-Level Security (RLS) Policies**
-
-Database enforces access control at the SQL level:
-
-| Table | Admin | Doctor | Receptionist | Patient |
-|-------|-------|--------|--------------|---------|
-| **users** | CRUD | — | — | — |
-| **doctors** | CRUD | — | — | — |
-| **patients** | CRUD | CRUD own | — | — |
-| **appointments** | CRUD | INSERT + SELECT own + DELETE own | CRUD | — |
-| **rooms** | CRUD | — | CRUD | — |
-| **patient_medical_files** | CRUD | SELECT own | — | — |
-| **appointment_results** | CRUD | SELECT own | — | — |
-
-### **Auth Flow Security**
-
-1. **Supabase manages authentication** - passwords never stored locally
-2. **JWT tokens** - stateless, time-limited
-3. **Database verification** - every request validates user exists
-4. **RLS enforcement** - database blocks unauthorized access
-5. **Authenticated client** - queries respect user's permissions
+| Benefit | How It Helps |
+|---------|------------|
+| **Testability** | Can test each layer independently |
+| **Maintainability** | Clear separation of concerns |
+| **Scalability** | Easy to add new features |
+| **Flexibility** | Can swap implementations (e.g., PostgreSQL → MongoDB) |
+| **Reusability** | Services can be reused across different controllers |
+| **Independence** | Domain logic independent of frameworks |
 
 ---
 
-## 📊 Data Models
+## How to Add a New Feature
 
-### **Core Tables**
+### Example: Add "Change Password" Endpoint
 
-```sql
-users
-├── id (INT, PRIMARY KEY)
-├── email (VARCHAR, UNIQUE)
-├── auth_uuid (UUID, references Supabase Auth)
-├── role_id (INT, FK → roles)
-├── first_name (TEXT)
-├── last_name (TEXT)
-└── timestamps (created_at, updated_at)
+1. **Domain Layer** (Business rules)
+   ```typescript
+   // domain/services/IUserAuthService.ts
+   changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void>;
+   ```
 
-roles
-├── id (INT, PRIMARY KEY)
-├── name (VARCHAR, UNIQUE) - admin, doctor, receptionist, patient
-└── description (TEXT)
-
-doctors
-├── id (INT, PRIMARY KEY, FK → users)
-├── salary (DECIMAL)
-├── is_medical_director (BOOLEAN)
-└── timestamps
-
-patients
-├── id (INT, PRIMARY KEY, FK → users)
-├── doctor_id (INT, FK → doctors)
-├── address (TEXT)
-├── phone_number (VARCHAR)
-├── birth_date (DATE)
-├── profession (TEXT)
-├── children_number (INT)
-├── family_situation (TEXT)
-└── timestamps
-
-appointments
-├── id (INT, PRIMARY KEY)
-├── patient_id (INT, FK → patients)
-├── doctor_id (INT, FK → doctors)
-├── room_id (INT, FK → rooms)
-├── appointment_date (TIMESTAMP)
-├── status (VARCHAR)
-└── timestamps
-
-rooms
-├── id (INT, PRIMARY KEY)
-├── name (VARCHAR)
-├── capacity (INT)
-└── timestamps
-
-patient_medical_files
-├── id (INT, PRIMARY KEY)
-├── patient_id (INT, FK → patients)
-├── doctor_id (INT, FK → doctors)
-├── file_url (TEXT)
-└── timestamps
-
-appointment_results
-├── id (INT, PRIMARY KEY)
-├── appointment_id (INT, FK → appointments)
-├── diagnosis (TEXT)
-├── treatment (TEXT)
-├── notes (TEXT)
-└── timestamps
-```
-
----
-
-## 🔄 Request/Response Flow Example
-
-### **Login Request**
-
-```
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "doctor@clinic.com",
-  "password": "securePassword123"
-}
-```
-
-### **Processing Steps**
-
-1. **Route** (`auth.route.ts`)
-   - Matches POST /api/auth/login
-   - Calls `AuthController.login()`
-
-2. **Controller** (`authController.ts`)
-   - Extracts email & password from request body
-   - Calls `AuthService.login(email, password)`
-
-3. **Application Service** (`AuthService.ts`)
-   - Calls `supabaseAdmin.auth.signInWithPassword()`
-   - Gets JWT token & user UUID
-   - Queries database for user details
-   - Returns `{ token, user }`
-
-4. **Controller Response**
-   ```json
-   {
-     "success": true,
-     "token": "eyJhbGciOiJIUzI1NiIs...",
-     "user": {
-       "id": "550e8400-e29b-41d4-a716-446655440000",
-       "email": "doctor@clinic.com",
-       "role": "doctor"
-     }
+2. **Application Layer** (Use case implementation)
+   ```typescript
+   // application/services/UserAuthService.ts
+   async changePassword(userId: string, oldPassword: string, newPassword: string) {
+       // Verify old password
+       // Update password in repository
    }
    ```
 
----
-
-### **Protected Request with Authentication**
-
-```
-GET /api/appointments
-Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
-```
-
-### **Processing Steps**
-
-1. **Route** - Middleware attached
+3. **Infrastructure Layer** (Data access)
    ```typescript
-   router.get('/appointments', authMiddleware, requireRole(['doctor', 'admin']), controller.getAppointments);
+   // infrastructure/repositories/AuthRepository.ts
+   async updatePassword(userId: string, newPassword: string): Promise<void> {
+       // Call Supabase API
+   }
    ```
 
-2. **authMiddleware**
-   - Extracts token from Authorization header
-   - Verifies token with Supabase
-   - Looks up user in database
-   - Fetches user's role
-   - Attaches `req.user` object
-
-3. **requireRole(['doctor', 'admin'])**
-   - Checks if `req.user.role` is in allowed roles
-   - Returns 403 if unauthorized
-
-4. **Controller**
-   - Uses `req.user.userId` for RLS queries
-   - Database enforces: doctor only sees own appointments
-   - Returns filtered results
+4. **Interface Layer** (HTTP endpoint)
+   ```typescript
+   // interface/controllers/authController.ts
+   async changePassword(req: AuthRequest, res: Response) {
+       const result = await this.userAuthService.changePassword(...);
+       res.json(result);
+   }
+   
+   // interface/routes/auth.route.ts
+   router.post("/change-password", authMiddleware, asyncWrapper(...));
+   ```
 
 ---
 
-## 🛠️ Key Technologies
+## Error Handling
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Runtime** | Node.js | JavaScript runtime |
-| **Language** | TypeScript | Type safety |
-| **Framework** | Express.js | HTTP server |
-| **Database** | PostgreSQL (Supabase) | Data persistence |
-| **Auth** | Supabase Auth | User authentication |
-| **Auth Protocol** | JWT | Stateless authentication |
-| **ORM/Query** | Supabase Client | Database queries |
-| **Security** | RLS (PostgreSQL) | Row-level access control |
-| **Config** | dotenv | Environment variables |
-| **Logging** | Custom Logger | Application logging |
-
----
-
-## 📁 Project Structure Summary
+All errors flow through the hierarchy:
 
 ```
-backend/
-├── src/
-│   ├── index.ts                    # Entry point
-│   ├── domain/                     # Business logic (no dependencies)
-│   ├── application/                # Use cases & orchestration
-│   ├── infrastructure/             # Framework implementations
-│   ├── interface/                  # HTTP layer
-│   ├── shared/                     # Utilities
-│   └── config/                     # Configuration & DI
-├── migrations/                     # Database migrations
-├── package.json
-├── tsconfig.json
-└── .env                            # Environment variables
+Domain Errors (AppError)
+    ├─ AuthError (login, token issues)
+    ├─ DatabaseError (data access failures)
+    └─ ValidationError (input validation)
+         ↓
+    Application Layer (catches & re-throws)
+         ↓
+    Interface Layer (errorHandler middleware)
+         ↓
+    HTTP Error Response
 ```
 
 ---
 
-## 🎯 Design Patterns Used
+## Best Practices
 
-1. **Clean Architecture** - Clear separation of concerns
-2. **Dependency Injection** - Loose coupling, easy testing
-3. **Repository Pattern** - Abstract data access
-4. **Middleware Pattern** - Request processing pipeline
-5. **Error Handling Pattern** - Custom error classes
-6. **Factory Pattern** - CreateSupabaseClient()
-7. **Async Wrapper Pattern** - Error handling in routes
+✅ **DO:**
+- Keep business logic in Domain entities and Services
+- Use interfaces to define contracts
+- Inject dependencies
+- Use DTOs for API communication
+- Return domain entities from repositories
 
----
-
-## ✅ Security Features
-
-- ✅ JWT token-based authentication
-- ✅ Role-based access control (RBAC)
-- ✅ Row-level security (RLS) at database level
-- ✅ Password hashing (Supabase manages)
-- ✅ Bearer token validation
-- ✅ User identity verification before DB queries
-- ✅ Error messages don't leak information
-- ✅ Authenticated client respects permissions
+❌ **DON'T:**
+- Put database logic in controllers
+- Import Infrastructure in Domain
+- Mix concerns in layers
+- Hardcode dependencies
+- Expose database entities directly to clients
 
 ---
 
-## 📈 Scalability Considerations
+## Next Steps
 
-1. **Database** - PostgreSQL with RLS scales well
-2. **Stateless** - JWT tokens = horizontal scaling
-3. **Caching** - Can add Redis for sessions/tokens
-4. **Rate Limiting** - Ready to integrate
-5. **Logging** - Centralized logging pattern in place
-6. **Error Handling** - Structured error handling
+1. Review the existing code structure
+2. Follow this pattern when adding new features
+3. Keep domain logic separate from infrastructure
+4. Use dependency injection for all services
+5. Write tests for each layer independently
 
----
-
-## 🚀 Deployment Checklist
-
-- [ ] Environment variables configured (.env)
-- [ ] Database migrations applied
-- [ ] Supabase project set up
-- [ ] Auth policies enabled
-- [ ] RLS policies created
-- [ ] API keys secured
-- [ ] Error logging configured
-- [ ] CORS configured
-- [ ] Rate limiting added
-- [ ] Request validation added
-
----
-
-## 📝 Development Guidelines
-
-### **Adding New Feature**
-
-1. **Define Domain** (`domain/entities/`, `domain/services/`)
-2. **Create Repository Interface** (`domain/repositories/`)
-3. **Implement Repository** (`infrastructure/repositories/`)
-4. **Create Application Service** (`application/services/`)
-5. **Create DTOs** (`application/dto/`)
-6. **Create Controller** (`interface/controllers/`)
-7. **Define Routes** (`interface/routes/`)
-8. **Add RLS Policies** (if DB table)
-
-### **Adding New Endpoint**
-
-```typescript
-// 1. Define route
-router.post('/users', authMiddleware, requireRole(['admin']), userController.create);
-
-// 2. Add controller method
-static async create(req: AuthRequest, res: Response) {
-    const userId = req.user?.userId;
-    // ...
-}
-
-// 3. Call application service
-const result = await userService.createUser(data);
-```
-
----
-
-## 🔗 Key Interfaces
-
-### **AuthRequest** (Extended Express Request)
-```typescript
-interface AuthRequest extends Request {
-    user?: {
-        id: string;           // UUID
-        email: string;
-        role: string;
-        userId: number;       // Database ID
-    };
-}
-```
-
-### **IUserRepository** (Contract)
-```typescript
-interface IUserRepository {
-    findById(id: string): Promise<User | null>;
-    findByEmail(email: string): Promise<User | null>;
-    create(data: CreateUserDto): Promise<User>;
-    update(id: string, data: Partial<User>): Promise<User>;
-}
-```
-
----
-
-## 📊 Architecture Rating: **8.5/10** ⭐
-
-**Strengths:**
-- ✅ Clean, layered architecture
-- ✅ Strong separation of concerns
-- ✅ Security-first design
-- ✅ Scalable structure
-- ✅ Type-safe (TypeScript)
-
-**Future Improvements:**
-- 🔄 Add comprehensive service layer
-- 🔄 Implement caching layer
-- 🔄 Add request validation
-- 🔄 Add integration tests
-- 🔄 Document API endpoints
-
----
-
-**Last Updated:** November 19, 2025
-**Version:** 1.0
+Happy coding! 🚀

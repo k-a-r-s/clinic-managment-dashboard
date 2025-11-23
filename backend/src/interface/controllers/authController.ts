@@ -51,6 +51,11 @@ export class AuthController {
     const { refreshToken } = req.body;
     const result = await this.userAuthService.refreshToken(refreshToken);
 
-    res.json(result.toJSON());
+    res.json({
+      status: 200,
+      success: true,
+      data: result.toJSON(),
+      error: null,
+    });
   }
 }

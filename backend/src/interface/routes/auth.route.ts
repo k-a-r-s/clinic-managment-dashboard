@@ -50,34 +50,73 @@ const authController = new AuthController(userAuthService);
  *             schema:
  *               type: object
  *               properties:
- *                 access_token:
- *                   type: string
- *                 refresh_token:
- *                   type: string
- *                 expires_in:
+ *                 status:
  *                   type: number
- *                 token_type:
- *                   type: string
- *                 user:
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
  *                   type: object
  *                   properties:
- *                     id:
+ *                     accessToken:
  *                       type: string
- *                     email:
+ *                       description: JWT access token
+ *                     refreshToken:
  *                       type: string
- *                     firstName:
+ *                       description: JWT refresh token
+ *                     expiresIn:
+ *                       type: number
+ *                       description: Token expiration time in seconds
+ *                     tokenType:
  *                       type: string
- *                     lastName:
- *                       type: string
- *                     role:
- *                       type: string
+ *                       example: Bearer
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           description: User ID (UUID)
+ *                         email:
+ *                           type: string
+ *                           format: email
+ *                         firstName:
+ *                           type: string
+ *                         lastName:
+ *                           type: string
+ *                         role:
+ *                           type: string
+ *                           enum: [admin, doctor, receptionist]
+ *                 error:
+ *                   type: null
+ *                   example: null
  *       400:
  *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: number
+ *                   example: 400
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 data:
+ *                   type: null
+ *                   example: null
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Invalid email or password
  */
 router.post(
-    "/login",
-    validate(LoginDto),
-    asyncWrapper((req, res) => authController.login(req, res))
+  "/login",
+  validate(LoginDto),
+  asyncWrapper((req, res) => authController.login(req, res))
 );
 
 /**
@@ -97,9 +136,9 @@ router.post(
  *         description: Unauthorized
  */
 router.post(
-    "/logout",
-    authMiddleware,
-    asyncWrapper((req, res) => authController.logout(req, res))
+  "/logout",
+  authMiddleware,
+  asyncWrapper((req, res) => authController.logout(req, res))
 );
 
 /**
@@ -145,17 +184,109 @@ router.post(
  *     responses:
  *       201:
  *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: number
+ *                   example: 201
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: User ID (UUID)
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                     firstName:
+ *                       type: string
+ *                     lastName:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: [admin, doctor, receptionist]
+ *                 error:
+ *                   type: null
+ *                   example: null
  *       400:
  *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: number
+ *                   example: 400
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 data:
+ *                   type: null
+ *                   example: null
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Validation failed
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: number
+ *                   example: 401
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 data:
+ *                   type: null
+ *                   example: null
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Unauthorized
  *       403:
  *         description: Forbidden - admin only
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: number
+ *                   example: 403
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 data:
+ *                   type: null
+ *                   example: null
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Forbidden - Admin access required
  */
 router.post(
-    "/create-user",
-    authMiddleware,
-    requireRole(['admin']),
-    validate(CreateUserDtoSchema),
-    asyncWrapper((req, res) => authController.createUser(req, res))
+  "/create-user",
+  authMiddleware,
+  requireRole(["admin"]),
+  validate(CreateUserDtoSchema),
+  asyncWrapper((req, res) => authController.createUser(req, res))
 );
 
 /**
@@ -163,7 +294,7 @@ router.post(
  * /auth/refresh-token:
  *   post:
  *     summary: Refresh access token
- *     description: Get a new access token using refresh token
+ *     description: Get a new access token and refresh token using an existing refresh token
  *     tags:
  *       - Authentication
  *     requestBody:
@@ -186,23 +317,57 @@ router.post(
  *             schema:
  *               type: object
  *               properties:
+ *                 status:
+ *                   type: number
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
  *                 data:
  *                   type: object
  *                   properties:
+ *                     refresh_token:
+ *                       type: string
+ *                       description: New refresh token
  *                     access_token:
  *                       type: string
+ *                       description: New access token
  *                     expires_in:
  *                       type: number
+ *                       description: Token expiration time in seconds
  *                     token_type:
  *                       type: string
+ *                       example: Bearer
+ *                 error:
+ *                   type: null
+ *                   example: null
  *       401:
  *         description: Invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: number
+ *                   example: 401
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 data:
+ *                   type: null
+ *                   example: null
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Invalid or expired refresh token
  */
 router.post(
+  "/refresh-token",
 
-    "/refresh-token",
-    
-    asyncWrapper((req, res) => authController.refreshToken(req, res))
+  asyncWrapper((req, res) => authController.refreshToken(req, res))
 );
 
 export default router;

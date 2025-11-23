@@ -6,74 +6,78 @@ import { IUserRepository } from "../../domain/repositories/IUserRepository";
 import { IUserAuthService } from "../../domain/services/IUserAuthService";
 import { Logger } from "../../shared/utils/logger";
 import { LoginResponseDto } from "../dto/responses/LoginResponseDto";
+import { RefreshTokenResponseDto } from "../dto/responses/RefreshTokenResponseDto";
 
 export class UserAuthService implements IUserAuthService {
-   constructor(
-      private userRepository: IUserRepository,
-      private authRepository: IAuthRepository
-   ) { }
+  constructor(
+    private userRepository: IUserRepository,
+    private authRepository: IAuthRepository
+  ) {}
 
-   async loginUser(email: string, password: string): Promise<LoginResponseDto> {
-      Logger.info("🔐 Login attempt", { email });
+  async loginUser(email: string, password: string): Promise<LoginResponseDto> {
+    Logger.info("🔐 Login attempt", { email });
 
-      const authResponse = await this.authRepository.login(email, password);
+    const authResponse = await this.authRepository.login(email, password);
 
-      // Get full user profile from database
-      const profile = await this.userRepository.findByAuthUUID(authResponse.user.getId());
+    // Get full user profile from database
+    const profile = await this.userRepository.findByAuthUUID(
+      authResponse.user.getId()
+    );
 
-      if (!profile) {
-         Logger.error("❌ Profile not found", { userId: authResponse.user.getId() });
-         throw new DatabaseError("User profile not found");
-      }
+    if (!profile) {
+      Logger.error("❌ Profile not found", {
+        userId: authResponse.user.getId(),
+      });
+      throw new DatabaseError("User profile not found");
+    }
 
-      Logger.info("✅ Login successful", { email, userId: profile.getId(), role: profile.getRole() });
+    Logger.info("✅ Login successful", {
+      email,
+      userId: profile.getId(),
+      role: profile.getRole(),
+    });
 
-      return new LoginResponseDto(
-         authResponse.access_token,
-         authResponse.refresh_token,
-         authResponse.expires_in || 3600,
-         authResponse.token_type || 'Bearer',
-         profile  // Pass the User instance directly
-      );
-   }
+    return new LoginResponseDto(
+      authResponse.access_token,
+      authResponse.refresh_token,
+      authResponse.expires_in || 3600,
+      authResponse.token_type || "Bearer",
+      profile // Pass the User instance directly
+    );
+  }
 
-   async logoutUser(userId: string): Promise<void> {
-      Logger.info("🔐 Logout attempt", { userId });
+  async logoutUser(userId: string): Promise<void> {
+    Logger.info("🔐 Logout attempt", { userId });
 
-      await this.authRepository.logout(userId);
-   }
+    await this.authRepository.logout(userId);
+  }
 
-   async refreshToken(refreshToken: string): Promise<LoginResponseDto> {
-      Logger.info("🔄 Refresh token attempt", { refreshToken });
+  async refreshToken(refreshToken: string): Promise<RefreshTokenResponseDto> {
+    Logger.info("🔄 Refresh token attempt", { refreshToken });
 
-      const authResponse = await this.authRepository.refreshToken(refreshToken);
+    const authResponse = await this.authRepository.refreshToken(refreshToken);
 
-      // Get full user profile from database
-      const profile = await this.userRepository.findByAuthUUID(authResponse.user.getId());
+    Logger.info("✅ Refresh token successful", {
+      access_token: authResponse.access_token,
+    });
 
-      if (!profile) {
-         Logger.error("❌ Profile not found", { userId: authResponse.user.getId() });
-         throw new DatabaseError("User profile not found");
-      }
+    return new RefreshTokenResponseDto(
+      authResponse.refresh_token,
+      authResponse.access_token,
+      authResponse.expires_in || 3600,
+      authResponse.token_type || "Bearer"
+    );
+  }
 
-      Logger.info("✅ Refresh token successful", { email: profile.getEmail(), userId: profile.getId() });
+  async createUser(user: User, password: string): Promise<User> {
+    Logger.info("🔐 User creation attempt", { email: user.getEmail() });
 
-      return new LoginResponseDto(
-         authResponse.access_token,
-         authResponse.refresh_token,
-         authResponse.expires_in || 3600,
-         authResponse.token_type || 'Bearer',
-         profile
-      );
-   }
+    const createdUser = await this.userRepository.createUser(user, password);
 
-   async createUser(user: User, password: string): Promise<User> {
-      Logger.info("🔐 User creation attempt", { email: user.getEmail() });
+    Logger.info("✅ User created successfully", {
+      email: createdUser.getEmail(),
+    });
 
-      const createdUser = await this.userRepository.createUser(user, password);
-
-      Logger.info("✅ User created successfully", { email: createdUser.getEmail() });
-
-      return createdUser;
-   }
+    return createdUser;
+  }
 }

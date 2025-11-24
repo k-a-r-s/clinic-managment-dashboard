@@ -45,6 +45,12 @@ const authController = new AuthController(userAuthService);
  *     responses:
  *       200:
  *         description: Login successful
+ *         headers:
+ *           Set-Cookie:
+ *             description: Refresh token stored in HTTP-only cookie
+ *             schema:
+ *               type: string
+ *               example: refreshToken=sbr_1234567890abcdef; Path=/api/auth/refresh-token; HttpOnly; Secure; SameSite=Strict
  *         content:
  *           application/json:
  *             schema:
@@ -62,9 +68,6 @@ const authController = new AuthController(userAuthService);
  *                     accessToken:
  *                       type: string
  *                       description: JWT access token
- *                     refreshToken:
- *                       type: string
- *                       description: JWT refresh token
  *                     expiresIn:
  *                       type: number
  *                       description: Token expiration time in seconds
@@ -124,7 +127,7 @@ router.post(
  * /auth/logout:
  *   post:
  *     summary: User logout
- *     description: Logout user and invalidate session
+ *     description: Logout user, invalidate session, and clear refresh token cookie
  *     tags:
  *       - Authentication
  *     security:
@@ -132,6 +135,12 @@ router.post(
  *     responses:
  *       200:
  *         description: Logout successful
+ *         headers:
+ *           Set-Cookie:
+ *             description: Clears the refresh token cookie
+ *             schema:
+ *               type: string
+ *               example: refreshToken=; Path=/api/auth/refresh-token; Expires=Thu, 01 Jan 1970 00:00:00 GMT
  *       401:
  *         description: Unauthorized
  */
@@ -141,31 +150,30 @@ router.post(
   asyncWrapper((req, res) => authController.logout(req, res))
 );
 
-
-
 /**
  * @swagger
  * /auth/refresh-token:
  *   post:
  *     summary: Refresh access token
- *     description: Get a new access token and refresh token using an existing refresh token
+ *     description: Get a new access token and refresh token using the refresh token stored in HTTP-only cookie
  *     tags:
  *       - Authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - refreshToken
- *             properties:
- *               refreshToken:
- *                 type: string
- *                 example: sbr_1234567890abcdef
+ *     parameters:
+ *       - in: cookie
+ *         name: refreshToken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Refresh token stored in HTTP-only cookie
  *     responses:
  *       200:
  *         description: Token refreshed successfully
+ *         headers:
+ *           Set-Cookie:
+ *             description: New refresh token stored in HTTP-only cookie
+ *             schema:
+ *               type: string
+ *               example: refreshToken=sbr_new_token; Path=/api/auth/refresh-token; HttpOnly; Secure; SameSite=Strict
  *         content:
  *           application/json:
  *             schema:
@@ -180,9 +188,6 @@ router.post(
  *                 data:
  *                   type: object
  *                   properties:
- *                     refresh_token:
- *                       type: string
- *                       description: New refresh token
  *                     access_token:
  *                       type: string
  *                       description: New access token

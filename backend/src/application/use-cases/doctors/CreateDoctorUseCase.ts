@@ -29,7 +29,10 @@ export class CreateDoctorUseCase {
     }
 
     // Pass the doctor entity and password to the repository
-    await this.doctorRepository.createDoctor(doctor, doctorData.password);
-    return { message: "Doctor created successfully" };
+    const createdDoctor = await this.doctorRepository.createDoctor(
+      doctor,
+      doctorData.password
+    );
+    return createdDoctor;
   }
 }

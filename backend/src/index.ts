@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { errorHandler } from "./interface/middlewares/errorHanlder";
@@ -11,6 +12,7 @@ import doctorRouter from "./interface/routes/doctor.route";
 const app = express();
 app.use(helmet());
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -23,8 +25,8 @@ const swaggerOptions = swaggerJsdoc({
       version: "1.0.0",
       description: "API documentation for Clinic Management Dashboard",
       contact: {
-        name: "Your Name",
-        email: "your.email@example.com",
+        name: "Dilmi Abderrahmane",
+        email: "abderrahmane.dilmi@ensia.edu.dz",
       },
     },
     servers: [

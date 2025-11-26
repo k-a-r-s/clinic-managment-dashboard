@@ -44,13 +44,17 @@ const authController = new AuthController(userAuthService);
  *                 example: admin
  *     responses:
  *       200:
- *         description: Login successful
+ *         description: Login successful - Access and refresh tokens set in HTTP-only cookies
  *         headers:
  *           Set-Cookie:
- *             description: Refresh token stored in HTTP-only cookie
+ *             description: Access token (1 hour) and refresh token (7 days) stored in HTTP-only cookies
  *             schema:
- *               type: string
- *               example: refreshToken=sbr_1234567890abcdef; Path=/api/auth/refresh-token; HttpOnly; Secure; SameSite=Strict
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example:
+ *                 - accessToken=jwt_access_token; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=3600
+ *                 - refreshToken=jwt_refresh_token; Path=/api/auth/refresh-token; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
  *         content:
  *           application/json:
  *             schema:
@@ -65,9 +69,6 @@ const authController = new AuthController(userAuthService);
  *                 data:
  *                   type: object
  *                   properties:
- *                     accessToken:
- *                       type: string
- *                       description: JWT access token
  *                     expiresIn:
  *                       type: number
  *                       description: Token expiration time in seconds
@@ -134,13 +135,17 @@ router.post(
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Logout successful
+ *         description: Logout successful - Both access and refresh token cookies cleared
  *         headers:
  *           Set-Cookie:
- *             description: Clears the refresh token cookie
+ *             description: Clears both access and refresh token cookies
  *             schema:
- *               type: string
- *               example: refreshToken=; Path=/api/auth/refresh-token; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example:
+ *                 - accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+ *                 - refreshToken=; Path=/api/auth/refresh-token; Expires=Thu, 01 Jan 1970 00:00:00 GMT
  *       401:
  *         description: Unauthorized
  */
@@ -167,13 +172,17 @@ router.post(
  *         description: Refresh token stored in HTTP-only cookie
  *     responses:
  *       200:
- *         description: Token refreshed successfully
+ *         description: Tokens refreshed successfully - New access and refresh tokens set in HTTP-only cookies
  *         headers:
  *           Set-Cookie:
- *             description: New refresh token stored in HTTP-only cookie
+ *             description: New access token (1 hour) and refresh token (7 days) stored in HTTP-only cookies
  *             schema:
- *               type: string
- *               example: refreshToken=sbr_new_token; Path=/api/auth/refresh-token; HttpOnly; Secure; SameSite=Strict
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example:
+ *                 - accessToken=jwt_new_access_token; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=3600
+ *                 - refreshToken=jwt_new_refresh_token; Path=/api/auth/refresh-token; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
  *         content:
  *           application/json:
  *             schema:
@@ -188,15 +197,9 @@ router.post(
  *                 data:
  *                   type: object
  *                   properties:
- *                     access_token:
+ *                     message:
  *                       type: string
- *                       description: New access token
- *                     expires_in:
- *                       type: number
- *                       description: Token expiration time in seconds
- *                     token_type:
- *                       type: string
- *                       example: Bearer
+ *                       example: Tokens refreshed successfully
  *                 error:
  *                   type: null
  *                   example: null
@@ -227,6 +230,83 @@ router.post(
   "/refresh-token",
 
   asyncWrapper((req, res) => authController.refreshToken(req, res))
+);
+
+/**
+ * @swagger
+ * /auth/me:
+ *   post:
+ *     summary: Get current user information
+ *     description: Retrieve the authenticated user's profile information
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: number
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: User ID (UUID)
+ *                       example: c0b837f3-5a95-44b6-bb60-7aeccc4afe9f
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: user@example.com
+ *                     firstName:
+ *                       type: string
+ *                       example: John
+ *                     lastName:
+ *                       type: string
+ *                       example: Doe
+ *                     role:
+ *                       type: string
+ *                       enum: [admin, doctor, receptionist]
+ *                       example: doctor
+ *                 error:
+ *                   type: null
+ *                   example: null
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: number
+ *                   example: 401
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 data:
+ *                   type: null
+ *                   example: null
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Invalid or expired token
+ */
+router.post(
+  "/me",
+  authMiddleware,
+  asyncWrapper((req, res) => authController.getMe(req, res))
 );
 
 export default router;

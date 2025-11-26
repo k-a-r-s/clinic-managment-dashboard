@@ -11,7 +11,7 @@ export interface AuthRequest extends Request {
     firstName: string;
     lastName: string;
     role: string;
-    token:string,
+    token: string;
   };
 }
 
@@ -21,21 +21,29 @@ export const authMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    // 1. Check if Authorization header exists
-    const authHeader = req.headers["authorization"];
-    if (!authHeader) {
-      const err = AuthError.invalidToken("No authorization header provided");
-      return next(err);
+    let token: string | undefined;
+
+    // 1. Check for token in cookies first (preferred method)
+    token = req.cookies?.accessToken;
+
+    // 2. Fall back to Authorization header for backward compatibility
+    if (!token) {
+      const authHeader = req.headers["authorization"];
+      if (authHeader) {
+        const parts = authHeader.split(" ");
+        if (parts.length === 2 && parts[0] === "Bearer") {
+          token = parts[1];
+        }
+      }
     }
 
-    // 2. Extract Bearer token
-    const parts = authHeader.split(" ");
-    if (parts.length !== 2 || parts[0] !== "Bearer") {
-      const err = AuthError.invalidToken("Invalid authorization header format");
+    // 3. If no token found in either location, reject request
+    if (!token) {
+      const err = AuthError.invalidToken(
+        "No access token provided in cookies or authorization header"
+      );
       return next(err);
     }
-
-    const token = parts[1];
 
     // 3. ✅ Verify token with Supabase admin client
     const {
@@ -73,7 +81,7 @@ export const authMiddleware = async (
       firstName: userProfile.getFirstName(),
       lastName: userProfile.getLastName(),
       role: userProfile.getRole(),
-      token:token,
+      token: token,
     };
 
     Logger.info(

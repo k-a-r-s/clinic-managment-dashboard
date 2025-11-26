@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { UserAuthService } from "../../application/services/UserAuthService";
 import { AuthRequest } from "../middlewares/authMiddleware";
-import { User } from "../../domain/entities/User";
 
 export class AuthController {
   constructor(private userAuthService: UserAuthService) {}
@@ -10,7 +9,16 @@ export class AuthController {
     const { email, password } = req.body;
     const result = await this.userAuthService.loginUser(email, password);
 
-    // Set refresh token in HTTP-only cookie
+    // Set access token in HTTP-only cookie (1 hour expiration)
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000, // 1 hour
+      path: "/",
+    });
+
+    // Set refresh token in HTTP-only cookie (7 days expiration)
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -19,14 +27,15 @@ export class AuthController {
       path: "/api/auth/refresh-token",
     });
 
-    // Return response without refresh token in body
+    // Return response with only user info (no tokens)
     const responseJson = result.toJSON();
-    const { refreshToken, ...dataWithoutRefreshToken } = responseJson.data;
+    const { refreshToken, accessToken, ...dataWithoutTokens } =
+      responseJson.data;
 
     res.json({
       status: 200,
       success: true,
-      data: dataWithoutRefreshToken,
+      data: dataWithoutTokens,
       error: null,
     });
   }
@@ -34,6 +43,14 @@ export class AuthController {
   async logout(req: AuthRequest, res: Response) {
     const userId = req.user?.id;
     await this.userAuthService.logoutUser(userId);
+
+    // Clear access token cookie
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
 
     // Clear refresh token cookie
     res.clearCookie("refreshToken", {
@@ -69,7 +86,16 @@ export class AuthController {
 
     const result = await this.userAuthService.refreshToken(refreshToken);
 
-    // Set new refresh token in cookie
+    // Set new access token in cookie (1 hour expiration)
+    res.cookie("accessToken", result["access_token"], {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000, // 1 hour
+      path: "/",
+    });
+
+    // Set new refresh token in cookie (7 days expiration)
     res.cookie("refreshToken", result["refresh_token"], {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -78,14 +104,11 @@ export class AuthController {
       path: "/api/auth/refresh-token",
     });
 
-    // Return response without refresh token in body
-    const responseJson = result.toJSON();
-    const { refresh_token, ...dataWithoutRefreshToken } = responseJson.data;
-
+    // Return minimal response (no tokens in body)
     res.json({
       status: 200,
       success: true,
-      data: dataWithoutRefreshToken,
+      data: { message: "Tokens refreshed successfully" },
       error: null,
     });
   }

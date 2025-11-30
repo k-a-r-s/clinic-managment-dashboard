@@ -3,14 +3,14 @@
 ## Base URL
 
 ```
-http://localhost:3000/api/auth
+http://localhost:3000
 ```
 
 ---
 
 ## 1. Login
 
-**Endpoint:** `POST /login`
+**Endpoint:** `POST /auth/login`
 
 **Description:** Authenticate user with email and password
 
@@ -54,7 +54,7 @@ Set-Cookie: refreshToken=sbr_1234567890abcdef; Path=/api/auth/refresh-token; Htt
 ```
 
 > [!IMPORTANT]
-> The refresh token is **NOT** returned in the response body. It is stored in a secure HTTP-only cookie that is automatically sent with subsequent requests to `/api/auth/refresh-token`.
+> The refresh token is **NOT** returned in the response body. It is stored in a secure HTTP-only cookie that is automatically sent with subsequent requests to `/auth/refresh-token`.
 
 **Error (401):**
 
@@ -74,7 +74,7 @@ Set-Cookie: refreshToken=sbr_1234567890abcdef; Path=/api/auth/refresh-token; Htt
 
 ## 2. Create User
 
-**Endpoint:** `POST /create-user`
+**Endpoint:** `POST /users/add-user`
 
 **Description:** Create a new user (admin only)
 
@@ -96,7 +96,8 @@ Set-Cookie: refreshToken=sbr_1234567890abcdef; Path=/api/auth/refresh-token; Htt
 
 **Valid Roles:**
 
-- `admin`
+**Valid Roles:**
+
 - `doctor`
 - `receptionist`
 
@@ -148,7 +149,7 @@ Set-Cookie: refreshToken=sbr_1234567890abcdef; Path=/api/auth/refresh-token; Htt
 
 ## 3. Refresh Token
 
-**Endpoint:** `POST /refresh-token`
+**Endpoint:** `POST /auth/refresh-token`
 
 **Description:** Get a new access token using the refresh token stored in HTTP-only cookie
 
@@ -212,7 +213,7 @@ _OR_
 
 ## 4. Logout
 
-**Endpoint:** `POST /logout`
+**Endpoint:** `POST /auth/logout`
 
 **Description:** Logout user and invalidate session
 
@@ -260,7 +261,7 @@ Set-Cookie: refreshToken=; Path=/api/auth/refresh-token; Expires=Thu, 01 Jan 197
 
 ## 5. Get Current User (Me)
 
-**Endpoint:** `POST /me`
+**Endpoint:** `POST /auth/me`
 
 **Description:** Retrieve the authenticated user's profile information
 
@@ -312,7 +313,7 @@ Authorization: Bearer <access_token>
 **Example:**
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/logout \
+curl -X POST http://localhost:3000/auth/logout \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
   -H "Content-Type: application/json"
 ```
@@ -375,54 +376,7 @@ Refresh tokens are stored in **secure HTTP-only cookies** for enhanced security:
 
 ## 7. Doctors API
 
-### 7.1 Create Doctor
-
-**Endpoint:** `POST /doctors`
-
-**Description:** Create a new doctor profile (Admin only)
-
-**Authentication:** Required (Bearer token)
-
-**Authorization:** Admin role required
-
-**Request Body:**
-
-```json
-{
-  "firstName": "Gregory",
-  "lastName": "House",
-  "email": "house@princeton.edu",
-  "password": "password123",
-  "role": "DOCTOR",
-  "salary": 250000,
-  "isMedicalDirector": true,
-  "specialization": "Diagnostician"
-}
-```
-
-**Response (201 Created):**
-
-```json
-{
-  "success": true,
-  "status": 201,
-  "data": {
-    "id": "uuid-here",
-    "firstName": "Gregory",
-    "lastName": "House",
-    "email": "house@princeton.edu",
-    "role": "DOCTOR",
-    "salary": 250000,
-    "isMedicalDirector": true,
-    "specialization": "Diagnostician",
-    "createdAt": "2023-10-27T10:00:00.000Z",
-    "updatedAt": "2023-10-27T10:00:00.000Z"
-  },
-  "error": null
-}
-```
-
-### 7.2 Get All Doctors
+### 7.1 Get All Doctors
 
 **Endpoint:** `GET /doctors`
 
@@ -463,7 +417,7 @@ Refresh tokens are stored in **secure HTTP-only cookies** for enhanced security:
 }
 ```
 
-### 7.3 Get Doctor by ID
+### 7.2 Get Doctor by ID
 
 **Endpoint:** `GET /doctors/:id`
 
@@ -493,14 +447,452 @@ Refresh tokens are stored in **secure HTTP-only cookies** for enhanced security:
 }
 ```
 
-### 7.4 Update Doctor (Placeholder)
+### 7.3 Update Doctor
 
 **Endpoint:** `PUT /doctors/:id`
 
-**Description:** Update doctor details (Not yet implemented)
+**Description:** Update doctor details (Admin only)
 
-### 7.5 Delete Doctor (Placeholder)
+**Authentication:** Required (Bearer token)
+
+**Authorization:** Admin role required
+
+**Path Parameters:**
+
+- `id` (required): UUID of the doctor
+
+**Request Body:**
+
+```json
+{
+  "specialization": "Cardiology",
+  "salary": 150000,
+  "isMedicalDirector": false
+}
+```
+
+**Field Validations:**
+
+| Field               | Type    | Required | Description                              |
+| ------------------- | ------- | -------- | ---------------------------------------- |
+| `specialization`    | string  | No       | The specialization of the doctor         |
+| `salary`            | number  | No       | The salary of the doctor                 |
+| `isMedicalDirector` | boolean | No       | Whether the doctor is a medical director |
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "data": {
+    "id": "uuid-here",
+    "firstName": "Gregory",
+    "lastName": "House",
+    "email": "house@princeton.edu",
+    "specialization": "Cardiology",
+    "role": "DOCTOR",
+    "salary": 150000,
+    "isMedicalDirector": false
+  },
+  "error": null
+}
+```
+
+**Error (404):**
+
+```json
+{
+  "success": false,
+  "status": 404,
+  "data": null,
+  "error": {
+    "type": "NotFoundError",
+    "message": "Doctor not found"
+  }
+}
+```
+
+**Error (400):**
+
+```json
+{
+  "success": false,
+  "status": 400,
+  "data": null,
+  "error": {
+    "type": "ValidationError",
+    "message": "Invalid field values"
+  }
+}
+```
+
+### 7.4 Delete Doctor
 
 **Endpoint:** `DELETE /doctors/:id`
 
-**Description:** Delete a doctor (Not yet implemented)
+**Description:** Delete a doctor by ID (Admin only)
+
+**Authentication:** Required (Bearer token)
+
+**Authorization:** Admin role required
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "data": null,
+  "error": null
+}
+```
+
+**Error (404):**
+
+```json
+{
+  "success": false,
+  "status": 404,
+  "data": null,
+  "error": {
+    "type": "NotFoundError",
+    "message": "Doctor not found"
+  }
+}
+```
+
+---
+
+## 8. Patients API
+
+### 8.1 Create Patient
+
+**Endpoint:** `POST /patients/add-patient`
+
+**Description:** Create a new patient profile (Admin or Receptionist only)
+
+**Authentication:** Required (Bearer token)
+
+**Authorization:** Admin or Receptionist role required
+
+**Request Body:**
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "phoneNumber": "+1-555-123-4567",
+  "birthDate": "1985-03-15",
+  "gender": "Male",
+  "address": "123 Main St",
+  "profession": "Engineer",
+  "childrenNumber": 2,
+  "familySituation": "Married",
+  "insuranceNumber": "INS-123456789",
+  "emergencyContactName": "Jane Doe",
+  "emergencyContactPhone": "+1-555-987-6543",
+  "allergies": ["Penicillin"],
+  "currentMedications": ["Lisinopril 10mg"]
+}
+```
+
+**Field Validations:**
+
+| Field                   | Type     | Required | Validation          |
+| ----------------------- | -------- | -------- | ------------------- |
+| `firstName`             | string   | Yes      | Minimum 1 character |
+| `lastName`              | string   | Yes      | Minimum 1 character |
+| `email`                 | string   | Yes      | Valid email format  |
+| `phoneNumber`           | string   | Yes      | Minimum 1 character |
+| `birthDate`             | string   | Yes      | Format: YYYY-MM-DD  |
+| `gender`                | string   | Yes      | Minimum 1 character |
+| `address`               | string   | Yes      | Minimum 1 character |
+| `profession`            | string   | Yes      | Minimum 1 character |
+| `childrenNumber`        | integer  | Yes      | Minimum 0           |
+| `familySituation`       | string   | Yes      | Minimum 1 character |
+| `insuranceNumber`       | string   | Yes      | Minimum 1 character |
+| `emergencyContactName`  | string   | Yes      | Minimum 1 character |
+| `emergencyContactPhone` | string   | Yes      | Minimum 1 character |
+| `allergies`             | string[] | No       | Array of strings    |
+| `currentMedications`    | string[] | No       | Array of strings    |
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "data": {
+    "id": "c0b837f3-5a95-44b6-bb60-7aeccc4afe9f",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "phoneNumber": "+1-555-123-4567",
+    "birthDate": "1985-03-15",
+    "gender": "Male",
+    "address": "123 Main St",
+    "profession": "Engineer",
+    "childrenNumber": 2,
+    "familySituation": "Married",
+    "insuranceNumber": "INS-123456789",
+    "emergencyContactName": "Jane Doe",
+    "emergencyContactPhone": "+1-555-987-6543",
+    "allergies": ["Penicillin"],
+    "currentMedications": ["Lisinopril 10mg"],
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  },
+  "error": null
+}
+```
+
+**Error (400):**
+
+```json
+{
+  "success": false,
+  "status": 400,
+  "data": null,
+  "error": {
+    "type": "ValidationError",
+    "message": "firstName: First name is required; email: Invalid email address",
+    "context": {
+      "userMessage": "There was a validation error. Please check your input and try again.",
+      "statusCode": 400
+    }
+  }
+}
+```
+
+### 8.2 Get All Patients
+
+**Endpoint:** `GET /patients`
+
+**Description:** Retrieve a list of all patients
+
+**Authentication:** Required (Bearer token)
+
+**Authorization:** Admin or Receptionist role required
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "data": [
+    {
+      "id": "c0b837f3-5a95-44b6-bb60-7aeccc4afe9f",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "phoneNumber": "+1-555-123-4567",
+      "birthDate": "1985-03-15",
+      "gender": "Male",
+      "address": "123 Main St",
+      "profession": "Engineer",
+      "childrenNumber": 2,
+      "familySituation": "Married",
+      "insuranceNumber": "INS-123456789",
+      "emergencyContactName": "Jane Doe",
+      "emergencyContactPhone": "+1-555-987-6543",
+      "allergies": ["Penicillin"],
+      "currentMedications": ["Lisinopril 10mg"]
+    }
+  ],
+  "error": null
+}
+```
+
+### 8.3 Get Patient by ID
+
+**Endpoint:** `GET /patients/:id`
+
+**Description:** Retrieve a specific patient's details
+
+**Authentication:** Required (Bearer token)
+
+**Authorization:** Admin or Receptionist role required
+
+**Path Parameters:**
+
+- `id` (required): UUID of the patient
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "data": {
+    "id": "c0b837f3-5a95-44b6-bb60-7aeccc4afe9f",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "phoneNumber": "+1-555-123-4567",
+    "birthDate": "1985-03-15",
+    "gender": "Male",
+    "address": "123 Main St",
+    "profession": "Engineer",
+    "childrenNumber": 2,
+    "familySituation": "Married",
+    "insuranceNumber": "INS-123456789",
+    "emergencyContactName": "Jane Doe",
+    "emergencyContactPhone": "+1-555-987-6543",
+    "allergies": ["Penicillin"],
+    "currentMedications": ["Lisinopril 10mg"]
+  },
+  "error": null
+}
+```
+
+**Error (404):**
+
+```json
+{
+  "success": false,
+  "status": 404,
+  "data": null,
+  "error": {
+    "type": "NotFoundError",
+    "message": "Patient not found"
+  }
+}
+```
+
+### 8.4 Delete Patient
+
+**Endpoint:** `DELETE /patients/:id`
+
+**Description:** Delete a patient by ID (Admin or Receptionist only)
+
+**Authentication:** Required (Bearer token)
+
+**Authorization:** Admin or Receptionist role required
+
+**Path Parameters:**
+
+- `id` (required): UUID of the patient
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "status": 200,
+  "data": null,
+  "error": null
+}
+```
+
+**Error (404):**
+
+```json
+{
+  "success": false,
+  "status": 404,
+  "data": null,
+  "error": {
+    "type": "NotFoundError",
+    "message": "Patient not found"
+  }
+}
+```
+
+---
+
+## 9. Example cURL Commands
+
+### Login
+
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "password123"
+  }'
+```
+
+### Create User
+
+```bash
+curl -X POST http://localhost:3000/users/add-user \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "newuser@example.com",
+    "password": "securepass123",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "role": "doctor"
+  }'
+```
+
+### Create Patient
+
+```bash
+curl -X POST http://localhost:3000/patients/add-patient \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "phoneNumber": "+1-555-123-4567",
+    "birthDate": "1985-03-15",
+    "gender": "Male",
+    "address": "123 Main St",
+    "profession": "Engineer",
+    "childrenNumber": 2,
+    "familySituation": "Married",
+    "insuranceNumber": "INS-123456789",
+    "emergencyContactName": "Jane Doe",
+    "emergencyContactPhone": "+1-555-987-6543",
+    "allergies": ["Penicillin"],
+    "currentMedications": ["Lisinopril 10mg"]
+  }'
+```
+
+### Get All Patients
+
+```bash
+curl -X GET http://localhost:3000/patients \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### Get Patient by ID
+
+```bash
+curl -X GET http://localhost:3000/patients/c0b837f3-5a95-44b6-bb60-7aeccc4afe9f \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### Delete Patient
+
+```bash
+curl -X DELETE http://localhost:3000/patients/c0b837f3-5a95-44b6-bb60-7aeccc4afe9f \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### Update Doctor
+
+```bash
+curl -X PUT http://localhost:3000/doctors/c0b837f3-5a95-44b6-bb60-7aeccc4afe9f \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "specialization": "Cardiology",
+    "salary": 150000,
+    "isMedicalDirector": false
+  }'
+```
+
+### Delete Doctor
+
+```bash
+curl -X DELETE http://localhost:3000/doctors/c0b837f3-5a95-44b6-bb60-7aeccc4afe9f \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```

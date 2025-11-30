@@ -5,7 +5,6 @@ import { Logger } from "../../shared/utils/logger";
 import { DatabaseError } from "../errors/DatabaseError";
 import { GetDoctorsList } from "../../application/dto/responses/getDoctorsList";
 export class DoctorRepository implements IDoctorRepository {
- 
   async getDoctorById(id: string): Promise<Doctor | null> {
     // Fetch doctor with profile information using join
     const { data, error } = await supabaseAdmin
@@ -114,10 +113,35 @@ export class DoctorRepository implements IDoctorRepository {
       doctors,
     };
   }
-  updateDoctor(doctor: Doctor): Promise<void> {
-    throw new Error("Method not implemented.");
+  async updateDoctorById(
+    id: string,
+    doctorData: Partial<Doctor>
+  ): Promise<Doctor> {
+    const { error } = await supabaseAdmin
+      .from("doctors")
+      .update(doctorData)
+      .eq("id", id);
+
+    if (error) {
+      Logger.error("Doctor not updated", { error });
+      throw new DatabaseError(error.message);
+    }
+
+    // Fetch the updated doctor with profile information
+    const updatedDoctor = await this.getDoctorById(id);
+
+    if (!updatedDoctor) {
+      Logger.error("Doctor not found after update", { id });
+      throw new DatabaseError("Doctor not found after update");
+    }
+
+    return updatedDoctor.toJSON() as any as Doctor;
   }
-  deleteDoctor(id: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async deleteDoctorById(id: string): Promise<void> {
+    const { error } = await supabaseAdmin.from("doctors").delete().eq("id", id);
+    if (error) {
+      Logger.error("Doctor not deleted", { error });
+      throw new DatabaseError(error);
+    }
   }
 }

@@ -12,10 +12,11 @@ import type { ApiSuccessResponse, ApiErrorResponse } from "../types";
  * so API functions receive the actual data directly (response.data).
  */
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+  baseURL: "/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
   },
 });
 
@@ -36,6 +37,15 @@ axiosInstance.interceptors.request.use(
       console.log("Query Params:", config.params);
     }
     console.groupEnd();
+
+    const cookieValue = "abuse_interstitial=04587382da26.ngrok-free.app";
+
+    // If other cookies exist, append to them
+    if (config.headers.Cookie) {
+      config.headers.Cookie += `; ${cookieValue}`;
+    } else {
+      config.headers.Cookie = cookieValue;
+    }
 
     // Add auth token if available
     const token = localStorage.getItem("auth_token");

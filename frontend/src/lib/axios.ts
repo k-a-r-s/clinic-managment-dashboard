@@ -12,7 +12,7 @@ import type { ApiSuccessResponse, ApiErrorResponse } from "../types";
  * so API functions receive the actual data directly (response.data).
  */
 const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

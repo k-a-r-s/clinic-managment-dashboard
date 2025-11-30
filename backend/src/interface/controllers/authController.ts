@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { UserAuthService } from "../../application/services/UserAuthService";
 import { AuthRequest } from "../middlewares/authMiddleware";
+import { success } from "zod";
+import { IUserRepository } from "../../domain/repositories/IUserRepository";
 
 export class AuthController {
   constructor(private userAuthService: UserAuthService) {}
@@ -122,4 +124,6 @@ export class AuthController {
       error: null,
     });
   }
+
+  
 }

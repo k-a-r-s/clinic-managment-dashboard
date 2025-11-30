@@ -1,3 +1,4 @@
+//
 import { User } from "../../domain/entities/User";
 import { AuthError } from "../../infrastructure/errors/AuthError";
 import { DatabaseError } from "../../infrastructure/errors/DatabaseError";
@@ -66,6 +67,24 @@ export class UserAuthService implements IUserAuthService {
       authResponse.access_token,
       authResponse.expires_in || 3600,
       authResponse.token_type || "Bearer"
+    );
+  }
+
+  async addUser(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    role: "receptionist" | "doctor"
+  ): Promise<User> {
+    Logger.info("🔐 Create user attempt", { email });
+
+    return await this.userRepository.addUser(
+      firstName,
+      lastName,
+      email,
+      password,
+      role
     );
   }
 }

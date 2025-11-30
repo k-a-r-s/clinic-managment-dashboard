@@ -8,7 +8,7 @@ import { errorHandler } from "./interface/middlewares/errorHanlder";
 import { Logger } from "./shared/utils/logger";
 import authRouter from "./interface/routes/auth.route";
 import doctorRouter from "./interface/routes/doctor.route";
-
+import userRouter from "./interface/routes/user.route";
 const app = express();
 app.use(helmet());
 app.use(
@@ -70,6 +70,8 @@ app.get("/", (req, res) => {
 app.use("/auth", authRouter);
 // This mounts all doctor routes at /doctors prefix
 app.use("/doctors", doctorRouter);
+// This mounts all user routes at /users prefix
+app.use("/users", userRouter);
 app.use(errorHandler);
 // Start the server
 const PORT = process.env.PORT || 3000;

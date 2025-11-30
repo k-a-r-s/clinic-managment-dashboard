@@ -5,50 +5,7 @@ import { Logger } from "../../shared/utils/logger";
 import { DatabaseError } from "../errors/DatabaseError";
 import { GetDoctorsList } from "../../application/dto/responses/getDoctorsList";
 export class DoctorRepository implements IDoctorRepository {
-  async createDoctor(doctor: Doctor, password: string): Promise<Doctor> {
-    // create auth user
-    const { data: authUser, error: AuthError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email: doctor.getEmail(),
-        password: password,
-        email_confirm: true,
-      });
-    if (AuthError) {
-      Logger.error("auth User not created", { AuthError });
-      throw new DatabaseError(AuthError);
-    }
-    if (!authUser) {
-      Logger.error("auth User not created");
-      throw new DatabaseError("auth User not created");
-    }
-    // create profile
-
-    const { error: ProfileError } = await supabaseAdmin
-      .from("profiles")
-      .insert({
-        id: authUser.user.id,
-        email: doctor.getEmail(),
-        first_name: doctor.getFirstName(),
-        last_name: doctor.getLastName(),
-        role: doctor.getRole(),
-      });
-    if (ProfileError) {
-      Logger.error("Profile not created", { ProfileError });
-      throw new DatabaseError(ProfileError.message);
-    }
-    // create doctor
-    const { error } = await supabaseAdmin.from("doctors").insert({
-      id: authUser.user.id,
-      salary: doctor.getSalary(),
-      is_medical_director: doctor.IsMedicalSupervisor(),
-      specialization: doctor.getSpecialisation(),
-    });
-    if (error) {
-      Logger.error("Doctor not created", { error });
-      throw new DatabaseError(error.message);
-    }
-    return doctor;
-  }
+ 
   async getDoctorById(id: string): Promise<Doctor | null> {
     // Fetch doctor with profile information using join
     const { data, error } = await supabaseAdmin

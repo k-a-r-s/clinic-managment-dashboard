@@ -47,84 +47,67 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async createUser(user: User, password: string): Promise<User> {
-    Logger.debug("📝 Creating new user", { email: user.getEmail() });
-
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
-      email: user.getEmail(),
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        first_name: user.getFirstName(),
-        last_name: user.getLastName(),
-        role: user.getRole(),
-      },
-    });
-
-    if (error) {
-      Logger.error("❌ Error creating auth user", {
-        email: user.getEmail(),
-        error: error.message,
+  async addUser(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    role: "doctor" | "receptionist"
+  ): Promise<User> {
+    const { data: AuthData, error: AuthError } =
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          role,
+        },
       });
-      throw new DatabaseError(error as any);
+    if (AuthError) {
+      Logger.error("❌ User creation failed", { error: AuthError.message });
+      throw new DatabaseError(AuthError);
     }
-
-    const userId = data.user?.id;
-
-    if (!userId) {
-      Logger.error("❌ User ID not returned after creation", {
-        email: user.getEmail(),
-      });
-      throw new DatabaseError("User ID not returned after creation");
-    }
-
-    Logger.debug("✅ User created in auth table", {
-      email: user.getEmail(),
-      userId,
-    });
-
-    // Validate role before inserting
-    const userRole = user.getRole();
-    const validRoles = ["admin", "doctor", "receptionist"] as const;
-
-    if (!validRoles.includes(userRole as any)) {
-      throw new Error(
-        `Invalid role: ${userRole}. Must be one of: ${validRoles.join(", ")}`
-      );
-    }
-
-    const role = userRole as (typeof validRoles)[number];
-
-    const { data: profileData, error: profileError } = await supabaseAdmin
+    Logger.info("✅ auth User created successfully", { email });
+    const { data: ProfileData, error: ProfileError } = await supabaseAdmin
       .from("profiles")
       .insert({
-        id: userId,
-        email: user.getEmail(),
-        first_name: user.getFirstName(),
-        last_name: user.getLastName(),
-        role, // ✅ Now properly typed
+        id: AuthData.user.id,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        role,
       });
-
-    if (profileError) {
-      Logger.error("❌ Error creating user profile", {
-        email: user.getEmail(),
-        error: profileError,
-      });
-      throw new DatabaseError(profileError as any);
+    if (ProfileError) {
+      Logger.error("❌ User creation failed", { error: ProfileError.message });
+      throw new DatabaseError(ProfileError);
     }
-
-    Logger.debug("✅ User profile created successfully", {
-      email: user.getEmail(),
-      userId,
-    });
-
-    return new User(
-      userId,
-      user.getEmail(),
-      user.getFirstName(),
-      user.getLastName(),
-      role // ✅ Use validated role
-    );
+    Logger.info("✅ profile created successfully", { email });
+    if (role === "doctor") {
+      const { error: DoctorError } = await supabaseAdmin
+        .from("doctors")
+        .insert({
+          id: AuthData.user.id,
+        });
+      if (DoctorError) {
+        Logger.error("❌ User creation failed", { error: DoctorError.message });
+        throw new DatabaseError(DoctorError);
+      }
+      Logger.info("✅ doctor created successfully", { email });
+    }
+    if (role === "receptionist") {
+      const { error: ReceptionistError } = await supabaseAdmin
+        .from("receptionists")
+        .insert({
+          id: AuthData.user.id,
+        });
+      if (ReceptionistError) {
+        Logger.error("❌ User creation failed", {
+          error: ReceptionistError.message,
+        });
+        throw new DatabaseError(ReceptionistError);
+      }
+      Logger.info("✅ receptionist created successfully", { email });
+    }
+    return new User(AuthData.user.id, email, firstName, lastName, role);
   }
-
 }

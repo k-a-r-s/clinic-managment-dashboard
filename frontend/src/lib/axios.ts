@@ -12,40 +12,38 @@ import type { ApiSuccessResponse, ApiErrorResponse } from "../types";
  * so API functions receive the actual data directly (response.data).
  */
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
   },
 });
 
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Log request details
+    // Logs
     console.group(
-      `🚀 HTTP Request: ${config.method?.toUpperCase()} ${config.url}`
+      `HTTP Request: ${config.method?.toUpperCase()} ${config.url}`
     );
     console.log("Base URL:", config.baseURL);
     console.log("Full URL:", `${config.baseURL}${config.url}`);
     console.log("Headers:", config.headers);
-    if (config.data) {
-      console.log("Request Body:", config.data);
-    }
-    if (config.params) {
-      console.log("Query Params:", config.params);
-    }
+    if (config.data) console.log("Request Body:", config.data);
+    if (config.params) console.log("Query Params:", config.params);
     console.groupEnd();
 
-    // Add auth token if available
+    // Authorization Token
     const token = localStorage.getItem("auth_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => {
-    console.error("❌ Request Error:", error);
+    console.error("Request Error:", error);
     return Promise.reject(error);
   }
 );
@@ -53,75 +51,81 @@ axiosInstance.interceptors.request.use(
 // Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
-    // Extract data from the standardized response format
-    const apiResponse = response.data as ApiSuccessResponse | ApiErrorResponse;
+    const body = response.data as ApiSuccessResponse | ApiErrorResponse;
 
     console.group(
-      `✅ HTTP Response: ${response.config.method?.toUpperCase()} ${
+      `OK HTTP Response: ${response.config.method?.toUpperCase()} ${
         response.config.url
       }`
     );
     console.log("Status:", response.status);
-    console.log("Raw Response:", apiResponse);
+    console.log("Raw Response:", body);
 
-    if (apiResponse.success) {
-      console.log("Unwrapped Data:", apiResponse.data);
+    // SUCCESS: true
+    if (body.success === true) {
+      console.log("Unwrapped Data:", body.data);
       console.groupEnd();
 
-      // Return the actual data for successful responses
-      response.data = apiResponse.data;
+      // Forward the unwrapped data to the consumer
+      response.data = body.data;
       return response;
-    } else {
-      console.error("Error Response:", apiResponse.error);
-      console.groupEnd();
-
-      // Treat success: false as an error
-      return Promise.reject({
-        response: {
-          status: apiResponse.status,
-          data: apiResponse.error,
-        },
-      });
     }
+
+    // SUCCESS: false (Error)
+    console.error("Error Response:", body.error);
+    console.groupEnd();
+
+    return Promise.reject({
+      status: body.status,
+      type: body.error.type,
+      subErrorType: body.error.subErrorType,
+      context: body.error.context,
+      message: body.error.message,
+      details: body.error.details,
+      hint: body.error.hint,
+    });
   },
+
+  // NETWORK / NON-STANDARD ERRORS
+
   (error) => {
     console.group(
-      `❌ HTTP Error: ${error.config?.method?.toUpperCase()} ${
+      `HTTP Error: ${error.config?.method?.toUpperCase()} ${
         error.config?.url
       }`
     );
     console.log("Status:", error.response?.status);
-    console.log("Status Text:", error.response?.statusText);
     console.log("Error Response:", error.response?.data);
 
-    // Handle network errors or non-standard responses
+    // Handle unauthorized
     if (error.response?.status === 401) {
-      console.log("🔒 Unauthorized - Redirecting to login");
-      console.groupEnd();
-
-      // Redirect to login or refresh token
+      console.log("Unauthorized - Redirecting to login");
       localStorage.removeItem("auth_token");
       window.location.href = "/login";
     }
 
-    // If the error response has our standard format, extract the error
+    // Error matches APIErrorResponse
     if (error.response?.data?.error) {
-      const extractedError = {
-        message: error.response.data.error.message,
-        type: error.response.data.error.type,
-        details: error.response.data.error.details,
-        hint: error.response.data.error.hint,
-        status: error.response.status,
-      };
-      console.log("Extracted Error:", extractedError);
-      console.groupEnd();
+      const e = error.response.data as ApiErrorResponse;
 
-      return Promise.reject(extractedError);
+      const extracted = {
+        status: e.status,
+        type: e.error.type,
+        subErrorType: e.error.subErrorType,
+        context: e.error.context,
+        message: e.error.message,
+        details: e.error.details,
+        hint: e.error.hint,
+      };
+
+      console.log("Extracted Error:", extracted);
+      console.groupEnd();
+      return Promise.reject(extracted);
     }
 
+    // Fallback unknown error
     console.log("Raw Error:", error);
     console.groupEnd();
-
     return Promise.reject(error);
   }
 );

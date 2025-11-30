@@ -63,9 +63,7 @@ export class AuthRepository implements IAuthRepository {
       throw new DatabaseError(error as any);
     }
   }
-  async refreshToken(
-    refreshToken: string
-  ): Promise<{
+  async refreshToken(refreshToken: string): Promise<{
     access_token: string;
     refresh_token: string;
     expires_in: number;
@@ -114,4 +112,5 @@ export class AuthRepository implements IAuthRepository {
       user,
     };
   }
+ 
 }

@@ -3,7 +3,14 @@ import { RefreshTokenResponseDto } from "../../application/dto/responses/Refresh
 import { User } from "../entities/User";
 
 export interface IUserAuthService {
-    loginUser(email: string, password: string): Promise<LoginResponseDto>;
-    logoutUser(userId: string): Promise<void>;
-    refreshToken(refreshToken: string): Promise<RefreshTokenResponseDto>;
+  loginUser(email: string, password: string): Promise<LoginResponseDto>;
+  logoutUser(userId: string): Promise<void>;
+  refreshToken(refreshToken: string): Promise<RefreshTokenResponseDto>;
+  addUser(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    role: "doctor" | "receptionist"
+  ): Promise<User>;
 }

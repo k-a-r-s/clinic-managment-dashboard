@@ -3,19 +3,14 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper";
 import { requireRole } from "../middlewares/requireRole";
 import { DoctorController } from "../controllers/doctorController";
-import { CreateDoctorUseCase } from "../../application/use-cases/doctors/CreateDoctorUseCase";
 import { DoctorRepository } from "../../infrastructure/repositories/DoctorRepository";
-import { validate } from "../middlewares/Validate";
-import { CreateDoctorDtoSchema } from "../../application/dto/requests/doctors/createDoctorDto";
 import { GetDoctorsListUseCase } from "../../application/use-cases/doctors/GetAllDoctorsUseCase";
 import { GetDoctorUseCase } from "../../application/use-cases/doctors/getDoctorUseCase";
 const router = Router();
 const doctorRepository = new DoctorRepository();
 const getAllDoctorsUseCase = new GetDoctorsListUseCase(doctorRepository);
-const createDoctorUseCase = new CreateDoctorUseCase(doctorRepository);
 const getDoctorUseCase = new GetDoctorUseCase(doctorRepository);
 const doctorsController = new DoctorController(
-  createDoctorUseCase,
   getAllDoctorsUseCase,
   getDoctorUseCase
 );
@@ -117,13 +112,6 @@ const doctorsController = new DoctorController(
  *       403:
  *         description: Forbidden - Admin only
  */
-router.post(
-  "/",
-  authMiddleware,
-  requireRole(["admin"]),
-  validate(CreateDoctorDtoSchema),
-  asyncWrapper(doctorsController.createDoctor.bind(doctorsController))
-);
 
 /**
  * @swagger

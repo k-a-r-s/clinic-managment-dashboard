@@ -10,6 +10,9 @@ import authRouter from "./interface/routes/auth.route";
 import doctorRouter from "./interface/routes/doctor.route";
 import userRouter from "./interface/routes/user.route";
 import patientRouter from "./interface/routes/patient.route";
+import machineRouter from "./interface/routes/machine.route";
+import prescriptionRouter from "./interface/routes/prescription.route";
+
 const app = express();
 app.use(helmet());
 app.use(
@@ -73,8 +76,13 @@ app.use("/auth", authRouter);
 app.use("/doctors", doctorRouter);
 // This mounts all user routes at /users prefix
 app.use("/users", userRouter);
-
+// This mounts all patient routes at /patients prefix
 app.use("/patients", patientRouter);
+// This mounts all machine routes at /machines prefix
+app.use("/machines", machineRouter);
+// This mounts all prescription routes at /prescriptions prefix
+app.use("/prescriptions", prescriptionRouter);
+
 app.use(errorHandler);
 // Start the server
 const PORT = process.env.PORT || 3000;

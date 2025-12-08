@@ -3,6 +3,9 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "esModuleInterop": true,
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": false,
+    "target": "ES2015",           // Add this
+    "lib": ["ES2015", "DOM"],     // Add this
+    "strict": true                // Add this (optional but recommended)
   }
 }

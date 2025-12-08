@@ -14,7 +14,6 @@ const menuItems = [
 
 const adminItems = [
   { icon: UserPlus, label: "Add System User", path: "/admin/add-user" },
-  { icon: Shield, label: "Roles & Permissions", path: "/admin/roles" },
   { icon: Settings, label: "Settings", path: "/admin/settings" },
 ]
 

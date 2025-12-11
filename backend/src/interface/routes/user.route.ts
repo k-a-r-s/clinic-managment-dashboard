@@ -4,14 +4,8 @@ import { requireRole } from "../middlewares/requireRole";
 import { validate } from "../middlewares/Validate";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper";
 import { CreateUserDtoSchema } from "../../application/dto/requests/CreateUserDto";
-import { UserController } from "../controllers/userController";
-import { UserAuthService } from "../../application/services/UserAuthService";
-import { UserRepository } from "../../infrastructure/repositories/UserRepository";
-import { AuthRepository } from "../../infrastructure/repositories/AuthRepository";
-const userRepository = new UserRepository();
-const authRepository = new AuthRepository();
-const userAuthService = new UserAuthService(userRepository, authRepository);
-const userController = new UserController(userAuthService);
+import { userController } from "../../config/container";
+
 const router = Router();
 
 /**

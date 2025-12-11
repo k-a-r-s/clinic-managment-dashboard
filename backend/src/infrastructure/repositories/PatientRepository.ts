@@ -3,7 +3,7 @@ import { IPatientRepository } from "../../domain/repositories/IPatientRepository
 import { supabaseAdmin } from "../database/supabase";
 import { DatabaseError } from "../errors/DatabaseError";
 export class PatientRepository implements IPatientRepository {
-  async addPatient(patient: Patient): Promise<Patient> {
+  async addPatient(patient: Patient): Promise<null> {
     const { data, error } = await supabaseAdmin
       .from("patients")
       .insert({
@@ -21,8 +21,6 @@ export class PatientRepository implements IPatientRepository {
         insurance_number: patient.getInsuranceNumber(),
         emergency_contact_name: patient.getEmergencyContactName(),
         emergency_contact_phone: patient.getEmergencyContactPhone(),
-        allergies: patient.getAllergies(),
-        current_medications: patient.getCurrentMedications(),
       })
       .select()
       .single();
@@ -33,25 +31,7 @@ export class PatientRepository implements IPatientRepository {
     if (!data) {
       throw new DatabaseError("Failed to create patient");
     }
-
-    return new Patient({
-      id: data.id,
-      firstName: data.first_name,
-      lastName: data.last_name,
-      email: data.email,
-      phoneNumber: data.phone_number,
-      birthDate: data.birth_date,
-      gender: data.gender,
-      address: data.address,
-      profession: data.profession,
-      childrenNumber: data.children_number,
-      familySituation: data.family_situation,
-      insuranceNumber: data.insurance_number,
-      emergencyContactName: data.emergency_contact_name,
-      emergencyContactPhone: data.emergency_contact_phone,
-      allergies: data.allergies,
-      currentMedications: data.current_medications,
-    });
+    return null;
   }
   async getPatientByid(id: string): Promise<Patient> {
     const { data, error } = await supabaseAdmin
@@ -80,8 +60,7 @@ export class PatientRepository implements IPatientRepository {
       insuranceNumber: data.insurance_number,
       emergencyContactName: data.emergency_contact_name,
       emergencyContactPhone: data.emergency_contact_phone,
-      allergies: data.allergies,
-      currentMedications: data.current_medications,
+      medicalFileId: data.medical_file_id,
     });
   }
   async deletePatientByid(id: string): Promise<void> {
@@ -117,8 +96,7 @@ export class PatientRepository implements IPatientRepository {
         insuranceNumber: patient.insurance_number,
         emergencyContactName: patient.emergency_contact_name,
         emergencyContactPhone: patient.emergency_contact_phone,
-        allergies: patient.allergies,
-        currentMedications: patient.current_medications,
+        medicalFileId: patient.medical_file_id,
       });
     });
   }

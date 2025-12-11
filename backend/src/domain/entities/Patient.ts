@@ -1,3 +1,4 @@
+
 export interface PatientProps {
   id: string;
   firstName: string;
@@ -13,17 +14,18 @@ export interface PatientProps {
   insuranceNumber: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
-  allergies: string[];
-  currentMedications: string[];
+  medicalFileId: string | null;
 }
 
 export class Patient {
-  constructor(private props: PatientProps) {}
+  constructor(private props: PatientProps) { }
 
   public getId(): string {
     return this.props.id;
   }
-
+  public getMedicalFileId(): string | null {
+    return this.props.medicalFileId;
+  }
   public getFirstName(): string {
     return this.props.firstName;
   }
@@ -76,13 +78,7 @@ export class Patient {
     return this.props.emergencyContactPhone;
   }
 
-  public getAllergies(): string[] {
-    return this.props.allergies;
-  }
 
-  public getCurrentMedications(): string[] {
-    return this.props.currentMedications;
-  }
   public toJson() {
     return {
       id: this.props.id,
@@ -99,8 +95,8 @@ export class Patient {
       insuranceNumber: this.props.insuranceNumber,
       emergencyContactName: this.props.emergencyContactName,
       emergencyContactPhone: this.props.emergencyContactPhone,
-      allergies: this.props.allergies,
-      currentMedications: this.props.currentMedications,
+      MedicalFileId: this.props.medicalFileId,
+
     };
   }
 }

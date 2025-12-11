@@ -14,9 +14,7 @@ export const addPatientSchemaDto = z.object({
   insuranceNumber: z.string().min(1, 'Insurance number is required'),
   emergencyContactName: z.string().min(1, 'Emergency contact name is required'),
   emergencyContactPhone: z.string().min(1, 'Emergency contact phone is required'),
-  allergies: z.array(z.string()).optional(),
-  currentMedications: z.array(z.string()).optional(),
-  
+
 });
 
 export type AddPatientDto = z.infer<typeof addPatientSchemaDto>;

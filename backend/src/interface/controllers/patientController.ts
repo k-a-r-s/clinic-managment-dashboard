@@ -46,7 +46,6 @@ export class PatientController {
   }
   async getAllPatients(req: AuthRequest, res: Response) {
     const result = await this.getAllPatientsUseCase.execute();
-    console.log(result);
     res.json({
       success: true,
       status: 200,

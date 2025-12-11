@@ -2,26 +2,11 @@ import { Router } from "express";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper";
 import { requireRole } from "../middlewares/requireRole";
-import { DoctorController } from "../controllers/doctorController";
-import { DoctorRepository } from "../../infrastructure/repositories/DoctorRepository";
-import { GetDoctorsListUseCase } from "../../application/use-cases/doctors/GetAllDoctorsUseCase";
-import { GetDoctorUseCase } from "../../application/use-cases/doctors/getDoctorUseCase";
-import { DeleteDoctorByIdUseCase } from "../../application/use-cases/doctors/DeleteDoctorByIdUseCase";
 import { validate } from "../middlewares/Validate";
 import { updateDoctorDtoSchema } from "../../application/dto/requests/updateDoctorDto";
-import { UpdateDoctorByIdUseCase } from "../../application/use-cases/doctors/updateDoctorByIdUseCase";
+import { doctorController as doctorsController } from "../../config/container";
+
 const router = Router();
-const doctorRepository = new DoctorRepository();
-const getAllDoctorsUseCase = new GetDoctorsListUseCase(doctorRepository);
-const getDoctorUseCase = new GetDoctorUseCase(doctorRepository);
-const deleteDoctorUseCase = new DeleteDoctorByIdUseCase(doctorRepository);
-const updateDoctorByIdUseCase = new UpdateDoctorByIdUseCase(doctorRepository);
-const doctorsController = new DoctorController(
-  getAllDoctorsUseCase,
-  deleteDoctorUseCase,
-  getDoctorUseCase,
-  updateDoctorByIdUseCase
-);
 
 /**
  * @swagger

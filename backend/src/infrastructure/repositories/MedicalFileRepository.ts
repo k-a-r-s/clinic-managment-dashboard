@@ -15,12 +15,12 @@ export class MedicalFileRepository implements IMedicalFileRepository {
             throw new Error(error.message);
         }
     }
-    async updateMedicalFile(patientId: string, data: MedicalData): Promise<void> {
+    async updateMedicalFile(id: string, doctorId: string | null, data: MedicalData | null): Promise<void> {
         // Fetch existing medical file
         const { data: existingFile, error: fetchError } = await supabaseAdmin
             .from('patient_medical_files')
-            .select('medical_data')
-            .eq('patient_id', patientId)
+            .select('data')
+            .eq('id', id)
             .single();
 
         if (fetchError) {
@@ -28,19 +28,26 @@ export class MedicalFileRepository implements IMedicalFileRepository {
         }
 
         // Merge new data with existing data
-        const mergedData = {
-            ...existingFile.medical_data,
+        const mergedData = data ? {
+            ...existingFile.data,
             ...data
+        } : existingFile.data;
+
+        // Prepare update object
+        const updateData: any = {
+            data: mergedData,
+            updated_at: new Date().toISOString(),
         };
+
+        if (doctorId !== null) {
+            updateData.doctor_id = doctorId;
+        }
 
         // Update with merged data
         const { error } = await supabaseAdmin
-            .from('medical_files')
-            .update({
-                medical_data: mergedData,
-                updated_at: new Date().toISOString(),
-            })
-            .eq('patient_id', patientId)
+            .from('patient_medical_files')
+            .update(updateData)
+            .eq('id', id)
         
         if (error) {
             throw new Error(`Failed to update medical file: ${error.message}`)

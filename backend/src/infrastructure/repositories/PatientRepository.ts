@@ -100,4 +100,35 @@ export class PatientRepository implements IPatientRepository {
       });
     });
   }
+  async updatePatient(patient: Patient): Promise<null> {
+    const { data, error } = await supabaseAdmin
+      .from("patients")
+      .update({
+        first_name: patient.getFirstName(),
+        last_name: patient.getLastName(),
+        email: patient.getEmail(),
+        phone_number: patient.getPhoneNumber(),
+        birth_date: patient.getBirthDate(),
+        gender: patient.getGender(),
+        address: patient.getAddress(),
+        profession: patient.getProfession(),
+        children_number: patient.getChildrenNumber(),
+        family_situation: patient.getFamilySituation(),
+        insurance_number: patient.getInsuranceNumber(),
+        emergency_contact_name: patient.getEmergencyContactName(),
+        emergency_contact_phone: patient.getEmergencyContactPhone(),
+        medical_file_id: patient.getMedicalFileId(),
+      })
+      .eq("id", patient.getId())
+      .select()
+      .single();
+
+    if (error) {
+      throw new DatabaseError(error);
+    }
+    if (!data) {
+      throw new DatabaseError("Failed to update patient");
+    }
+    return null;
+  }
 }

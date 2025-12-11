@@ -5,7 +5,7 @@ import { UpdateMedicalFileDto } from "../../dto/requests/updateMedicalFileDto";
 
 export class UpdateMedicalFileUseCase {
     constructor(private medicalFileRepository: IMedicalFileRepository) { }
-    async execure(updateMedicalFileDto: UpdateMedicalFileDto) {
-        await this.medicalFileRepository.updateMedicalFile(updateMedicalFileDto.doctorId as string, updateMedicalFileDto.data);
+    async execute(id: string, updateMedicalFileDto: UpdateMedicalFileDto) {
+        await this.medicalFileRepository.updateMedicalFile(id, updateMedicalFileDto.doctorId as string, updateMedicalFileDto.data);
     }
 }

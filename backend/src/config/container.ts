@@ -12,6 +12,7 @@ import { DoctorController } from '../interface/controllers/doctorController';
 import { PatientController } from '../interface/controllers/patientController';
 import { UserController } from '../interface/controllers/userController';
 import { AppointementController } from '../interface/controllers/appointmentController';
+import { MedicalFileController } from '../interface/controllers/medicalFileController';
 
 // Use Cases - Doctor
 import { GetDoctorsListUseCase } from '../application/use-cases/doctors/GetAllDoctorsUseCase';
@@ -24,9 +25,13 @@ import { GetPatientByIdUseCase } from '../application/use-cases/patients/getPati
 import { AddPatientUseCase } from '../application/use-cases/patients/addPatientUseCase';
 import { DeletePatientByIdUseCase } from '../application/use-cases/patients/deletePatientByIdUseCase';
 import { GetAllPatientsUseCase } from '../application/use-cases/patients/getAllPatientsUseCase';
+import { UpdatePatientUseCase } from '../application/use-cases/patients/UpdatePatientUseCase';
 
 // Use Cases - Medical File
 import { createMedicalFileUseCase } from '../application/use-cases/medicalFile/createMedicalFIleUseCase';
+import { GetMedicalFileUseCase } from '../application/use-cases/medicalFile/GetMedicalFileUseCase';
+import { UpdateMedicalFileUseCase } from '../application/use-cases/medicalFile/UpdateMedicalFileUseCase';
+import { DeleteMedicalFileUseCase } from '../application/use-cases/medicalFile/DeleteMedicalFileUseCase';
 
 // Use Cases - Appointment
 import { AddAppointementUseCase } from '../application/use-cases/appointement/AddAppointementUseCase';
@@ -52,14 +57,26 @@ const getDoctorUseCase = new GetDoctorUseCase(doctorRepository);
 const deleteDoctorByIdUseCase = new DeleteDoctorByIdUseCase(doctorRepository);
 const updateDoctorByIdUseCase = new UpdateDoctorByIdUseCase(doctorRepository);
 
-// Use Cases - Medical File
-const createMedicalFileUseCaseInstance = new createMedicalFileUseCase(medicalFileRepository);
+// Use Cases - Medical File (without createMedicalFile for now)
+const getMedicalFileUseCase = new GetMedicalFileUseCase(medicalFileRepository);
+const updateMedicalFileUseCaseInstance = new UpdateMedicalFileUseCase(medicalFileRepository);
+const deleteMedicalFileUseCase = new DeleteMedicalFileUseCase(medicalFileRepository);
 
 // Use Cases - Patient
 const getPatientByIdUseCase = new GetPatientByIdUseCase(patientRepository);
-const addPatientUseCase = new AddPatientUseCase(patientRepository, createMedicalFileUseCaseInstance);
 const deletePatientByIdUseCase = new DeletePatientByIdUseCase(patientRepository);
 const getAllPatientsUseCase = new GetAllPatientsUseCase(patientRepository);
+const updatePatientUseCase = new UpdatePatientUseCase(patientRepository);
+
+// Create medical file use case (depends on patient use cases)
+const createMedicalFileUseCaseInstance = new createMedicalFileUseCase(
+    medicalFileRepository,
+    updatePatientUseCase,
+    patientRepository
+);
+
+// Add patient use case (depends on createMedicalFileUseCase)
+const addPatientUseCase = new AddPatientUseCase(patientRepository, createMedicalFileUseCaseInstance);
 
 // Use Cases - Appointment
 const addAppointementUseCase = new AddAppointementUseCase(appointementRepository);
@@ -80,7 +97,8 @@ export const patientController = new PatientController(
     addPatientUseCase,
     getPatientByIdUseCase,
     deletePatientByIdUseCase,
-    getAllPatientsUseCase
+    getAllPatientsUseCase,
+    updatePatientUseCase
 );
 export const userController = new UserController(userAuthService);
 export const appointementController = new AppointementController(
@@ -89,4 +107,10 @@ export const appointementController = new AppointementController(
     getAppointmentsByDoctorUseCase,
     getAppointementsByPatientUseCase,
     deleteAppointementUseCaseInstance
+);
+export const medicalFileController = new MedicalFileController(
+    createMedicalFileUseCaseInstance,
+    getMedicalFileUseCase,
+    updateMedicalFileUseCaseInstance,
+    deleteMedicalFileUseCase
 );

@@ -5,14 +5,24 @@ import { DatabaseError } from "../errors/DatabaseError";
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
 export class AppointementRepository implements IAppointementsRepository {
     async addAppointement(appointementData: Appointement): Promise<null> {
-        const { error } = await supabaseAdmin.from('appointements').insert(appointementData.toJson());
+        const { error } = await supabaseAdmin.from('appointments').insert({
+            id: appointementData.id,
+            patient_id: appointementData.patientId,
+            doctor_id: appointementData.doctorId,
+            room_id: appointementData.roomId,
+            created_by_receptionist_id: appointementData.createdByReceptionId,
+            created_by_doctor_id: appointementData.createdByDoctorId,
+            appointment_date: appointementData.appointementDate,
+            estimated_duration: appointementData.estimatedDurationInMinutes,
+            status: appointementData.status
+        });
         if (error) {
             throw new DatabaseError(`Error adding appointement: ${error.message}`);
         }
         return null;
     };
     async deleteAppointement(appointementId: string): Promise<null> {
-        const { error } = await supabaseAdmin.from('appointements').delete().eq('id', appointementId);
+        const { error } = await supabaseAdmin.from('appointments').delete().eq('id', appointementId);
         if (error) {
             throw new DatabaseError(`Error deleting appointement: ${error.message}`);
         }
@@ -20,165 +30,188 @@ export class AppointementRepository implements IAppointementsRepository {
     };
     async getAppointmentsByPatientId(
         patientId: string,
-        view: "year" | "month" | "week" | "day"
+        view: "year" | "month" | "week" | "day" | "all" = "month"
     ): Promise<Appointement[]> {
 
         const now = new Date();
-        let from: Date;
-        let to: Date;
+        let from: Date | null = null;
+        let to: Date | null = null;
 
-        switch (view) {
-            case "year":
-                from = startOfYear(now);
-                to = endOfYear(now);
-                break;
+        if (view !== "all") {
+            switch (view) {
+                case "year":
+                    from = startOfYear(now);
+                    to = endOfYear(now);
+                    break;
 
-            case "month":
-                from = startOfMonth(now);
-                to = endOfMonth(now);
-                break;
+                case "month":
+                    from = startOfMonth(now);
+                    to = endOfMonth(now);
+                    break;
 
-            case "week":
-                from = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
-                to = endOfWeek(now, { weekStartsOn: 1 });
-                break;
+                case "week":
+                    from = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
+                    to = endOfWeek(now, { weekStartsOn: 1 });
+                    break;
 
-            case "day":
-                from = startOfDay(now);
-                to = endOfDay(now);
-                break;
+                case "day":
+                    from = startOfDay(now);
+                    to = endOfDay(now);
+                    break;
+            }
         }
 
-        const { data, error } = await supabaseAdmin
-            .from("appointements")
+        let query = supabaseAdmin
+            .from("appointments")
             .select("*")
-            .eq("patient_id", patientId)
-            .gte("appointement_date", from.toISOString())
-            .lte("appointement_date", to.toISOString());
+            .eq("patient_id", patientId);
 
+        if (from && to) {
+            query = query
+                .gte("appointment_date", from.toISOString())
+                .lte("appointment_date", to.toISOString());
+        }
+
+        const { data, error } = await query;
         if (error) {
             throw new DatabaseError(`Error fetching appointments: ${error.message}`);
         }
         if (!data) {
-            throw new Error("not found");
+            return [];
         }
         return data.map((item) => new Appointement(
             item.id,
             item.patient_id,
             item.doctor_id,
             item.room_id,
-            item.created_by_reception_id,
+            item.created_by_receptionist_id,
             item.created_by_doctor_id,
-            new Date(item.appointement_date),
-            item.estimated_duration_in_minutes,
+            new Date(item.appointment_date),
+            item.estimated_duration,
             item.status
         ));
     };
-    async getAppointementsByDoctorId(doctorId: string, view: "year" | "month" | "week" | "day"): Promise<Appointement[]> {
+    async getAppointementsByDoctorId(doctorId: string, view: "year" | "month" | "week" | "day" | "all" = "month"): Promise<Appointement[]> {
         const now = new Date();
-        let from: Date;
-        let to: Date;
+        let from: Date | null = null;
+        let to: Date | null = null;
 
-        switch (view) {
-            case "year":
-                from = startOfYear(now);
-                to = endOfYear(now);
-                break;
+        if (view !== "all") {
+            switch (view) {
+                case "year":
+                    from = startOfYear(now);
+                    to = endOfYear(now);
+                    break;
 
-            case "month":
-                from = startOfMonth(now);
-                to = endOfMonth(now);
-                break;
+                case "month":
+                    from = startOfMonth(now);
+                    to = endOfMonth(now);
+                    break;
 
-            case "week":
-                from = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
-                to = endOfWeek(now, { weekStartsOn: 1 });
-                break;
+                case "week":
+                    from = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
+                    to = endOfWeek(now, { weekStartsOn: 1 });
+                    break;
 
-            case "day":
-                from = startOfDay(now);
-                to = endOfDay(now);
-                break;
+                case "day":
+                    from = startOfDay(now);
+                    to = endOfDay(now);
+                    break;
+            }
         }
 
-        const { data, error } = await supabaseAdmin
-            .from("appointements")
+        let query = supabaseAdmin
+            .from("appointments")
             .select("*")
-            .eq("doctor_id", doctorId)
-            .gte("appointement_date", from.toISOString())
-            .lte("appointement_date", to.toISOString());
+            .eq("doctor_id", doctorId);
+
+        if (from && to) {
+            query = query
+                .gte("appointment_date", from.toISOString())
+                .lte("appointment_date", to.toISOString());
+        }
+
+        const { data, error } = await query;
 
         if (error) {
             throw new DatabaseError(`Error fetching appointments: ${error.message}`);
         }
         if (!data) {
-            throw new Error("not found");
+            return [];
         }
         return data.map((item) => new Appointement(
             item.id,
             item.patient_id,
             item.doctor_id,
             item.room_id,
-            item.created_by_reception_id,
+            item.created_by_receptionist_id,
             item.created_by_doctor_id,
-            new Date(item.appointement_date),
-            item.estimated_duration_in_minutes,
+            new Date(item.appointment_date),
+            item.estimated_duration,
             item.status
         ));
     }
 
-    async getAppointements(view: "year" | "month" | "week" | "day"): Promise<Appointement[]> {
+    async getAppointements(view: "year" | "month" | "week" | "day" | "all" = "month"): Promise<Appointement[]> {
         const now = new Date();
-        let from: Date;
-        let to: Date;
+        let from: Date | null = null;
+        let to: Date | null = null;
 
-        switch (view) {
-            case "year":
-                from = startOfYear(now);
-                to = endOfYear(now);
-                break;
+        if (view !== "all") {
+            switch (view) {
+                case "year":
+                    from = startOfYear(now);
+                    to = endOfYear(now);
+                    break;
 
-            case "month":
-                from = startOfMonth(now);
-                to = endOfMonth(now);
-                break;
+                case "month":
+                    from = startOfMonth(now);
+                    to = endOfMonth(now);
+                    break;
 
-            case "week":
-                from = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
-                to = endOfWeek(now, { weekStartsOn: 1 });
-                break;
+                case "week":
+                    from = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
+                    to = endOfWeek(now, { weekStartsOn: 1 });
+                    break;
 
-            case "day":
-                from = startOfDay(now);
-                to = endOfDay(now);
-                break;
+                case "day":
+                    from = startOfDay(now);
+                    to = endOfDay(now);
+                    break;
+            }
         }
 
-        const { data, error } = await supabaseAdmin
-            .from("appointements")
-            .select("*")
-            .gte("appointement_date", from.toISOString())
-            .lte("appointement_date", to.toISOString());
+        let query = supabaseAdmin
+            .from("appointments")
+            .select("*");
+
+        if (from && to) {
+            query = query
+                .gte("appointment_date", from.toISOString())
+                .lte("appointment_date", to.toISOString());
+        }
+
+        const { data, error } = await query;
         if (error) {
             throw new DatabaseError(`Error fetching appointments: ${error.message}`);
         }
         if (!data) {
-            throw new Error("not found");
+            return [];
         }
         return data.map((item) => new Appointement(
             item.id,
             item.patient_id,
             item.doctor_id,
             item.room_id,
-            item.created_by_reception_id,
+            item.created_by_receptionist_id,
             item.created_by_doctor_id,
-            new Date(item.appointement_date),
-            item.estimated_duration_in_minutes,
+            new Date(item.appointment_date),
+            item.estimated_duration,
             item.status
         ));
     };
     async updateAppointementStatus(appointementId: string, status: string): Promise<null> {
-        const { error } = await supabaseAdmin.from('appointements').update({ status: status }).eq('id', appointementId);
+        const { error } = await supabaseAdmin.from('appointments').update({ status: status }).eq('id', appointementId);
         if (error) {
             throw new DatabaseError(`Error updating appointement status: ${error.message}`);
         }

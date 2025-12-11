@@ -5,6 +5,7 @@ import { asyncWrapper } from '../../shared/utils/asyncWrapper';
 import { requireRole } from '../middlewares/requireRole';
 import { validate } from '../middlewares/Validate';
 import { addAppointmentDto } from '../../application/dto/requests/addAppointementDto';
+import { Role } from '../../shared/lib/roles';
 
 const router = Router();
 
@@ -12,7 +13,7 @@ const router = Router();
 router.post(
     '/',
     authMiddleware,
-    requireRole(['DOCTOR', 'RECEPTIONIST', 'ADMIN']),
+    requireRole([Role.RECEPTIONIST, Role.DOCTOR, Role.ADMIN]),
     validate(addAppointmentDto),
     asyncWrapper(appointementController.createAppointment.bind(appointementController))
 
@@ -22,7 +23,7 @@ router.post(
 router.get(
     '/',
     authMiddleware,
-    requireRole(['DOCTOR', 'RECEPTIONIST', 'ADMIN']),
+    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
     asyncWrapper(appointementController.getAllAppointments.bind(appointementController))
 );
 
@@ -30,7 +31,7 @@ router.get(
 router.get(
     '/doctor/:doctorId',
     authMiddleware,
-    requireRole(['DOCTOR', 'RECEPTIONIST', 'ADMIN']),
+    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
     asyncWrapper(appointementController.getAppointmentsByDoctor.bind(appointementController))
 );
 
@@ -38,7 +39,7 @@ router.get(
 router.get(
     '/patient/:patientId',
     authMiddleware,
-    requireRole(['DOCTOR', 'RECEPTIONIST', 'ADMIN']),
+    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
     asyncWrapper(appointementController.getAppointmentsByPatient.bind(appointementController))
 );
 
@@ -46,7 +47,7 @@ router.get(
 router.delete(
     '/:appointmentId',
     authMiddleware,
-    requireRole(['DOCTOR', 'RECEPTIONIST', 'ADMIN']),
+    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
     asyncWrapper(appointementController.deleteAppointment.bind(appointementController))
 );
 

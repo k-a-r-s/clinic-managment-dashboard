@@ -4,6 +4,7 @@ import { createMedicalFileUseCase } from "../../application/use-cases/medicalFil
 import { GetMedicalFileUseCase } from "../../application/use-cases/medicalFile/GetMedicalFileUseCase";
 import { UpdateMedicalFileUseCase } from "../../application/use-cases/medicalFile/UpdateMedicalFileUseCase";
 import { DeleteMedicalFileUseCase } from "../../application/use-cases/medicalFile/DeleteMedicalFileUseCase";
+import { ResponseFormatter } from "../utils/ResponseFormatter";
 
 export class MedicalFileController {
   constructor(
@@ -16,45 +17,25 @@ export class MedicalFileController {
   async createMedicalFile(req: AuthRequest, res: Response) {
     const { body } = req;
     await this.createMedicalFileUseCase.execute(body);
-    res.status(201).json({
-      success: true,
-      status: 201,
-      data: { message: "Medical file created successfully" },
-      error: null,
-    });
+    return ResponseFormatter.success(res, null, "Medical file created successfully", 201);
   }
 
   async getMedicalFileByPatientId(req: AuthRequest, res: Response) {
     const { patientId } = req.params;
     const result = await this.getMedicalFileUseCase.execute(patientId);
-    res.json({
-      success: true,
-      status: 200,
-      data: result,
-      error: null,
-    });
+    return ResponseFormatter.success(res, result, "Medical file retrieved successfully");
   }
 
   async updateMedicalFile(req: AuthRequest, res: Response) {
     const { id } = req.params;
     const { body } = req;
     await this.updateMedicalFileUseCase.execute(id, body);
-    res.json({
-      success: true,
-      status: 200,
-      data: { message: "Medical file updated successfully" },
-      error: null,
-    });
+    return ResponseFormatter.success(res, null, "Medical file updated successfully");
   }
 
   async deleteMedicalFile(req: AuthRequest, res: Response) {
     const { id } = req.params;
     await this.deleteMedicalFileUseCase.execute(id);
-    res.json({
-      success: true,
-      status: 200,
-      data: { message: "Medical file deleted successfully" },
-      error: null,
-    });
+    return ResponseFormatter.success(res, null, "Medical file deleted successfully");
   }
 }

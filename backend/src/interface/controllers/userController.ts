@@ -1,6 +1,7 @@
 import { IUserAuthService } from "../../domain/services/IUserAuthService";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { Response } from "express";
+import { ResponseFormatter } from "../utils/ResponseFormatter";
 
 export class UserController {
   constructor(private userAuthService: IUserAuthService) {}
@@ -13,11 +14,6 @@ export class UserController {
       password,
       role
     );
-    res.json({
-      success: true,
-      status: 200,
-      data: user,
-      error: null,
-    });
+    return ResponseFormatter.success(res, user, "User created successfully", 201);
   }
 }

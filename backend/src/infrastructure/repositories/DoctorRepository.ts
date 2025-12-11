@@ -135,7 +135,13 @@ export class DoctorRepository implements IDoctorRepository {
       throw new DatabaseError("Doctor not found after update");
     }
 
-    return updatedDoctor.toJSON() as any as Doctor;
+    return new Doctor(
+      updatedDoctor.getId(),
+      updatedDoctor.getEmail(),
+      updatedDoctor.getFirstName(),
+      updatedDoctor.getLastName(),
+      updatedDoctor.getSpecialisation()
+    );
   }
   async deleteDoctorById(id: string): Promise<void> {
     const { error } = await supabaseAdmin.from("doctors").delete().eq("id", id);

@@ -5,6 +5,7 @@ import { MedicalFileRepository } from '../infrastructure/repositories/MedicalFil
 import { PatientRepository } from '../infrastructure/repositories/PatientRepository';
 import { UserRepository } from '../infrastructure/repositories/UserRepository';
 import { AppointementRepository } from '../infrastructure/repositories/AppointementRepository';
+import { RoomRepository } from '../infrastructure/repositories/RoomRepository';
 
 // Controllers
 import { AuthController } from '../interface/controllers/authController';
@@ -13,6 +14,7 @@ import { PatientController } from '../interface/controllers/patientController';
 import { UserController } from '../interface/controllers/userController';
 import { AppointementController } from '../interface/controllers/appointmentController';
 import { MedicalFileController } from '../interface/controllers/medicalFileController';
+import { RoomController } from '../interface/controllers/roomController';
 
 // Use Cases - Doctor
 import { GetDoctorsListUseCase } from '../application/use-cases/doctors/GetAllDoctorsUseCase';
@@ -40,6 +42,15 @@ import { GetAppointmentsByDoctorUseCase } from '../application/use-cases/appoint
 import { GetAppointementsByPatientUseCase } from '../application/use-cases/appointement/GetAppointementsByPatientUseCase';
 import { deleteAppointementUseCase } from '../application/use-cases/appointement/DeleteAppointmentUseCase';
 
+// Use Cases - Room
+import { CreateRoom } from '../application/use-cases/rooms/CreateRoom';
+import { GetRoomById } from '../application/use-cases/rooms/GetRoomById';
+import { GetAllRooms } from '../application/use-cases/rooms/GetAllRooms';
+import { GetAvailableRooms } from '../application/use-cases/rooms/GetAvailableRooms';
+import { UpdateRoom } from '../application/use-cases/rooms/UpdateRoom';
+import { DeleteRoom } from '../application/use-cases/rooms/DeleteRoom';
+import { UpdateRoomAvailability } from '../application/use-cases/rooms/UpdateRoomAvailability';
+
 // Repositories
 const authRepository = new AuthRepository();
 const doctorRepository = new DoctorRepository();
@@ -47,6 +58,7 @@ const medicalFileRepository = new MedicalFileRepository();
 const patientRepository = new PatientRepository();
 const userRepository = new UserRepository();
 const appointementRepository = new AppointementRepository();
+const roomRepository = new RoomRepository();
 
 // Services
 const userAuthService = new UserAuthService(userRepository, authRepository);
@@ -85,6 +97,15 @@ const getAppointmentsByDoctorUseCase = new GetAppointmentsByDoctorUseCase(appoin
 const getAppointementsByPatientUseCase = new GetAppointementsByPatientUseCase(appointementRepository);
 const deleteAppointementUseCaseInstance = new deleteAppointementUseCase(appointementRepository);
 
+// Use Cases - Room
+const createRoomUseCase = new CreateRoom(roomRepository);
+const getRoomByIdUseCase = new GetRoomById(roomRepository);
+const getAllRoomsUseCase = new GetAllRooms(roomRepository);
+const getAvailableRoomsUseCase = new GetAvailableRooms(roomRepository);
+const updateRoomUseCase = new UpdateRoom(roomRepository);
+const deleteRoomUseCase = new DeleteRoom(roomRepository);
+const updateRoomAvailabilityUseCase = new UpdateRoomAvailability(roomRepository);
+
 // Controllers
 export const authController = new AuthController(userAuthService);
 export const doctorController = new DoctorController(
@@ -114,3 +135,39 @@ export const medicalFileController = new MedicalFileController(
     updateMedicalFileUseCaseInstance,
     deleteMedicalFileUseCase
 );
+export const roomController = new RoomController(
+    createRoomUseCase,
+    getRoomByIdUseCase,
+    getAllRoomsUseCase,
+    getAvailableRoomsUseCase,
+    updateRoomUseCase,
+    deleteRoomUseCase,
+    updateRoomAvailabilityUseCase
+);
+
+// Dependency Injection Container
+class Container {
+    private dependencies: Map<string, any> = new Map();
+
+    register<T>(name: string, dependency: T): void {
+        this.dependencies.set(name, dependency);
+    }
+
+    resolve<T>(name: string): T {
+        if (!this.dependencies.has(name)) {
+            throw new Error(`Dependency ${name} not found`);
+        }
+        return this.dependencies.get(name) as T;
+    }
+}
+
+export const container = new Container();
+
+// Register all controllers
+container.register('authController', authController);
+container.register('doctorController', doctorController);
+container.register('patientController', patientController);
+container.register('userController', userController);
+container.register('appointementController', appointementController);
+container.register('medicalFileController', medicalFileController);
+container.register('roomController', roomController);

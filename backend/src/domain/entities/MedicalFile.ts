@@ -4,9 +4,9 @@ export interface MedicalData {
     [key: string]: any
 }
 export class MedicalFile {
-    private id: UUID;
-    private doctorId: UUID;
-    private data: MedicalData;
+    public id: UUID;
+    public doctorId: UUID;
+    public data: MedicalData;
 
     public constructor(doctorId: UUID, data: MedicalData) {
         this.doctorId = doctorId;

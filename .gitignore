@@ -3,7 +3,7 @@ backend/node_modules/
 backend/.env
 backend/.env.local
 backend/.env.*.local
-
+backend/package-lock.json
 # Logs
 *.log
 npm-debug.log*

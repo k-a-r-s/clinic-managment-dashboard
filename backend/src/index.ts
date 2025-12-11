@@ -11,6 +11,8 @@ import doctorRouter from "./interface/routes/doctor.route";
 import userRouter from "./interface/routes/user.route";
 import patientRouter from "./interface/routes/patient.route";
 import appointementRouter from "./interface/routes/appointement.route";
+import medicalFileRouter from "./interface/routes/medicalFile.route";
+import roomRouter from "./interface/routes/room.route";
 const app = express();
 app.use(helmet());
 app.use(
@@ -78,6 +80,10 @@ app.use("/users", userRouter);
 app.use("/patients", patientRouter);
 // This mounts all appointment routes at /appointments prefix
 app.use("/appointments", appointementRouter);
+// This mounts all medical file routes at /medical-files prefix
+app.use("/medical-files", medicalFileRouter);
+// This mounts all room routes at /rooms prefix
+app.use("/rooms", roomRouter);
 
 app.use(errorHandler);
 // Start the server

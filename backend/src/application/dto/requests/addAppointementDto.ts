@@ -3,11 +3,11 @@ import { z } from 'zod';
 export const StatusEnum = z.enum(['SCHEDULED', 'COMPLETED', 'CANCELED', 'NO_SHOW']);
 
 export const addAppointmentDto = z.object({
-    patientId: z.string().min(1, 'Patient ID is required'),
-    doctorId: z.string().min(1, 'Doctor ID is required'),
-    roomId: z.string().min(1, 'Room ID is required'),
-    createdByDoctorId: z.string().nullable(),
-    createdByReceptionId: z.string().nullable(),
+    patientId: z.uuid('Patient ID must be a valid UUID'),
+    doctorId: z.uuid('Doctor ID must be a valid UUID'),
+    roomId: z.uuid('Room ID must be a valid UUID'),
+    createdByDoctorId: z.uuid().nullable(),
+    createdByReceptionId: z.uuid().nullable(),
     appointmentDate: z.coerce.date(),
     estimatedDurationInMinutes: z.number().int().positive('Duration must be positive'),
     status: StatusEnum,

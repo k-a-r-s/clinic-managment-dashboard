@@ -4,6 +4,7 @@ import { requireRole } from "../middlewares/requireRole";
 import { Role } from "../../shared/lib/roles";
 import { validate } from "../middlewares/Validate";
 import { addPatientSchemaDto } from "../../application/dto/requests/addPatientDto";
+import { updatePatientSchemaDto } from "../../application/dto/requests/updatePatienDto";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper";
 import { Response } from "express";
 import { patientController } from "../../config/container";
@@ -393,4 +394,92 @@ router.get(
   requireRole([Role.ADMIN, Role.RECEPTIONIST]),
   asyncWrapper(patientController.getAllPatients.bind(patientController))
 );
+
+/**
+ * @swagger
+ * /patients/{id}:
+ *   put:
+ *     summary: Update a patient by ID
+ *     tags: [Patients]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         required: true
+ *         description: The patient id
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneNumber:
+ *                 type: string
+ *               birthDate:
+ *                 type: string
+ *                 format: date
+ *               gender:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *               profession:
+ *                 type: string
+ *               childrenNumber:
+ *                 type: integer
+ *               familySituation:
+ *                 type: string
+ *               insuranceNumber:
+ *                 type: string
+ *               emergencyContactName:
+ *                 type: string
+ *               emergencyContactPhone:
+ *                 type: string
+ *               medicalFileId:
+ *                 type: string
+ *                 format: uuid
+ *     responses:
+ *       200:
+ *         description: The patient was successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 status:
+ *                   type: number
+ *                   example: 200
+ *                 data:
+ *                   type: null
+ *                 error:
+ *                   type: null
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin or Receptionist only
+ *       404:
+ *         description: Patient not found
+ */
+router.put(
+  "/:id",
+  authMiddleware,
+  requireRole([Role.ADMIN, Role.RECEPTIONIST]),
+  validate(updatePatientSchemaDto),
+  asyncWrapper(patientController.updatePatient.bind(patientController))
+);
+
 export default router;

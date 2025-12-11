@@ -1,3 +1,4 @@
+import { AddPatientDto } from "../../application/dto/requests/addPatientDto";
 import { Patient } from "../entities/Patient";
 
 export interface IPatientRepository {
@@ -5,4 +6,5 @@ export interface IPatientRepository {
   getPatientByid(id: string): Promise<Patient>;
   deletePatientByid(id: string): Promise<void>;
   getAllPatients(): Promise<Patient[]>;
+  updatePatient(patient: Patient): Promise<null>;
 }

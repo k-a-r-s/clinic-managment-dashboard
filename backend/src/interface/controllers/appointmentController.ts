@@ -5,6 +5,7 @@ import { GetAppointementsByPatientUseCase } from "../../application/use-cases/ap
 import { deleteAppointementUseCase } from "../../application/use-cases/appointement/DeleteAppointmentUseCase";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { Response } from "express";
+import { ResponseFormatter } from "../utils/ResponseFormatter";
 
 export class AppointementController {
     constructor(
@@ -18,32 +19,32 @@ export class AppointementController {
     async createAppointment(request: AuthRequest, response: Response) {
         const { body } = request;
         await this.addAppointementUseCase.execute(body);
-        return response.status(201).json({ message: "Appointment created successfully" });
+        return ResponseFormatter.success(response, null, "Appointment created successfully", 201);
     }
 
     async getAllAppointments(request: AuthRequest, response: Response) {
         const { view = "month" } = request.query;
         const appointments = await this.getAppointementsUseCase.execute(view as "year" | "month" | "week" | "day");
-        return response.status(200).json(appointments);
+        return ResponseFormatter.success(response, appointments, "Appointments retrieved successfully");
     }
 
     async getAppointmentsByDoctor(request: AuthRequest, response: Response) {
         const { doctorId } = request.params;
         const { view = "month" } = request.query;
         const appointments = await this.getAppointementsByDoctorUseCase.execute(doctorId, view as "year" | "month" | "week" | "day");
-        return response.status(200).json(appointments);
+        return ResponseFormatter.success(response, appointments, "Doctor appointments retrieved successfully");
     }
 
     async getAppointmentsByPatient(request: AuthRequest, response: Response) {
         const { patientId } = request.params;
         const { view = "month" } = request.query;
         const appointments = await this.getAppointementsByPatientUseCase.execute(patientId, view as "year" | "month" | "week" | "day");
-        return response.status(200).json(appointments);
+        return ResponseFormatter.success(response, appointments, "Patient appointments retrieved successfully");
     }
 
     async deleteAppointment(request: AuthRequest, response: Response) {
         const { appointmentId } = request.params;
         await this.deleteAppointementUseCase.execute(appointmentId);
-        return response.status(200).json({ message: "Appointment deleted successfully" });
+        return ResponseFormatter.success(response, null, "Appointment deleted successfully");
     }
 }

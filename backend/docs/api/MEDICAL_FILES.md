@@ -22,7 +22,7 @@
 ### Request Body
 ```typescript
 {
-  userId: string;         // Required, UUID (patient ID)
+  patientId: string;      // Required, UUID
   doctorId: string;       // Required, UUID
   data?: object;          // Optional, flexible medical data
 }
@@ -31,7 +31,7 @@
 **Example Request:**
 ```json
 {
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
+  "patientId": "123e4567-e89b-12d3-a456-426614174000",
   "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
   "data": {
     "diagnosis": "Hypertension",
@@ -49,9 +49,7 @@
 {
   success: boolean;
   message: string;
-  data: {
-    message: string;
-  };
+  data: null;
   error: null;
 }
 ```
@@ -61,9 +59,7 @@
 {
   "success": true,
   "message": "Medical file created successfully",
-  "data": {
-    "message": "Medical file created successfully"
-  },
+  "data": null,
   "error": null
 }
 ```
@@ -167,7 +163,8 @@ GET /medical-files/patient/123e4567-e89b-12d3-a456-426614174000
 ### Request Body
 ```typescript
 {
-  data: object;  // Required, flexible medical data
+  doctorId?: string;  // Optional, UUID
+  data?: object;      // Optional, flexible medical data
 }
 ```
 
@@ -195,13 +192,7 @@ GET /medical-files/patient/123e4567-e89b-12d3-a456-426614174000
 {
   success: boolean;
   message: string;
-  data: {
-    id: string;
-    doctorId: string;
-    data: object;
-    createdAt: string;
-    updatedAt: string;
-  };
+  data: null;
   error: null;
 }
 ```
@@ -211,23 +202,7 @@ GET /medical-files/patient/123e4567-e89b-12d3-a456-426614174000
 {
   "success": true,
   "message": "Medical file updated successfully",
-  "data": {
-    "id": "abc12345-6789-def0-1234-567890abcdef",
-    "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
-    "data": {
-      "diagnosis": "Hypertension - Stage 2",
-      "bloodPressure": "145/95",
-      "medications": ["Lisinopril 20mg", "Amlodipine 5mg"],
-      "notes": "Increased medication dosage. Follow-up in 2 weeks.",
-      "labResults": {
-        "date": "2024-12-11",
-        "cholesterol": "220 mg/dL",
-        "glucose": "105 mg/dL"
-      }
-    },
-    "createdAt": "2024-01-15T10:00:00.000Z",
-    "updatedAt": "2024-12-11T15:00:00.000Z"
-  },
+  "data": null,
   "error": null
 }
 ```
@@ -329,12 +304,13 @@ The `data` field is flexible and can contain any medical information. Common fie
 ## Field Validations
 
 ### Create Medical File DTO
-- `userId`: Required, valid UUID
+- `patientId`: Required, valid UUID
 - `doctorId`: Required, valid UUID
-- `data`: Optional, any valid JSON object
+- `data`: Optional, nullable JSON object
 
 ### Update Medical File DTO
-- `data`: Required, any valid JSON object
+- `doctorId`: Optional, valid UUID
+- `data`: Optional, any valid JSON object
 
 ---
 

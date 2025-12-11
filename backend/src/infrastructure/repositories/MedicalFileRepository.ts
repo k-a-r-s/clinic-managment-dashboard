@@ -2,8 +2,16 @@ import { MedicalData, MedicalFile } from "../../domain/entities/MedicalFile";
 import { IMedicalFileRepository } from "../../domain/repositories/IMedicalFileRepository";
 import { supabaseAdmin } from "../database/supabase";
 export class MedicalFileRepository implements IMedicalFileRepository {
-    async getMedicalFileByPatientId(patientId: string): Promise<void> {
-        const { data, error } = await supabaseAdmin.from("patient_medical_files").select().eq("patient_id", patientId).single();
+    async getMedicalFileByPatientId(patientId: string): Promise<any> {
+        const { data: Patient, error:errorPatient } = await supabaseAdmin.from("patients").select().eq("id", patientId).single();
+        if (errorPatient) {
+            throw new Error(errorPatient.message);
+        }
+        if (!Patient) {
+            return null;
+        }
+        const medicalFileId = Patient.medical_file_id;
+        const { data, error } = await supabaseAdmin.from("patient_medical_files").select().eq("id", medicalFileId).single();
         if (error) {
             throw new Error(error.message);
         }
@@ -48,7 +56,7 @@ export class MedicalFileRepository implements IMedicalFileRepository {
             .from('patient_medical_files')
             .update(updateData)
             .eq('id', id)
-        
+
         if (error) {
             throw new Error(`Failed to update medical file: ${error.message}`)
         }
@@ -59,7 +67,7 @@ export class MedicalFileRepository implements IMedicalFileRepository {
             .insert({
                 doctor_id: medicalFile.getDoctorId(),
                 data: medicalFile.getData(),
-                updated_at:new Date().toISOString(),
+                updated_at: new Date().toISOString(),
             })
             .select()
             .single();

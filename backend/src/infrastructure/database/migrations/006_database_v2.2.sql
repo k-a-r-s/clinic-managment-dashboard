@@ -3,34 +3,29 @@
 
 CREATE TABLE public.appointment_results (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  appointment_id uuid NOT NULL,
-  patient_medical_file_id uuid NOT NULL,
-  description text,
-  treatment_plan text,
-  prescription jsonb,
+  appointment_id uuid NOT NULL UNIQUE,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  appointment_data jsonb,
   CONSTRAINT appointment_results_pkey PRIMARY KEY (id),
-  CONSTRAINT appointment_results_appointment_id_fkey FOREIGN KEY (appointment_id) REFERENCES public.appointments(id),
-  CONSTRAINT appointment_results_patient_medical_file_id_fkey FOREIGN KEY (patient_medical_file_id) REFERENCES public.patient_medical_files(id)
+  CONSTRAINT appointment_results_appointment_id_fkey FOREIGN KEY (appointment_id) REFERENCES public.appointments(id)
 );
 CREATE TABLE public.appointments (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   patient_id uuid NOT NULL,
   doctor_id uuid NOT NULL,
-  room_id integer,
   created_by_receptionist_id uuid,
   created_by_doctor_id uuid,
   appointment_date timestamp with time zone NOT NULL,
   estimated_duration integer DEFAULT 30,
-  status character varying NOT NULL DEFAULT 'scheduled'::character varying CHECK (status::text = ANY (ARRAY['scheduled'::character varying, 'in-progress'::character varying, 'completed'::character varying, 'cancelled'::character varying, 'no-show'::character varying]::text[])),
+  status character varying NOT NULL DEFAULT 'scheduled'::character varying CHECK (status::text = ANY (ARRAY['SCHEDULED'::character varying, 'COMPLETED'::character varying, 'CANCELED'::character varying, 'NO_SHOW'::character varying]::text[])),
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  room_id uuid,
   CONSTRAINT appointments_pkey PRIMARY KEY (id),
-  CONSTRAINT appointments_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id),
-  CONSTRAINT appointments_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.rooms(id),
   CONSTRAINT appointments_created_by_receptionist_id_fkey FOREIGN KEY (created_by_receptionist_id) REFERENCES public.receptionists(id),
-  CONSTRAINT appointments_created_by_doctor_id_fkey FOREIGN KEY (created_by_doctor_id) REFERENCES public.doctors(id)
+  CONSTRAINT appointments_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.rooms(id),
+  CONSTRAINT appointments_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id)
 );
 CREATE TABLE public.doctors (
   id uuid NOT NULL,
@@ -46,7 +41,6 @@ CREATE TABLE public.machines (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   machine_id character varying NOT NULL UNIQUE,
   serial_number character varying NOT NULL,
-  room_id integer,
   status character varying NOT NULL DEFAULT 'available'::character varying CHECK (status::text = ANY (ARRAY['available'::character varying, 'in-use'::character varying, 'maintenance'::character varying, 'out-of-service'::character varying]::text[])),
   last_maintenance_date date NOT NULL,
   next_maintenance_date date NOT NULL,
@@ -54,9 +48,10 @@ CREATE TABLE public.machines (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   is_active boolean DEFAULT true,
+  room_id uuid,
   CONSTRAINT machines_pkey PRIMARY KEY (id),
-  CONSTRAINT machines_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.rooms(id),
-  CONSTRAINT machines_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.profiles(id)
+  CONSTRAINT machines_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.profiles(id),
+  CONSTRAINT machines_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.rooms(id)
 );
 CREATE TABLE public.patient_medical_files (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -135,12 +130,12 @@ CREATE TABLE public.receptionists (
   CONSTRAINT receptionists_id_fkey FOREIGN KEY (id) REFERENCES public.profiles(id)
 );
 CREATE TABLE public.rooms (
-  id integer NOT NULL DEFAULT nextval('rooms_id_seq'::regclass),
   room_number character varying NOT NULL UNIQUE,
   capacity integer DEFAULT 1,
   type character varying DEFAULT 'consultation'::character varying,
   is_available boolean DEFAULT true,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
   CONSTRAINT rooms_pkey PRIMARY KEY (id)
 );

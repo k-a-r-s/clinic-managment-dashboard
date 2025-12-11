@@ -4,6 +4,7 @@ import { GetMedicalFileResponseDto } from "../../dto/responses/medical-file/getM
 export class GetMedicalFileUseCase {
     constructor(private medicalFileRepository: IMedicalFileRepository) { }
     async execute(patientId: string) {
-        return (await this.medicalFileRepository.getMedicalFileByPatientId(patientId)).toJson() as GetMedicalFileResponseDto;
+        const data: GetMedicalFileResponseDto= await this.medicalFileRepository.getMedicalFileByPatientId(patientId);
+        return data;
     }
 }

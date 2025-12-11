@@ -6,6 +6,7 @@ import { PatientRepository } from '../infrastructure/repositories/PatientReposit
 import { UserRepository } from '../infrastructure/repositories/UserRepository';
 import { AppointementRepository } from '../infrastructure/repositories/AppointementRepository';
 import { RoomRepository } from '../infrastructure/repositories/RoomRepository';
+import { AppointmentHistoryRepository } from '../infrastructure/repositories/AppointmentHistoryRepository';
 
 // Controllers
 import { AuthController } from '../interface/controllers/authController';
@@ -51,6 +52,13 @@ import { UpdateRoom } from '../application/use-cases/rooms/UpdateRoom';
 import { DeleteRoom } from '../application/use-cases/rooms/DeleteRoom';
 import { UpdateRoomAvailability } from '../application/use-cases/rooms/UpdateRoomAvailability';
 
+// Use Cases - Appointment History
+import { GetAppointmentHistoryforPatientUseCase } from '../application/use-cases/AppointmentHistory/GetAppointmentHistoryforPatientUseCase';
+import { GetHistoriesByPatientUseCase } from '../application/use-cases/AppointmentHistory/GetHistoriesByPatientUseCase';
+import { UpdateAppointmentHistoryUseCase } from '../application/use-cases/AppointmentHistory/UpdateAppointmentHistoryUseCase';
+import { DeleteAppointmentHistoryUseCase } from '../application/use-cases/AppointmentHistory/DeleteAppointmentHistoryUseCase';
+import { AppointmentCompletedUseCase } from '../application/use-cases/AppointmentHistory/AppointmentCompletedUseCase';
+
 // Repositories
 const authRepository = new AuthRepository();
 const doctorRepository = new DoctorRepository();
@@ -59,6 +67,7 @@ const patientRepository = new PatientRepository();
 const userRepository = new UserRepository();
 const appointementRepository = new AppointementRepository();
 const roomRepository = new RoomRepository();
+const appointmentHistoryRepository = new AppointmentHistoryRepository();
 
 // Services
 const userAuthService = new UserAuthService(userRepository, authRepository);
@@ -106,6 +115,18 @@ const updateRoomUseCase = new UpdateRoom(roomRepository);
 const deleteRoomUseCase = new DeleteRoom(roomRepository);
 const updateRoomAvailabilityUseCase = new UpdateRoomAvailability(roomRepository);
 
+// Use Cases - Appointment History
+const getAppointmentHistoryUseCase = new GetAppointmentHistoryforPatientUseCase(appointmentHistoryRepository, appointementRepository);
+const getHistoriesByPatientUseCase = new GetHistoriesByPatientUseCase(appointmentHistoryRepository);
+const updateAppointmentHistoryUseCase = new UpdateAppointmentHistoryUseCase(appointmentHistoryRepository);
+const deleteAppointmentHistoryUseCase = new DeleteAppointmentHistoryUseCase(appointmentHistoryRepository);
+const appointmentCompletedUseCase = new AppointmentCompletedUseCase(
+    appointmentHistoryRepository,
+    medicalFileRepository,
+    getMedicalFileUseCase,
+    createMedicalFileUseCaseInstance
+);
+
 // Controllers
 export const authController = new AuthController(userAuthService);
 export const doctorController = new DoctorController(
@@ -127,7 +148,12 @@ export const appointementController = new AppointementController(
     getAppointementsUseCase,
     getAppointmentsByDoctorUseCase,
     getAppointementsByPatientUseCase,
-    deleteAppointementUseCaseInstance
+    deleteAppointementUseCaseInstance,
+    getAppointmentHistoryUseCase,
+    getHistoriesByPatientUseCase,
+    updateAppointmentHistoryUseCase,
+    deleteAppointmentHistoryUseCase,
+    appointmentCompletedUseCase
 );
 export const medicalFileController = new MedicalFileController(
     createMedicalFileUseCaseInstance,
@@ -144,6 +170,7 @@ export const roomController = new RoomController(
     deleteRoomUseCase,
     updateRoomAvailabilityUseCase
 );
+
 
 // Dependency Injection Container
 class Container {

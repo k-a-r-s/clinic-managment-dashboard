@@ -46,6 +46,11 @@ Complete list of all available API endpoints grouped by route with descriptions.
 | GET | `/appointments/doctor/:doctorId` | Retrieve all appointments for a specific doctor with optional time filtering. |
 | GET | `/appointments/patient/:patientId` | Retrieve all appointments for a specific patient with optional time filtering. |
 | DELETE | `/appointments/:appointmentId` | Cancel/delete an appointment (admin, doctor, or receptionist). |
+| POST | `/appointments/:appointmentId/complete` | Complete an appointment and record medical history (doctor or admin). |
+| GET | `/appointments/history/:appointmentId` | Get appointment result/history by appointment ID (doctor or admin). |
+| GET | `/appointments/history/patient/:patientId` | Get all appointment histories for a patient (doctor or admin). |
+| PATCH | `/appointments/history/:appointmentId` | Update appointment history/results data (doctor or admin). |
+| DELETE | `/appointments/history/:appointmentId` | Delete appointment history record (admin only). |
 
 ---
 

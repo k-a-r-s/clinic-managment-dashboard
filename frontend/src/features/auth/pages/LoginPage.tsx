@@ -9,9 +9,10 @@ import { validateLoginForm, type ValidationErrors } from '../utils/validation';
 
 interface LoginPageProps {
   onForgotPassword: () => void;
+  onLoginSuccess?: (userData?: any) => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onForgotPassword }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onForgotPassword , onLoginSuccess }) => {
   const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -30,6 +31,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onForgotPassword }) => {
       console.log('Login successful:', response);
       alert('Login successful!');
       // Redirect to dashboard or handle successful login
+      onLoginSuccess?.(response.userData);
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Login failed');
     } finally {

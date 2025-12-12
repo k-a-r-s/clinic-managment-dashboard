@@ -1,3 +1,4 @@
+import axiosInstance from "../../../lib/axios";
 
 export interface LoginFormData {
   email: string;
@@ -8,56 +9,25 @@ export interface ResetFormData {
   email: string;
 }
 
-export interface ApiResponse {
-  success: boolean;
-  message: string;
-  data?: any;
-}
-
 export const authApi = {
-  login: async (data: LoginFormData): Promise<ApiResponse> => {
-    try {
-      // Replace with your actual API endpoint
-      const response = await fetch('http://localhost:3000/auth/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      console.log("Response received from login API:", response);
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.log("Response received from login API:", data);
-      throw new Error('Login failed. Please check your credentials.');
-    }
+  login: async (data: LoginFormData) => {
+    // Axios auto-handles success/error unwrapping
+    const response = await axiosInstance.post("/auth/login", data, {
+      withCredentials: true, 
+    });
+    // Because interceptor unwraps response -> response.data = actual "data"
+    return response.data;
   },
 
-  resetPassword: async (data: ResetFormData): Promise<ApiResponse> => {
-    try {
-      // Replace with your actual API endpoint
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error('Password reset failed');
+  resetPassword: async (data: ResetFormData) => {
+    const response = await axiosInstance.post(
+      "/auth/reset-password",
+      data,
+      {
+        withCredentials: true, // if your backend sets cookies here too
       }
+    );
 
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      throw new Error('Failed to send reset link. Please try again.');
-    }
+    return response.data;
   },
 };
-

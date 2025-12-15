@@ -95,7 +95,6 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log("Unauthorized - Redirecting to login");
       localStorage.removeItem("auth_token");
-      window.location.href = "/login";
     }
 
     // Error matches APIErrorResponse

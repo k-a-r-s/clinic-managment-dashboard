@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "./components/layout/Sidebar";
 import { TopBar } from "./components/layout/TopBar";
 import { PatientsList } from "./features/patients/pages/PatientsList";
@@ -12,7 +12,9 @@ import { CreateAppointment } from "./features/appointments/pages/CreateAppointme
 import { AppointmentDetails } from "./features/appointments/pages/AppointmentDetails";
 import { CalendarView } from "./features/appointments/pages/CalendarView";
 import { DoctorAvailability } from "./features/appointments/pages/DoctorAvailability";
+import { useAuth } from "./context/AuthContext";
 import { AuthModule } from "./features/auth";
+
 
 type PageType =
   | "dialysis-management"
@@ -35,29 +37,14 @@ type PageType =
   | "calendar-view"
   | "doctor-availability";
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+function App() {  
+  const { user, logout } = useAuth(); // use context instead of local isAuthenticated
   const [currentPage, setCurrentPage] = useState<PageType>("patients-list");
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
-    null
-  );
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
-  const [selectedAppointmentId, setSelectedAppointmentId] = useState<
-    number | null
-  >(null);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const handleLogin = () => {
-    localStorage.setItem("auth_token", "example_token");
-    setIsAuthenticated(true);
-    setCurrentPage("patients-list");
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setCurrentPage("patients-list");
-  };
 
   const handleViewPatient = (patientId: string) => {
     setSelectedPatientId(patientId);
@@ -162,8 +149,8 @@ function App() {
     setIsEditMode(false);
   };
 
-  if (!isAuthenticated) {
-    return <AuthModule onLoginSuccess={handleLogin} />;
+  if (!user) {
+    return <AuthModule />;
   }
 
   return (
@@ -179,7 +166,7 @@ function App() {
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <TopBar
-          onLogout={handleLogout}
+          onLogout={logout}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 

@@ -5,6 +5,7 @@ import { Logo } from '../components/Logo';
 import { BrandSection } from '../components/BrandSection';
 import { InputField } from '../components/InputField';
 import { authApi, type LoginFormData } from '../api/authApi';
+import { useAuth } from '../../../context/AuthContext';
 import { validateLoginForm, type ValidationErrors } from '../utils/validation';
 
 interface LoginPageProps {
@@ -16,6 +17,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onForgotPassword , onLogin
   const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const { login } = useAuth();
 
   const handleSubmit = async () => {
     const validationErrors = validateLoginForm(formData.email, formData.password);
@@ -29,9 +31,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onForgotPassword , onLogin
     try {
       const response = await authApi.login(formData);
       console.log('Login successful:', response);
-      alert('Login successful!');
-      // Redirect to dashboard or handle successful login
-      onLoginSuccess?.(response.userData);
+      // Persist user in AuthContext (localStorage) so app can treat as authenticated immediately
+      if (response?.user) {
+        try {
+          login(response.user);
+        } catch (e) {
+          console.warn('Auth context login failed', e);
+        }
+      }
+
+      // Notify parent (App) to refetch server-side auth if needed
+      onLoginSuccess?.();
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Login failed');
     } finally {

@@ -2,12 +2,9 @@ import React, { useState } from "react";
 import { LoginPage } from "./pages/LoginPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 
-interface AuthModuleProps {
-  onLoginSuccess?: (userData?: any) => void;
-}
-
-export const AuthModule: React.FC<AuthModuleProps> = ({ onLoginSuccess }) => {
+export const AuthModule: React.FC = () => {
   const [showReset, setShowReset] = useState(false);
+  // AuthModule no longer performs the context login here; LoginPage handles persisting the user
 
   return (
     <>
@@ -16,7 +13,7 @@ export const AuthModule: React.FC<AuthModuleProps> = ({ onLoginSuccess }) => {
       ) : (
         <LoginPage
           onForgotPassword={() => setShowReset(true)}
-          onLoginSuccess={onLoginSuccess}
+          onLoginSuccess={() => { /* noop - LoginPage writes to AuthContext directly */ }}
         />
       )}
     </>

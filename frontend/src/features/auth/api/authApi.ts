@@ -12,8 +12,8 @@ export interface ResetFormData {
 export const authApi = {
   login: async (data: LoginFormData) => {
     // Axios auto-handles success/error unwrapping
-    const response = await axiosInstance.post("/auth/login", data, {
-      withCredentials: true, 
+    const response = await axiosInstance.post("/auth/login", data,{
+      withCredentials: true,
     });
     // Because interceptor unwraps response -> response.data = actual "data"
     return response.data;
@@ -30,4 +30,19 @@ export const authApi = {
 
     return response.data;
   },
+
+  me: async () => {
+    const response = await axiosInstance.post("/auth/me", {}, {
+      withCredentials: true,
+    });
+    return response.data;
+  },
+  
+  logout : async () => {
+    const response = await axiosInstance.post("/auth/me", {}, {
+      withCredentials: true,
+    });
+    return response.data;
+  },
 };
+

@@ -160,13 +160,14 @@ function App() {
         currentPage={currentPage as any}
         onNavigate={setCurrentPage as any}
         collapsed={sidebarCollapsed}
+        onLogout={() => logout()}
       />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <TopBar
-          onLogout={logout}
+          onLogout={()=>logout()}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 

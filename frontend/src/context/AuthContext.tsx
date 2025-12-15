@@ -1,17 +1,11 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { authApi } from "../features/auth/api/authApi";
+import type { UserProfile } from "../types";
 
 // --------------------
 // Types
 // --------------------
-export type UserProfile = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-};
 
 interface AuthContextType {
   user: UserProfile | null;

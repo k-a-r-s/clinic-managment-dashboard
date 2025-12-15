@@ -221,7 +221,7 @@ function App() {
           )}
 
           {currentPage === "appointments-list" && (
-            <AppointmentsList
+            <AppointmentsList       
               onViewAppointment={handleViewAppointment}
               onEditAppointment={handleEditAppointment}
               onCreate={handleCreateAppointment}

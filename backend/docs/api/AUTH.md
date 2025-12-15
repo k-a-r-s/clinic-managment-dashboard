@@ -220,6 +220,66 @@ None
 
 ---
 
+## 4. Get Current User
+
+**Endpoint:** `POST /auth/me`
+
+**Description:** Retrieve the authenticated user's profile information
+
+**Authentication:** Required (Bearer token)
+
+### Request Body
+None
+
+### Response
+
+**Success (200):**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    id: string;              // UUID
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: "admin" | "doctor" | "receptionist";
+  } | null;
+  error: null;
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "message": "User information retrieved successfully",
+  "data": {
+    "id": "c0b837f3-5a95-44b6-bb60-7aeccc4afe9f",
+    "email": "user@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "role": "doctor"
+  },
+  "error": null
+}
+```
+
+**Error (401):**
+```json
+{
+  "success": false,
+  "message": "Unauthorized",
+  "data": null,
+  "error": {
+    "name": "AuthError",
+    "message": "Invalid or expired token",
+    "statusCode": 401
+  }
+}
+```
+
+
 ## Security Notes
 
 1. **Access Token:** Short-lived (1 hour), used for API requests

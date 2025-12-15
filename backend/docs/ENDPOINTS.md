@@ -11,6 +11,7 @@ Complete list of all available API endpoints grouped by route with descriptions.
 | POST | `/auth/login` | Authenticate user with email and password. Returns access and refresh tokens in HTTP-only cookies. |
 | POST | `/auth/logout` | Logout user and invalidate session. Clears both access and refresh token cookies. |
 | POST | `/auth/refresh-token` | Refresh access token using refresh token stored in HTTP-only cookie. |
+| POST | `/auth/me` | Retrieve the authenticated user's profile information (requires Bearer token). |
 
 ---
 

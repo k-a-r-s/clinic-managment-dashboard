@@ -12,9 +12,14 @@ import { CreateAppointment } from "./features/appointments/pages/CreateAppointme
 import { AppointmentDetails } from "./features/appointments/pages/AppointmentDetails";
 import { CalendarView } from "./features/appointments/pages/CalendarView";
 import { DoctorAvailability } from "./features/appointments/pages/DoctorAvailability";
+import { DashboardPage } from "./features/dashboard/pages/DashboardPage";
+import { LabRequestPage } from "./features/lab-requests/pages/LabRequestPage";
+import { PrescriptionsPage } from "./features/prescriptions/pages/PrescriptionsPage";
+import { MachinesPage } from "./features/machines/pages/MachinesPage";
+import { RolesPermissionsPage } from "./features/roles-permissions/pages/RolesPermissionsPage";
 
 type PageType =
-  | "dialysis-management"
+  | "dashboard"
   | "lab-request"
   | "prescription"
   | "machines-management"
@@ -239,7 +244,7 @@ function App() {
           )}
 
           {currentPage === "appointments-list" && (
-            <AppointmentsList       
+            <AppointmentsList
               onViewAppointment={handleViewAppointment}
               onEditAppointment={handleEditAppointment}
               onCreate={handleCreateAppointment}
@@ -273,8 +278,28 @@ function App() {
 
           {currentPage === "doctor-availability" && <DoctorAvailability />}
 
+          {/* Dashboard */}
+          {currentPage === "dashboard" && <DashboardPage />}
+
+          {/* Lab Requests */}
+          {currentPage === "lab-request" && <LabRequestPage />}
+
+          {/* Prescriptions */}
+          {currentPage === "prescription" && <PrescriptionsPage />}
+
+          {/* Machines Management */}
+          {currentPage === "machines-management" && <MachinesPage />}
+
+          {/* Roles & Permissions */}
+          {currentPage === "roles-permissions" && <RolesPermissionsPage />}
+
           {/* Placeholder for other pages */}
           {![
+            "dashboard",
+            "lab-request",
+            "prescription",
+            "machines-management",
+            "roles-permissions",
             "patients-list",
             "register-patient",
             "patient-details",

@@ -18,7 +18,7 @@ import { Button } from "../ui/button";
 
 interface SidebarProps {
   currentPage:
-    | "dialysis-management"
+    | "dashboard"
     | "lab-request"
     | "prescription"
     | "machines-management"
@@ -39,7 +39,7 @@ interface SidebarProps {
     | "doctor-availability";
   onNavigate: (
     page:
-      | "dialysis-management"
+      | "dashboard"
       | "lab-request"
       | "prescription"
       | "machines-management"
@@ -68,11 +68,11 @@ export function Sidebar({
   collapsed = false,
 }: SidebarProps) {
   const menuItems = [
-    { icon: Home, label: "Dashboard", page: null },
+    { icon: Home, label: "Dashboard", page: "dashboard" as const },
     {
       icon: Droplets,
       label: "Dialysis Management",
-      page: "dialysis-management" as const,
+      page: "dashboard" as const,
     },
     {
       icon: Monitor,

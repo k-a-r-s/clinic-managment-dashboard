@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "./context/AuthContext";
+import { AuthModule } from "./features/auth";
 import { Sidebar } from "./components/layout/Sidebar";
 import { TopBar } from "./components/layout/TopBar";
 import { PatientsList } from "./features/patients/pages/PatientsList";
@@ -39,12 +41,16 @@ type PageType =
   | "calendar-view"
   | "doctor-availability";
 
-function App() {  
+function App() {
   const { user, logout } = useAuth(); // use context instead of local isAuthenticated
   const [currentPage, setCurrentPage] = useState<PageType>("patients-list");
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
+    null
+  );
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
-  const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<
+    number | null
+  >(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -169,7 +175,7 @@ function App() {
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <TopBar
-          onLogout={()=>logout()}
+          onLogout={() => logout()}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 

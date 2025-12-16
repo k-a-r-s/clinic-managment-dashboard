@@ -60,12 +60,14 @@ interface SidebarProps {
       | "doctor-availability"
   ) => void;
   collapsed?: boolean;
+  onLogout?: () => void;
 }
 
 export function Sidebar({
   currentPage,
   onNavigate,
   collapsed = false,
+  onLogout,
 }: SidebarProps) {
   const menuItems = [
     { icon: Home, label: "Dashboard", page: null },
@@ -190,6 +192,7 @@ export function Sidebar({
             collapsed ? "justify-center px-2" : "justify-start"
           } gap-3 text-red-600 hover:bg-red-50 hover:text-red-700`}
           title={collapsed ? "Logout" : undefined}
+          onClick={() => onLogout && onLogout()}
         >
           <LogOut className="w-5 h-5 shrink-0" />
           {!collapsed && <span>Logout</span>}

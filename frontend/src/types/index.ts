@@ -1,3 +1,15 @@
+// Admin Type
+
+export interface UserProfile {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // Patient Types
 export interface Patient {
   id: number;

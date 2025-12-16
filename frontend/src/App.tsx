@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "./components/layout/Sidebar";
 import { TopBar } from "./components/layout/TopBar";
 import { PatientsList } from "./features/patients/pages/PatientsList";
@@ -39,23 +39,14 @@ type PageType =
   | "calendar-view"
   | "doctor-availability";
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+function App() {  
+  const { user, logout } = useAuth(); // use context instead of local isAuthenticated
   const [currentPage, setCurrentPage] = useState<PageType>("patients-list");
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
-    null
-  );
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
-  const [selectedAppointmentId, setSelectedAppointmentId] = useState<
-    number | null
-  >(null);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setCurrentPage("patients-list");
-  };
 
   const handleViewPatient = (patientId: string) => {
     setSelectedPatientId(patientId);
@@ -160,20 +151,8 @@ function App() {
     setIsEditMode(false);
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Please Login</h1>
-          <button
-            onClick={() => setIsAuthenticated(true)}
-            className="px-4 py-2 bg-[#1C8CA8] text-white rounded-md hover:bg-[#157A93]"
-          >
-            Login
-          </button>
-        </div>
-      </div>
-    );
+  if (!user) {
+    return <AuthModule />;
   }
 
   return (
@@ -183,13 +162,14 @@ function App() {
         currentPage={currentPage as any}
         onNavigate={setCurrentPage as any}
         collapsed={sidebarCollapsed}
+        onLogout={() => logout()}
       />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <TopBar
-          onLogout={handleLogout}
+          onLogout={()=>logout()}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 

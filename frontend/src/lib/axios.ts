@@ -12,11 +12,11 @@ import type { ApiSuccessResponse, ApiErrorResponse } from "../types";
  * so API functions receive the actual data directly (response.data).
  */
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
+  baseURL: "http://localhost:3000",
   timeout: 10000,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
   },
 });
 
@@ -33,12 +33,6 @@ axiosInstance.interceptors.request.use(
     if (config.data) console.log("Request Body:", config.data);
     if (config.params) console.log("Query Params:", config.params);
     console.groupEnd();
-
-    // Authorization Token
-    const token = localStorage.getItem("auth_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
 
     return config;
   },
@@ -101,7 +95,6 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log("Unauthorized - Redirecting to login");
       localStorage.removeItem("auth_token");
-      window.location.href = "/login";
     }
 
     // Error matches APIErrorResponse

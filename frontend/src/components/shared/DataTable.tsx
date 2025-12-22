@@ -27,7 +27,7 @@ export interface DataTableProps<T> {
 }
 
 export function DataTable<T>({
-  data,
+  data = [] as T[],
   columns,
   onRowClick,
   getRowKey,
@@ -35,6 +35,21 @@ export function DataTable<T>({
   emptyMessage = "No data available",
   rowClassName,
 }: DataTableProps<T>) {
+  // Normalize data to an array. This guards against API or prop mistakes where
+  // the `data` prop might be an object or null.
+  const items: T[] = Array.isArray(data)
+    ? data
+    : Array.isArray((data as any)?.data)
+    ? (data as any).data
+    : [];
+
+  if (process.env.NODE_ENV !== "production" && !Array.isArray(data)) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "DataTable: received non-array `data` prop — falling back to empty array."
+    );
+  }
+
   return (
     <Table>
       <TableHeader>
@@ -50,7 +65,7 @@ export function DataTable<T>({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.length === 0 ? (
+        {items.length === 0 ? (
           <TableRow>
             <TableCell
               colSpan={columns.length}
@@ -60,7 +75,7 @@ export function DataTable<T>({
             </TableCell>
           </TableRow>
         ) : (
-          data.map((item) => {
+          items.map((item) => {
             const key = getRowKey(item);
             const isSelected = selectedKey === key;
             const baseClassName = `cursor-pointer transition-colors border-b border-gray-200 ${

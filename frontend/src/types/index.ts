@@ -1,3 +1,6 @@
+//absolute zina istg
+
+export * from "./doctors";
 // Admin Type
 
 export interface UserProfile {
@@ -60,6 +63,15 @@ export interface PatientFormData {
   emergencyContactPhone?: string;
 }
 
+// User Types
+export interface UserFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: "doctor" | "receptionist";
+}
+
 export interface VascularAccess {
   type: string;
   site: string;
@@ -120,15 +132,6 @@ export interface Doctor {
   updatedAt?: string;
 }
 
-export interface DoctorFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  salary: number;
-  isMedicalDirector?: boolean;
-  specialization: string;
-}
 
 // Appointment Types
 export interface Appointment {

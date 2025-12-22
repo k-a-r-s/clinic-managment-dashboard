@@ -8,7 +8,7 @@ import { DataTable } from "../../../components/shared/DataTable";
 import type { Column } from "../../../components/shared/DataTable";
 import { getDoctors } from "../api/doctors.api";
 import type { Doctor } from "../../../types";
-
+import toast from "react-hot-toast";
 interface DoctorsListPageProps {
   onViewDoctor?: (doctorId: number) => void;
   onEditDoctor?: (doctorId: number) => void;
@@ -36,23 +36,19 @@ export function DoctorsList({
       setDoctors(data);
     } catch (error) {
       console.error("Failed to load doctors:", error);
-      // TODO: Show error toast
+      toast.error("Failed to load doctors");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Filter doctors
-  const filteredDoctors = doctors.filter((doctor) => {
+  //Filter doctors
+  const filteredDoctors = doctors.length > 0 ? doctors.filter((doctor) => {
     const fullName = `${doctor.firstName} ${doctor.lastName}`.toLowerCase();
     const matchesSearch =
-      fullName.includes(searchTerm.toLowerCase()) ||
-      doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.email.toLowerCase().includes(searchTerm.toLowerCase());
-
+      fullName.includes(searchTerm.toLowerCase());
     return matchesSearch;
-  });
+  }) : [];
 
   const handleViewDoctor = (doctorId: number) => {
     if (onViewDoctor) {
@@ -165,7 +161,7 @@ export function DoctorsList({
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between gap-4 mb-6">
             <SearchBar
-              placeholder="Search by name, specialty, phone, or email..."
+              placeholder="Search by name"
               value={searchTerm}
               onChange={setSearchTerm}
             />

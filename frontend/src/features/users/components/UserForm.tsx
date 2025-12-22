@@ -9,7 +9,6 @@ import type { UserFormData } from "../../../types";
 interface UserFormProps {
   initialData?: Partial<UserFormData>;
   onSubmit: (data: UserFormData) => void;
-  onCancel: () => void;
   isLoading?: boolean;
   submitLabel?: string;
 }

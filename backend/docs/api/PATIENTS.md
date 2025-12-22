@@ -250,8 +250,6 @@
   insuranceNumber?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
-  allergies?: string[];
-  currentMedications?: string[];
 }
 ```
 

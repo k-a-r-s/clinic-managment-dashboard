@@ -95,7 +95,7 @@ export function Sidebar({
   ];
 
   const adminMenuItems = [
-    { icon: UserPlus, label: "Add System User", page: "add-user" as const },
+    { icon: UserPlus, label: "Add User", page: "add-user" as const },
     {
       icon: Shield,
       label: "Roles & Permissions",

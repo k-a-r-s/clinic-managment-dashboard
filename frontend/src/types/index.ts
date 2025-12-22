@@ -63,6 +63,15 @@ export interface PatientFormData {
   emergencyContactPhone?: string;
 }
 
+// User Types
+export interface UserFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: "doctor" | "receptionist";
+}
+
 export interface VascularAccess {
   type: string;
   site: string;

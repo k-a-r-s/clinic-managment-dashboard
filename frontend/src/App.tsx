@@ -19,6 +19,7 @@ import { LabRequestPage } from "./features/lab-requests/pages/LabRequestPage";
 import { PrescriptionsPage } from "./features/prescriptions/pages/PrescriptionsPage";
 import { MachinesPage } from "./features/machines/pages/MachinesPage";
 import { RolesPermissionsPage } from "./features/roles-permissions/pages/RolesPermissionsPage";
+import { AddUser } from "./features/users/pages/AddUser";
 
 type PageType =
   | "dashboard"
@@ -279,6 +280,12 @@ function App() {
           {/* Roles & Permissions */}
           {currentPage === "roles-permissions" && <RolesPermissionsPage />}
 
+          {/* Add User */}
+          {currentPage === "add-user" && (
+            <AddUser
+            />
+          )}
+
           {/* Placeholder for other pages */}
           {![
             "dashboard",
@@ -297,6 +304,7 @@ function App() {
             "appointment-details",
             "calendar-view",
             "doctor-availability",
+            "add-user",   
           ].includes(currentPage) && (
             <div className="p-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">

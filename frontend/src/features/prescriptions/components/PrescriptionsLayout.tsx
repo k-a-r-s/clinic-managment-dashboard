@@ -32,28 +32,18 @@ const PrescriptionsLayout: React.FC = () => {
     },
   ]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [patientName, setPatientName] = useState<string>("John Michael Doe");
+  const [patientAge, setPatientAge] = useState<string>("58");
+  const [patientGender, setPatientGender] = useState<string>("Male");
+  const [requestingDoctor, setRequestingDoctor] = useState<string>("Dr. Sarah Johnson");
 
-  // Track unsaved changes
+  // Track whether there is any medication content
   useEffect(() => {
     const hasContent = medications.some(
-      (med) =>
-        med.name || med.dosage || med.frequency || med.duration || med.notes
+      (med) => med.name || med.dosage || med.frequency || med.duration || med.notes
     );
     setHasUnsavedChanges(hasContent);
   }, [medications]);
-
-  // Warn before leaving if there are unsaved changes
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasUnsavedChanges]);
 
   const handleAddMedication = () => {
     const newMedication: Medication = {
@@ -102,30 +92,12 @@ const PrescriptionsLayout: React.FC = () => {
             notes: "",
           },
         ]);
+        // Clear local draft if present
         localStorage.removeItem("prescription_draft");
         setHasUnsavedChanges(false);
       }
     }
   };
-
-  const handleSave = () => {
-    const prescription: PrescriptionState = {
-      medications: medications.filter((med) => med.name.trim() !== ""),
-      savedAt: new Date().toISOString(),
-    };
-
-    console.log("Saving prescription...", prescription);
-
-    // TODO: Replace with actual API call
-    // await api.savePrescription(prescription);
-
-    // Save to localStorage as backup
-    localStorage.setItem("prescription_draft", JSON.stringify(prescription));
-
-    toast.success("Prescription saved successfully!");
-    setHasUnsavedChanges(false);
-  };
-
   const handlePrintRequestForm = () => {
     const filledMedications = medications.filter(
       (med) => med.name.trim() !== ""
@@ -136,16 +108,43 @@ const PrescriptionsLayout: React.FC = () => {
       return;
     }
 
-    if (hasUnsavedChanges) {
-      const shouldSave = window.confirm(
-        "Would you like to save before printing?"
-      );
-      if (shouldSave) {
-        handleSave();
-      }
+    if (!patientName || patientName.trim() === "") {
+      toast.error("Please enter the patient name before printing.");
+      return;
     }
 
-    window.print();
+    // Print only the preview area
+    const printEl = document.getElementById('prescription-print-area');
+    if (!printEl) {
+      toast.error('Print area not available');
+      return;
+    }
+
+    const printContents = printEl.outerHTML;
+    const win = window.open('', '_blank');
+    if (!win) {
+      toast.error('Unable to open print window.');
+      return;
+    }
+    win.document.write(`
+      <html>
+        <head>
+          <title>Prescription Request Form</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; padding: 24px; }
+            .text-teal-600 { color: #0d9488; }
+            .font-semibold { font-weight: 600; }
+          </style>
+        </head>
+        <body>
+          ${printContents}
+        </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
   };
 
   const handlePrintPrescription = () => {
@@ -175,70 +174,32 @@ const PrescriptionsLayout: React.FC = () => {
       toast.error("No previous prescription found.");
     }
   };
-
-  // Load draft from localStorage on mount
-  useEffect(() => {
-    const draft = localStorage.getItem("prescription_draft");
-    if (draft) {
-      try {
-        const parsed: PrescriptionState = JSON.parse(draft);
-        const shouldLoad = window.confirm(
-          "A draft prescription was found. Would you like to load it?"
-        );
-        if (shouldLoad) {
-          setMedications(parsed.medications || []);
-        } else {
-          localStorage.removeItem("prescription_draft");
-        }
-      } catch (error) {
-        console.error("Failed to load draft:", error);
-        toast.error("Failed to load saved prescription draft");
-        localStorage.removeItem("prescription_draft");
-      }
-    }
-  }, []);
+  // No automatic draft loading - save button removed by request
 
   return (
     <div className="p-6 space-y-6 bg-gray-50">
       <PrescriptionsHeader
         medications={medications}
         onClearAll={handleClearAll}
-        onSave={handleSave}
         onPrintRequestForm={handlePrintRequestForm}
         onPrintPrescription={handlePrintPrescription}
+        patientName={patientName}
       />
 
-      {/* Unsaved changes indicator */}
-      {hasUnsavedChanges && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-yellow-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-700">
-                You have unsaved changes. Don't forget to save your work.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Save button removed; manual save UX was removed per requirements */}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {" "}
         {/* Left Section - Form */}
         <div className="lg:col-span-2 space-y-6">
-          <PatientInfoSection />
+          <PatientInfoSection
+            name={patientName}
+            onNameChange={setPatientName}
+            age={patientAge}
+            onAgeChange={setPatientAge}
+            gender={patientGender}
+            onGenderChange={setPatientGender}
+          />
           <PharmacyMedicationsInfo />
           <PrescriptionDetailsTable
             medications={medications}
@@ -250,7 +211,14 @@ const PrescriptionsLayout: React.FC = () => {
         </div>
         {/* Right Section - Print Preview */}
         <div className="lg:col-span-1">
-          <PrescriptionPrintPreview medications={medications} />
+          <PrescriptionPrintPreview
+            medications={medications}
+            patientName={patientName}
+            age={patientAge}
+            gender={patientGender}
+            requestDate={new Date().toLocaleDateString()}
+            requestDoctor={requestingDoctor}
+          />
         </div>
       </div>
     </div>

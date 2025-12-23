@@ -1,9 +1,8 @@
-import { Monitor, MapPin, Calendar, Edit, Power } from "lucide-react"
+import { Monitor, MapPin, Calendar, Edit } from "lucide-react"
 import { AlertCircle } from "lucide-react"
 import { useState, useEffect } from "react"
 import { toast } from "react-hot-toast"
-import { getMachines, deactivateMachine, updateMachine } from "../api/machines.api"
-import DeactivateModal from "./DeactivateModal" 
+import { getMachines, updateMachine } from "../api/machines.api"
 import AddMachineModal from "./AddMachineModal" 
 
 interface Machine { 
@@ -125,10 +124,7 @@ export default function MachinesTable({
   onAddMachine,
 }: MachinesTableProps) {
   const [machines, setMachines] = useState<Machine[]>(initialMachines)
-  const [deactivateModal, setDeactivateModal] = useState<{isOpen: boolean; machineId: string}>({
-    isOpen: false,
-    machineId: ""
-  })
+  // Deactivate flow removed from table UI. Use Edit -> set status to 'out-of-service' to deactivate.
   const [editModal, setEditModal] = useState<{isOpen: boolean; machineData: Machine | null}>({
     isOpen: false,
     machineData: null
@@ -148,12 +144,15 @@ export default function MachinesTable({
     return matchesSearch && matchesRoom && matchesStatus
   })
 
-  const handleDeactivate = (machineId: string) => {
-    setDeactivateModal({ isOpen: true, machineId })
-  }
+  // Deactivate handler removed; table no longer exposes a deactivate button.
 
   useEffect(() => {
     loadMachines();
+    // Poll in background to reflect changes made elsewhere in near real-time
+    const interval = setInterval(() => {
+      loadMachines()
+    }, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -209,24 +208,7 @@ export default function MachinesTable({
     return diffDays <= 30
   }
 
-  const handleConfirmDeactivate = () => {
-    const doDeactivate = async () => {
-      try {
-        await deactivateMachine(deactivateModal.machineId)
-        toast.success('Machine deactivated')
-        // refresh
-        loadMachines()
-        onRefresh && onRefresh()
-      } catch (error) {
-        console.error('Failed to deactivate machine:', error)
-        toast.error('Failed to deactivate machine')
-      } finally {
-        setDeactivateModal({ isOpen: false, machineId: '' })
-      }
-    }
-
-    doDeactivate()
-  }
+  // Deactivate modal/flow removed
 
   const handleEdit = (machine: Machine) => {
     setEditModal({ isOpen: true, machineData: machine })
@@ -354,13 +336,7 @@ export default function MachinesTable({
                           <Edit className="w-4 h-4" />
                           Edit
                         </button>
-                        <button 
-                          onClick={() => handleDeactivate(machine.id)}
-                          className="inline-flex items-center gap-1.5 text-red-600 hover:text-red-700 text-sm font-medium"
-                        >
-                          <Power className="w-4 h-4" />
-                          Deactivate
-                        </button>
+                        {/* Deactivate button removed; change status via Edit (set to 'out-of-service') */}
                       </div>
                     </td>
                   </tr>
@@ -371,13 +347,7 @@ export default function MachinesTable({
         </div>
       </div>
 
-      {/* Deactivate Modal */}
-      <DeactivateModal
-        isOpen={deactivateModal.isOpen}
-        onClose={() => setDeactivateModal({ isOpen: false, machineId: "" })}
-        machineId={deactivateModal.machineId}
-        onConfirm={handleConfirmDeactivate}
-      />
+      {/* Deactivate modal removed from UI */}
 
       {/* Edit Modal */}
       <AddMachineModal

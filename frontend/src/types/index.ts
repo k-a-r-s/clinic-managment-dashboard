@@ -120,7 +120,7 @@ export interface LabResult {
 
 // Doctor Types
 export interface Doctor {
-  id: number;
+  id: number | string;
   firstName: string;
   lastName: string;
   email: string;

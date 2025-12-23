@@ -8,6 +8,7 @@ import { Loader } from "../../../components/shared/Loader";
 import { DataTable } from "../../../components/shared/DataTable";
 import type { Column } from "../../../components/shared/DataTable";
 import { getPatients } from "../api/patients.api";
+import { toast } from "react-hot-toast";
 import type { Patient } from "../../../types";
 
 // Utility function to calculate age from birth date
@@ -51,7 +52,7 @@ export function PatientsList({
       setPatients(data);
     } catch (error) {
       console.error("Failed to load patients:", error);
-      // TODO: Show error toast
+      toast.error("Failed to load patients");
     } finally {
       setIsLoading(false);
     }

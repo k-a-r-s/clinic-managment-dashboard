@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,12 +26,13 @@ export function AddDoctor({
     try {
       setIsLoading(true);
       await createDoctor(data);
+      toast.success("Doctor added successfully");
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
       console.error("Failed to add doctor:", error);
-      // TODO: Show error toast
+      toast.error("Failed to add doctor");
     } finally {
       setIsLoading(false);
     }

@@ -3,6 +3,7 @@ import { User } from "./User";
 export class Doctor extends User {
   private speciality: string;
   private isMedicalSupervisor: boolean;
+  private phoneNumber?: string;
   private specialisation: string;
   private salary: number;
   constructor(
@@ -19,6 +20,12 @@ export class Doctor extends User {
   }
   setIsMedicalSupervisor(isMedicalSupervisor: boolean) {
     this.isMedicalSupervisor = isMedicalSupervisor;
+  }
+  setPhoneNumber(phone: string) {
+    this.phoneNumber = phone;
+  }
+  getPhoneNumber(): string | undefined {
+    return this.phoneNumber;
   }
   IsMedicalSupervisor(): boolean {
     return this.isMedicalSupervisor;
@@ -51,6 +58,8 @@ export class Doctor extends User {
       speciality: this.speciality,
       isMedicalSupervisor: this.isMedicalSupervisor,
       specialisation: this.specialisation,
+      phoneNumber: this.phoneNumber,
+      salary: this.salary,
     };
   }
 }

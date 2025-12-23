@@ -1,3 +1,4 @@
+import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { Edit, ChevronDown, ChevronUp, Save, X, Trash2 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
@@ -152,7 +153,7 @@ export function PatientProfile({
       });
     } catch (error) {
       console.error("Failed to load patient:", error);
-      // TODO: Show error toast
+      toast.error("Failed to load patient");
     } finally {
       setIsLoading(false);
     }
@@ -161,11 +162,12 @@ export function PatientProfile({
   const handleSave = async () => {
     try {
       await updatePatient(patientId, formData);
+      toast.success("Patient updated successfully");
       setIsEditMode(false);
       loadPatient(); // Reload patient data
     } catch (error) {
       console.error("Failed to update patient:", error);
-      // TODO: Show error toast
+      toast.error("Failed to update patient");
     }
   };
 
@@ -201,12 +203,13 @@ export function PatientProfile({
     if (confirmed) {
       try {
         await deletePatient(patientId);
+        toast.success("Patient deleted successfully");
         if (onDeleted) {
           onDeleted();
         }
       } catch (error) {
         console.error("Failed to delete patient:", error);
-        // TODO: Show error toast
+        toast.error("Failed to delete patient");
       }
     }
   };

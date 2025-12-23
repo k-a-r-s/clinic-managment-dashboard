@@ -5,9 +5,21 @@ import type { Medication } from './PrescriptionsLayout';
 
 interface PrescriptionPrintPreviewProps {
   medications: Medication[];
+  patientName: string;
+  age?: string;
+  gender?: string;
+  requestDate?: string;
+  requestDoctor?: string;
 }
 
-const PrescriptionPrintPreview: React.FC<PrescriptionPrintPreviewProps> = ({ medications }) => {
+const PrescriptionPrintPreview: React.FC<PrescriptionPrintPreviewProps> = ({
+  medications,
+  patientName,
+  age = "",
+  gender = "",
+  requestDate = "",
+  requestDoctor = ""
+}) => {
   const filledMedications = medications.filter(med => med.name.trim() !== '');
   const hasContent = filledMedications.length > 0;
 
@@ -21,7 +33,7 @@ const PrescriptionPrintPreview: React.FC<PrescriptionPrintPreviewProps> = ({ med
 
         {/* Preview Content */}
         <div className="p-6">
-          <div className="bg-white border-2 border-gray-200 rounded-lg p-10 min-h-[600px] max-h-[800px] overflow-y-auto">
+          <div id="prescription-print-area" className="bg-white border-2 border-gray-200 rounded-lg p-10 min-h-[600px] max-h-[800px] overflow-y-auto">
             {/* Logo and Header */}
             <div className="text-center mb-8 pb-6 border-b-2 border-teal-600">
               <div className="flex justify-center mb-3">
@@ -44,27 +56,24 @@ const PrescriptionPrintPreview: React.FC<PrescriptionPrintPreviewProps> = ({ med
             <div className="grid grid-cols-2 gap-4 mb-8 text-sm">
               <div>
                 <span className="font-semibold">Patient Name:</span>
-                <span className="ml-2">John Michael Doe</span>
+                <span className="ml-2">{patientName || '—'}</span>
               </div>
-              <div>
-                <span className="font-semibold">Patient ID:</span>
-                <span className="ml-2">HD-2024-1234</span>
-              </div>
+              {/* Patient ID removed from print per requirements */}
               <div>
                 <span className="font-semibold">Age:</span>
-                <span className="ml-2">58 years</span>
+                <span className="ml-2">{age ? `${age} years` : '—'}</span>
               </div>
               <div>
                 <span className="font-semibold">Gender:</span>
-                <span className="ml-2">Male</span>
+                <span className="ml-2">{gender || '—'}</span>
               </div>
               <div>
                 <span className="font-semibold">Request Date:</span>
-                <span className="ml-2">November 30, 2025</span>
+                <span className="ml-2">{requestDate || '—'}</span>
               </div>
               <div>
                 <span className="font-semibold">Requesting Doctor:</span>
-                <span className="ml-2">Dr. Sarah Johnson</span>
+                <span className="ml-2">{requestDoctor || '—'}</span>
               </div>
             </div>
 

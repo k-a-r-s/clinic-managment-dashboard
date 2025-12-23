@@ -42,7 +42,8 @@ export const getPatientById = async (id: number): Promise<Patient> => {
 
   // Uncomment to use real API:
   const response = await axiosInstance.get(`/patients/${id}`);
-  return response.data;
+  const body = response.data;
+  return body?.data ?? body;
 };
 
 export const createPatient = async (

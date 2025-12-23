@@ -120,7 +120,8 @@ export default function MachinesTable({
   searchTerm,
   selectedRoom,
   selectedStatus,
-  
+  refreshKey,
+  onAddMachine,
 }: MachinesTableProps) {
   const [machines, setMachines] = useState<Machine[]>(initialMachines)
   const [deactivateModal, setDeactivateModal] = useState<{isOpen: boolean; machineId: string}>({
@@ -134,10 +135,13 @@ export default function MachinesTable({
 
   const filteredMachines = machines.filter((machine) => {
     const matchesSearch =
-      machine.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      machine.room.toLowerCase().includes(searchTerm.toLowerCase())
+      (machine.machineId ?? machine.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (machine.roomDisplay ?? machine.room ?? "").toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesRoom = selectedRoom === "all" || machine.room.includes(selectedRoom)
+    const matchesRoom =
+      selectedRoom === "all" ||
+      machine.room === selectedRoom ||
+      (machine.roomDisplay ?? "").includes(selectedRoom)
     const matchesStatus = selectedStatus === "all" || machine.status === selectedStatus
 
     return matchesSearch && matchesRoom && matchesStatus

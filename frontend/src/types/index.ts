@@ -180,22 +180,6 @@ export interface Room {
 
 
 // Appointment Types
-export interface Appointment {
-  id: number;
-  patientId: string;
-  doctorId: string;
-  roomId?: number;
-  createdByReceptionistId?: string;
-  createdByDoctorId?: string;
-  appointmentDate: string;
-  estimatedDurationInMinutes: number; // in minutes
-  actualDuration?: number;
-  status: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
-  notes?: string;
-  reason?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 export type AppointmentStatus =
   | "SCHEDULED"
@@ -203,6 +187,24 @@ export type AppointmentStatus =
   | "COMPLETED"
   | "CANCELED"
   | "NO_SHOW";
+
+
+export interface Appointment {
+  id: number;
+  patientId: string;
+  doctorId: string;
+  roomId?: string;
+  createdByReceptionistId?: string;
+  createdByDoctorId?: string;
+  appointmentDate: string;
+  estimatedDurationInMinutes: number; // in minutes
+  actualDuration?: number;
+  status: AppointmentStatus;
+  notes?: string;
+  reason?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export interface AppointmentFormData {
   patientId: string;

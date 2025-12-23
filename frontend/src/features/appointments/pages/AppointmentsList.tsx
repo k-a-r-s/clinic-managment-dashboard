@@ -130,6 +130,7 @@ export function AppointmentsList({
   };
 
   const formatDate = (dateString: string) => {
+    console.log(dateString)
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -152,7 +153,7 @@ export function AppointmentsList({
       header: "Date",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm">{formatDate(appointment.appointmentDate)}</span>
+        <span className="text-sm text-gray-600">{formatDate(appointment.appointementDate)}</span>
       ),
     },
     {
@@ -187,16 +188,6 @@ export function AppointmentsList({
       header: "Status",
       className: "text-xs",
       render: (appointment) => getStatusBadge(appointment.status),
-    },
-    {
-      key: "reason",
-      header: "Reason",
-      className: "text-xs",
-      render: (appointment) => (
-        <span className="text-sm text-gray-600 line-clamp-1">
-          {appointment.reason || "N/A"}
-        </span>
-      ),
     },
     {
       key: "actions",

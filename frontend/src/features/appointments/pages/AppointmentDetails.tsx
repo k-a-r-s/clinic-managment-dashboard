@@ -23,7 +23,7 @@ import type {
 } from "../../../types";
 
 interface AppointmentDetailsProps {
-  appointmentId: number;
+  appointmentId: string;
   initialEditMode?: boolean;
   onBack?: () => void;
   onDeleted?: () => void;
@@ -47,12 +47,12 @@ export function AppointmentDetails({
     []
   );
   const [formData, setFormData] = useState<AppointmentFormData>({
-    date: "",
-    estimatedDuration: "",
+    appointmentDate: "",
+    estimatedDurationInMinutes: 0,
     doctorId: "",
     patientId: "",
-    roomNumber: 0,
-    status: "scheduled",
+    roomId: "",
+    status: "SCHEDULED",
     reason: "",
   });
 
@@ -73,12 +73,12 @@ export function AppointmentDetails({
       setDoctors(doctorsData.map((d) => ({ id: d.id, name: d.name })));
       setPatients(patientsData.map((p) => ({ id: p.id, name: p.name })));
       setFormData({
-        date: appointmentData.date,
-        estimatedDuration: appointmentData.estimatedDuration || "",
+        appointmentDate: appointmentData.appointmentDate,
+        estimatedDurationInMinutes: appointmentData.estimatedDurationInMinutes || 0,
         doctorId: appointmentData.doctorId,
         patientId: appointmentData.patientId,
-        roomNumber: appointmentData.roomNumber || 0,
-        status: appointmentData.status || "scheduled",
+        roomId: appointmentData.roomId || "",
+        status: appointmentData.status || "SCHEDULED",
         reason: appointmentData.reason || "",
       });
     } catch (error) {
@@ -105,12 +105,12 @@ export function AppointmentDetails({
     if (appointment) {
       // Reset form data to original values
       setFormData({
-        date: appointment.date,
-        estimatedDuration: appointment.estimatedDuration || "",
+        appointmentDate: appointment.appointmentDate,
+        estimatedDurationInMinutes: appointment.estimatedDurationInMinutes || 0,
         doctorId: appointment.doctorId,
         patientId: appointment.patientId,
-        roomNumber: appointment.roomNumber || 0,
-        status: appointment.status || "scheduled",
+        roomId: appointment.roomId || "",
+        status: appointment.status || "SCHEDULED",
         reason: appointment.reason || "",
       });
     }

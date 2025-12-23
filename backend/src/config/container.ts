@@ -24,6 +24,7 @@ import { GetMachineByIdUseCase } from '../application/use-cases/machines/GetMach
 import { UpdateMachineUseCase } from '../application/use-cases/machines/UpdateMachineUseCase';
 import { DeactivateMachineUseCase } from '../application/use-cases/machines/DeactivateMachineUseCase';
 import { GetMachineStatsUseCase } from '../application/use-cases/machines/GetMachineStatsUseCase';
+import { GetMachineStatsFormattedUseCase } from '../application/use-cases/machines/GetMachineStatsFormattedUseCase';
 import { MachineController } from '../interface/controllers/machineController';
 
 // Use Cases - Doctor
@@ -87,7 +88,6 @@ const appointmentHistoryRepository = new AppointmentHistoryRepository();
 
 // Services
 const userAuthService = new UserAuthService(userRepository, authRepository);
-
 // Use Cases - Doctor
 const getDoctorsListUseCase = new GetDoctorsListUseCase(doctorRepository);
 const getDoctorUseCase = new GetDoctorUseCase(doctorRepository);
@@ -144,6 +144,7 @@ const getMachineByIdUseCase = new GetMachineByIdUseCase(machineRepository);
 const updateMachineUseCase = new UpdateMachineUseCase(machineRepository);
 const deactivateMachineUseCase = new DeactivateMachineUseCase(machineRepository);
 const getMachineStatsUseCase = new GetMachineStatsUseCase(machineRepository);
+const getMachineStatsFormattedUseCase = new GetMachineStatsFormattedUseCase(machineRepository);
 
 // Use Cases - Appointment History
 const getAppointmentHistoryUseCase = new GetAppointmentHistoryforPatientUseCase(appointmentHistoryRepository, appointementRepository);
@@ -211,8 +212,9 @@ export const machineController = new MachineController(
     getAllMachinesUseCase,
     getMachineByIdUseCase,
     updateMachineUseCase,
-    deactivateMachineUseCase
-    , getMachineStatsUseCase
+    deactivateMachineUseCase,
+    getMachineStatsUseCase,
+    getMachineStatsFormattedUseCase
 );
 
 

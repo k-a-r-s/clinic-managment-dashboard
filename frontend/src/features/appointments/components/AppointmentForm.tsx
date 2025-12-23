@@ -22,6 +22,7 @@ interface AppointmentFormProps {
   submitLabel?: string;
   doctors?: Array<{ id: string; name: string }>;
   patients?: Array<{ id: string; name: string }>;
+  rooms?: Array<{ id: string; name: string }>;
 }
 
 export function AppointmentForm({
@@ -32,15 +33,16 @@ export function AppointmentForm({
   submitLabel = "Create Appointment",
   doctors = [],
   patients = [],
+  rooms = []
 }: AppointmentFormProps) {
   const [formData, setFormData] = useState<AppointmentFormData>({
     date: initialData.date || "",
     estimatedDuration: initialData.estimatedDuration || "",
     doctorId: initialData.doctorId || "",
     patientId: initialData.patientId || "",
-    roomNumber: initialData.roomNumber || 0,
     status: initialData.status || "scheduled",
     reason: initialData.reason || "",
+    roomId: initialData.roomId || "",
   });
 
   const [errors, setErrors] = useState<
@@ -78,6 +80,10 @@ export function AppointmentForm({
 
     if (!formData.reason.trim()) {
       newErrors.reason = "Reason is required";
+    }
+
+    if (!formData.roomId.trim()) {
+      newErrors.reason = "roomid is required";
     }
 
     setErrors(newErrors);
@@ -196,17 +202,31 @@ export function AppointmentForm({
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="roomNumber">Room Number</Label>
-            <Input
-              id="roomNumber"
-              type="number"
-              placeholder="101"
-              value={formData.roomNumber}
-              onChange={(e) =>
-                handleInputChange("roomNumber", parseInt(e.target.value) || 0)
-              }
-            />
+<div className="space-y-2">
+            <Label htmlFor="room">
+              Room <span className="text-red-500">*</span>
+            </Label>
+            <Select
+              value={formData.roomId}
+              onValueChange={(value) => handleInputChange("roomId", value)}
+            >
+              <SelectTrigger
+                id="room"
+                className={errors.roomId ? "border-red-500" : ""}
+              >
+                <SelectValue placeholder="Select room" />
+              </SelectTrigger>
+              <SelectContent>
+                {rooms.map((room) => (
+                  <SelectItem key={room.id} value={room.id}>
+                    {room.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.roomId && (
+              <p className="text-sm text-red-500">{errors.roomId}</p>
+            )}
           </div>
 
           <div className="space-y-2">

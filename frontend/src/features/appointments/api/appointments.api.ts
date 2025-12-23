@@ -20,6 +20,7 @@ export const getAppointmentById = async (
 export const createAppointment = async (
   data: AppointmentFormData
 ): Promise<Appointment> => {
+  console.log("kill meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" , data)
   const response = await axiosInstance.post("/appointments", data);
   return response.data;
 };

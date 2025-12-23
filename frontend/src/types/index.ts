@@ -15,6 +15,7 @@ export interface UserProfile {
 
 // Patient Types
 export interface Patient {
+  name: any;
   id: number;
   email: string;
   firstName: string;
@@ -120,6 +121,7 @@ export interface LabResult {
 
 // Doctor Types
 export interface Doctor {
+  name: any;
   id:  string;
   firstName: string;
   lastName: string;
@@ -166,6 +168,7 @@ export interface MachineFormData {
 
 // Room Types
 export interface Room {
+  status: any;
   id: string;
   roomNumber: string;
   type?: string;
@@ -194,12 +197,12 @@ export interface Appointment {
 }
 
 export interface AppointmentFormData {
-  patientId: number;
-  doctorId: number;
-  roomId?: number;
+  patientId: string;
+  doctorId: string;
+  roomId?: string;
   appointmentDate: string;
   estimatedDuration: number;
-  status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
+  status?: "SCHEDULED" | "in-progress" | "COMPLETED" | "CANCELED" | "no-show";
   notes?: string;
   reasonForVisit?: string;
 }

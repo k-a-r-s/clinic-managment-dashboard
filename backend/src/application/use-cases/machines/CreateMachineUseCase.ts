@@ -17,7 +17,7 @@ export class CreateMachineUseCase {
       nextMaintenanceDate: data.nextMaintenanceDate,
       
       isActive: data.isActive ?? true,
-      room: data.room ?? null,
+      roomId: data.roomId ?? null,
     });
 
     return this.machineRepository.createMachine(machine);

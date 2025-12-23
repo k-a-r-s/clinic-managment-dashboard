@@ -7,7 +7,8 @@ export interface MachineProps {
   lastMaintenanceDate: string; // YYYY-MM-DD
   nextMaintenanceDate: string; // YYYY-MM-DD
   isActive: boolean;
-  room?: string | null;
+  // store room reference as UUID to normalize (room id)
+  roomId?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -48,8 +49,8 @@ export class Machine {
     return this.props.isActive;
   }
 
-  public getRoom(): string | undefined | null {
-    return this.props.room;
+  public getRoomId(): string | undefined | null {
+    return this.props.roomId;
   }
 
   public toJson() {
@@ -62,7 +63,7 @@ export class Machine {
       lastMaintenanceDate: this.props.lastMaintenanceDate,
       nextMaintenanceDate: this.props.nextMaintenanceDate,
       isActive: this.props.isActive,
-      room: this.props.room,
+      roomId: this.props.roomId,
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
     };

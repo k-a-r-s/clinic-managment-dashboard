@@ -19,7 +19,7 @@ export class UpdateMachineUseCase {
       lastMaintenanceDate: updateData.lastMaintenanceDate ?? existing.getLastMaintenanceDate(),
       nextMaintenanceDate: updateData.nextMaintenanceDate ?? existing.getNextMaintenanceDate(),
       isActive: typeof updateData.isActive === 'boolean' ? updateData.isActive : existing.getIsActive(),
-      room: updateData.room ?? existing.getRoom(),
+      roomId: updateData.roomId ?? existing.getRoomId(),
       createdAt: (existing as any).toJson().createdAt,
       updatedAt: (existing as any).toJson().updatedAt,
     });

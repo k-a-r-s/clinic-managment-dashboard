@@ -8,7 +8,9 @@ import AddMachineModal from "./AddMachineModal"
 
 interface Machine { 
   id: string
+  machineId?: string
   room: string
+  roomDisplay?: string
   status: "in-use" | "available" | "maintenance" | "out-of-service"
   lastMaintenance: string
   nextMaintenance: string
@@ -110,6 +112,8 @@ interface MachinesTableProps {
   searchTerm: string
   selectedRoom: string
   selectedStatus: string
+  refreshKey?: number
+  onAddMachine?: (data: any) => void
 }
 
 export default function MachinesTable({
@@ -147,22 +151,42 @@ export default function MachinesTable({
     loadMachines();
   }, [])
 
+  useEffect(() => {
+    // reload when parent signals a refresh (e.g., new machine added)
+    if (typeof refreshKey !== 'undefined') {
+      loadMachines();
+    }
+  }, [refreshKey])
+
   const loadMachines = async () => {
     try {
       // loading flag removed; keep minimal UI updates
-      const data = await getMachines()
+      // Fetch machines and rooms in parallel
+      const [data, rooms] = await Promise.all([
+        getMachines(),
+        import("../../rooms/api/rooms.api").then((m) => m.getRooms()),
+      ])
+
+      // map rooms by id for display
+      const roomLookup = new Map(rooms.map((r: any) => [r.id, r.roomNumber]))
+
       // map API fields to UI shape
       const mapped = data.map((m) => ({
-        id: m.machineId ?? m.id,
+        // Keep the true DB UUID as `id` (used for updates/deletes) and expose
+        // the human-friendly `machineId` separately for display (e.g. "HD-MAC-101").
+        id: m.id,
+        machineId: m.machineId ?? m.machine_id ?? m.id,
+        // m.room is stored as room id (UUID) — keep it as `room` and add `roomDisplay`
         room: m.room ?? "",
+        roomDisplay: roomLookup.get(m.room) ?? m.room ?? "",
         status: m.status as Machine['status'],
         lastMaintenance: new Date(m.lastMaintenanceDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
         nextMaintenance: new Date(m.nextMaintenanceDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
         dueStatus: isDueSoon(m.nextMaintenanceDate) ? ('due-soon' as const) : undefined,
         manufacturer: m.manufacturer ?? undefined,
         model: m.model ?? undefined,
-      
       }))
+
       setMachines(mapped)
     } catch (error) {
       console.error('Failed to load machines:', error)
@@ -206,7 +230,7 @@ export default function MachinesTable({
     const doUpdate = async () => {
       try {
         await updateMachine(data.id, {
-              room: data.room,
+              roomId: data.room,
               status: data.status,
               lastMaintenanceDate: new Date(data.lastMaintenance).toISOString(),
               nextMaintenanceDate: new Date(data.nextMaintenance).toISOString(),
@@ -285,11 +309,11 @@ export default function MachinesTable({
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${status.dotColor}`}></div>
-                        <span className="font-semibold text-gray-900">{machine.id}</span>
+                        <span className="font-semibold text-gray-900">{machine.machineId ?? machine.id}</span>
                       </div>
                     </td>
                     
-                    <td className="px-6 py-4 text-gray-900 text-sm">{machine.room}</td>
+                    <td className="px-6 py-4 text-gray-900 text-sm">{machine.roomDisplay ?? machine.room}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <span

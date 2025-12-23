@@ -13,7 +13,7 @@ export class MachineRepository implements IMachineRepository {
       last_maintenance_date: machine.getLastMaintenanceDate(),
       next_maintenance_date: machine.getNextMaintenanceDate(),
       is_active: machine.getIsActive(),
-      room: machine.getRoom(),
+      room_id: machine.getRoomId(),
     };
     // include machine_id only if provided (DB has default generator)
     if (machine.getMachineId()) {
@@ -42,7 +42,7 @@ export class MachineRepository implements IMachineRepository {
       lastMaintenanceDate: data.last_maintenance_date,
       nextMaintenanceDate: data.next_maintenance_date,
       isActive: data.is_active,
-      room: data.room,
+      roomId: data.room_id,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     });
@@ -78,7 +78,15 @@ export class MachineRepository implements IMachineRepository {
   }
 
   async getAllMachines(): Promise<Machine[]> {
-    const { data, error } = await supabaseAdmin.from("machines").select();
+  async getAllMachines(filters?: { status?: string; roomId?: string }): Promise<Machine[]> {
+    let query = supabaseAdmin.from("machines").select();
+    if (filters?.status) {
+      query = query.eq("status", filters.status);
+    }
+    if (filters?.roomId) {
+      query = query.eq("room_id", filters.roomId);
+    }
+    const { data, error } = await query;
     if (error) {
       throw new DatabaseError(error);
     }
@@ -96,7 +104,7 @@ export class MachineRepository implements IMachineRepository {
         lastMaintenanceDate: m.last_maintenance_date,
         nextMaintenanceDate: m.next_maintenance_date,
         isActive: m.is_active,
-        room: m.room,
+        roomId: m.room_id,
         createdAt: m.created_at,
         updatedAt: m.updated_at,
       })
@@ -115,7 +123,7 @@ export class MachineRepository implements IMachineRepository {
         last_maintenance_date: machine.getLastMaintenanceDate(),
         next_maintenance_date: machine.getNextMaintenanceDate(),
         is_active: machine.getIsActive(),
-        room: machine.getRoom(),
+        room_id: machine.getRoomId(),
       })
       .eq("id", machine.getId())
       .select()
@@ -137,7 +145,7 @@ export class MachineRepository implements IMachineRepository {
       lastMaintenanceDate: data.last_maintenance_date,
       nextMaintenanceDate: data.next_maintenance_date,
       isActive: data.is_active,
-      room: data.room,
+      roomId: data.room_id,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     });

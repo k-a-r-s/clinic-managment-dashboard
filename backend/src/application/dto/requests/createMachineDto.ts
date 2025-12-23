@@ -12,7 +12,8 @@ export const createMachineSchemaDto = z.object({
     message: "Invalid date",
   }),
   // notes removed per new requirement
-  room: z.string().optional().nullable(),
+  // roomId: reference to rooms.id (UUID)
+  roomId: z.string().uuid('Room ID must be a valid UUID').optional().nullable(),
   isActive: z.boolean().optional(),
 });
 

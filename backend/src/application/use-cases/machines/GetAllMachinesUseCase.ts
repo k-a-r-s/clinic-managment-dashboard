@@ -3,7 +3,7 @@ import { IMachineRepository } from '../../../domain/repositories/IMachineReposit
 export class GetAllMachinesUseCase {
   constructor(private machineRepository: IMachineRepository) {}
 
-  async execute() {
-    return await this.machineRepository.getAllMachines();
+  async execute(filters?: { status?: string; roomId?: string }) {
+    return await this.machineRepository.getAllMachines(filters);
   }
 }

@@ -23,7 +23,8 @@ export class MachineController {
   }
 
   async getMachines(req: AuthRequest, res: Response) {
-    const result = await this.getAllMachinesUseCase.execute();
+    const { status, roomId } = req.query as { status?: string; roomId?: string };
+    const result = await this.getAllMachinesUseCase.execute({ status, roomId });
     return ResponseFormatter.success(res, result.map((m) => m.toJson()), 'Machines retrieved successfully');
   }
 

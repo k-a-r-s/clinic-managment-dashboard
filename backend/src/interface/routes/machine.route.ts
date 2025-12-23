@@ -38,8 +38,9 @@ const router = Router();
  *           format: date
  *         isActive:
  *           type: boolean
- *         room:
+ *         roomId:
  *           type: string
+ *           format: uuid
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -65,8 +66,9 @@ const router = Router();
  *         nextMaintenanceDate:
  *           type: string
  *           format: date
- *         room:
+ *         roomId:
  *           type: string
+ *           format: uuid
  *         isActive:
  *           type: boolean
  *       required:
@@ -101,11 +103,12 @@ const router = Router();
  *     security:
  *       - bearerAuth: []
  *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CreateMachineDto'
+ *       - in: query
+ *         name: roomId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by room id (UUID)
  *     responses:
  *       201:
  *         description: Machine created successfully
@@ -238,6 +241,10 @@ const router = Router();
  *       404:
  *         description: Machine not found
  */
+/** Create machine */
+router.post(
+  "/",
+  authMiddleware,
   asyncWrapper(machineController.createMachine.bind(machineController))
 );
 

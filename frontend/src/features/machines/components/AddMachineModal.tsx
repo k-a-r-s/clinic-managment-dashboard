@@ -1,4 +1,9 @@
 import { X, Monitor, MapPin, Calendar, AlertCircle, FileText } from "lucide-react"
+import { useState, useEffect } from "react"
+import { toast } from "react-hot-toast"
+import { createMachine } from "../api/machines.api"
+import { getRooms } from "../../rooms/api/rooms.api"
+import type { Room } from "../../../types"
 
 interface AddMachineModalProps {
   isOpen: boolean
@@ -17,12 +22,24 @@ interface AddMachineModalProps {
 
 export default function AddMachineModal({ isOpen, onClose, editData, onSubmit }: AddMachineModalProps) {
   if (!isOpen) return null
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [rooms, setRooms] = useState<Room[]>([])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await getRooms()
+        setRooms(data)
+      } catch (err) {
+        console.error('Failed to load rooms', err)
+      }
+    }
+    load()
+  }, [])
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
-    const data = {
-      machineId: formData.get("machineId"),
+    const data: any = {
       room: formData.get("room"),
       status: formData.get("status"),
       manufacturer: formData.get("manufacturer"),
@@ -30,8 +47,36 @@ export default function AddMachineModal({ isOpen, onClose, editData, onSubmit }:
       lastMaintenance: formData.get("lastMaintenance"),
       nextMaintenance: formData.get("nextMaintenance"),
     }
-    onSubmit(data)
-    onClose()
+
+    // If editing, just forward to parent (parent handles update)
+    if (editData) {
+      data.id = editData.id
+      onSubmit(data)
+      onClose()
+      return
+    }
+
+    // Create flow — call API directly and show toast
+    try {
+      setIsSubmitting(true)
+      const payload: any = {
+        roomId: String(data.room ?? ""),
+        status: String(data.status ?? "available") as any,
+        manufacturer: data.manufacturer ? String(data.manufacturer) : undefined,
+        model: data.model ? String(data.model) : undefined,
+        lastMaintenanceDate: new Date(String(data.lastMaintenance)).toISOString(),
+        nextMaintenanceDate: new Date(String(data.nextMaintenance)).toISOString(),
+      }
+      const created = await createMachine(payload as any)
+      toast.success("Machine added")
+      onSubmit(created)
+      onClose()
+    } catch (err) {
+      console.error("Failed to create machine", err)
+      toast.error("Failed to add machine")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -61,21 +106,22 @@ export default function AddMachineModal({ isOpen, onClose, editData, onSubmit }:
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Machine ID */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Monitor className="w-4 h-4 text-teal-600" />
-                  Machine ID *
-                </label>
-                <input
-                  type="text"
-                  name="machineId"
-                  defaultValue={editData?.id}
-                  placeholder="e.g., HD-MAC-101"
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white"
-                />
-              </div>
+              {/* Machine ID: displayed only when editing (read-only) */}
+              {editData && (
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <Monitor className="w-4 h-4 text-teal-600" />
+                    Machine ID
+                  </label>
+                  <input
+                    type="text"
+                    name="machineId"
+                    defaultValue={editData?.id}
+                    readOnly
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed"
+                  />
+                </div>
+              )}
 
               {/* Serial Number removed per requirement */}
 
@@ -92,13 +138,9 @@ export default function AddMachineModal({ isOpen, onClose, editData, onSubmit }:
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white"
                 >
                   <option value="">Select room</option>
-                  <option value="Room 1A">Room 1A</option>
-                  <option value="Room 1B">Room 1B</option>
-                  <option value="Room 1C">Room 1C</option>
-                  <option value="Room 2A">Room 2A</option>
-                  <option value="Room 2B">Room 2B</option>
-                  <option value="Room 3A">Room 3A</option>
-                  <option value="Room 3B">Room 3B</option>
+                  {rooms.map((r) => (
+                    <option key={r.id} value={r.id}>{r.roomNumber}</option>
+                  ))}
                 </select>
               </div>
 
@@ -203,10 +245,11 @@ export default function AddMachineModal({ isOpen, onClose, editData, onSubmit }:
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors flex items-center gap-2"
+              disabled={isSubmitting}
+              className={`px-6 py-2.5 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors flex items-center gap-2 ${isSubmitting ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               <FileText className="w-4 h-4" />
-              {editData ? "Update Machine" : "Add Machine"}
+              {editData ? "Update Machine" : isSubmitting ? "Adding..." : "Add Machine"}
             </button>
           </div>
         </form>

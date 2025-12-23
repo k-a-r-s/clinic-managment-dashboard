@@ -17,6 +17,8 @@ export const getMachines = async (): Promise<Machine[]> => {
     
     isActive: m.is_active ?? true,
     room: m.room ?? null,
+    // Accept room from various backends: roomId (API), room_id (DB direct), or legacy room (string)
+    room: m.roomId ?? m.room_id ?? m.room ?? null,
     createdAt: m.created_at,
     updatedAt: m.updated_at,
   }));

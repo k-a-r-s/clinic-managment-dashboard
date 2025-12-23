@@ -7,6 +7,7 @@ import {
   FileBarChart,
   Pill,
   Monitor,
+  MapPin,
   UserPlus,
   Shield,
   LogOut,
@@ -33,7 +34,8 @@ interface SidebarProps {
     | "create-appointment"
     | "appointment-details"
     | "calendar-view"
-    | "doctor-availability";
+    | "doctor-availability"
+    | "rooms";
   onNavigate: (
     page:
       | "dashboard"
@@ -53,7 +55,8 @@ interface SidebarProps {
       | "create-appointment"
       | "appointment-details"
       | "calendar-view"
-      | "doctor-availability"
+        | "doctor-availability"
+        | "rooms"
   ) => void;
   collapsed?: boolean;
   onLogout?: () => void;
@@ -77,6 +80,7 @@ export function Sidebar({
       label: "Machines Management",
       page: "machines-management" as const,
     },
+    { icon: MapPin, label: "Rooms", page: "rooms" as const },
     { icon: FileBarChart, label: "Lab Request", page: "lab-request" as const },
     { icon: Pill, label: "Prescriptions", page: "prescription" as const },
     { icon: Users, label: "Patients", page: "patients-list" as const },

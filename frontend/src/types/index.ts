@@ -160,7 +160,18 @@ export interface MachineFormData {
   // notes removed
   // notes removed
   // notes removed
+  // store room by UUID (room id)
   room?: string;
+}
+
+// Room Types
+export interface Room {
+  id: string;
+  roomNumber: string;
+  type?: string;
+  isAvailable?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 

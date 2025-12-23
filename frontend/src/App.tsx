@@ -26,7 +26,6 @@ type PageType =
   | "lab-request"
   | "prescription"
   | "machines-management"
-  | "billing"
   | "settings"
   | "add-user"
   | "roles-permissions"

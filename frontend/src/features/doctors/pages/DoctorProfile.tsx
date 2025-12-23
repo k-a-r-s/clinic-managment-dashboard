@@ -54,7 +54,7 @@ export function DoctorProfile({
         email: data.email,
         phoneNumber: data.phoneNumber,
         specialization: data.specialization,
-        salary: data.salary,
+        salary: data.salary ?? 0,
         isMedicalDirector: data.isMedicalDirector,
       });
     } catch (error) {

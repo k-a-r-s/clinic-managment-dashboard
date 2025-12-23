@@ -107,7 +107,7 @@ export function DoctorsList({
       header: "Salary",
       render: (doctor) => (
         <span className="text-sm text-gray-600">
-          ${doctor.salary.toLocaleString()}
+          {doctor.salary != null ? `$${doctor.salary.toLocaleString()}` : "—"}
         </span>
       ),
     },

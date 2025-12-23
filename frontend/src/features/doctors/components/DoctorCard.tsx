@@ -199,7 +199,7 @@ export function DoctorCard({
             ) : (
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
                 <p className="text-sm text-gray-900">
-                  ${formData.salary.toLocaleString()}
+                  {formData.salary != null ? `$${formData.salary.toLocaleString()}` : "—"}
                 </p>
               </div>
             )}

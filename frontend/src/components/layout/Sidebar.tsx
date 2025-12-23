@@ -1,14 +1,12 @@
 import {
   Home,
   Droplets,
-  FlaskConical,
   Users,
   Calendar,
   Settings,
   FileBarChart,
   Pill,
   Monitor,
-  Receipt,
   UserPlus,
   Shield,
   LogOut,
@@ -22,7 +20,6 @@ interface SidebarProps {
     | "lab-request"
     | "prescription"
     | "machines-management"
-    | "billing"
     | "settings"
     | "add-user"
     | "roles-permissions"
@@ -43,7 +40,6 @@ interface SidebarProps {
       | "lab-request"
       | "prescription"
       | "machines-management"
-      | "billing"
       | "settings"
       | "add-user"
       | "roles-permissions"
@@ -83,8 +79,6 @@ export function Sidebar({
     },
     { icon: FileBarChart, label: "Lab Request", page: "lab-request" as const },
     { icon: Pill, label: "Prescriptions", page: "prescription" as const },
-    { icon: Receipt, label: "Billing & Payments", page: "billing" as const },
-    { icon: FlaskConical, label: "Laboratory", page: null },
     { icon: Users, label: "Patients", page: "patients-list" as const },
     { icon: UserCheck, label: "Doctors", page: "doctors-list" as const },
     {

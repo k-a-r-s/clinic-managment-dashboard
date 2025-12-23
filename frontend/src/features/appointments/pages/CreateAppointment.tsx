@@ -46,7 +46,7 @@ export function CreateAppointment({
         getAvailableRooms()
       ]);
       setDoctors(doctorsData.map((d) => ({ id: d.id, name: `${d.firstName} ${d.lastName}` })));
-      setPatients(patientsData.map((p) => ({ id: p.id, name: `${p.firstName} ${p.lastName}` })));
+      setPatients(patientsData.map((p) => ({ id: p.id.toString(), name: `${p.firstName} ${p.lastName}` })));
       setRooms(roomsData.map((r) => ({ id: r.id, name: r.roomNumber })));
       console.log("gggggggggggggggggg")
       console.log(rooms)

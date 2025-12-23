@@ -10,6 +10,7 @@ import {
 import { PageHeader } from "../../../components/shared/PageHeader";
 import { AppointmentForm } from "../components/AppointmentForm";
 import { createAppointment } from "../api/appointments.api";
+import { toast } from "react-hot-toast";
 import { getDoctors } from "../../doctors/api/doctors.api";
 import { getPatients } from "../../patients/api/patients.api";
 import type { AppointmentFormData } from "../../../types";
@@ -43,7 +44,7 @@ export function CreateAppointment({
       setPatients(patientsData.map((p) => ({ id: p.id, name: p.name })));
     } catch (error) {
       console.error("Failed to load doctors/patients:", error);
-      // TODO: Show error toast
+      toast.error("Failed to load doctors or patients");
     }
   };
 
@@ -56,7 +57,7 @@ export function CreateAppointment({
       }
     } catch (error) {
       console.error("Failed to create appointment:", error);
-      // TODO: Show error toast
+      toast.error("Failed to create appointment");
     } finally {
       setIsLoading(false);
     }

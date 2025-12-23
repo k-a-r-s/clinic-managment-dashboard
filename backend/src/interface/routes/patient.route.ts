@@ -88,6 +88,11 @@ const router = Router();
  *           items:
  *             type: string
  *           description: List of current medications
+ *         medicalFileId:
+ *           type: string
+ *           nullable: true
+ *           format: uuid
+ *           description: The id of the associated medical file for the patient (nullable)
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -113,6 +118,7 @@ const router = Router();
  *         emergencyContactPhone: "+1-555-987-6543"
  *         allergies: ["Penicillin"]
  *         currentMedications: ["Lisinopril 10mg"]
+ *         medicalFileId: null
  *         createdAt: "2024-01-15T10:30:00Z"
  *         updatedAt: "2024-01-15T10:30:00Z"
  */

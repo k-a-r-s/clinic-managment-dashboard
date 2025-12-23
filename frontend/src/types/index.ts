@@ -120,7 +120,7 @@ export interface LabResult {
 
 // Doctor Types
 export interface Doctor {
-  id: number | string;
+  id:  string;
   firstName: string;
   lastName: string;
   email: string;
@@ -128,6 +128,48 @@ export interface Doctor {
   salary: number;
   isMedicalDirector: boolean;
   specialization: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Machine Types
+export interface Machine {
+  id: string;
+  machineId?: string;
+  manufacturer?: string | null;
+  model?: string | null;
+  status: 'available' | 'in-use' | 'maintenance' | 'out-of-service';
+  lastMaintenanceDate: string;
+  nextMaintenanceDate: string;
+  // notes removed per design
+  // notes removed
+  // notes removed
+  isActive?: boolean;
+  room?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface MachineFormData {
+  machineId?: string;
+  manufacturer?: string;
+  model?: string;
+  status: 'available' | 'in-use' | 'maintenance' | 'out-of-service';
+  lastMaintenanceDate: string;
+  nextMaintenanceDate: string;
+  // notes removed
+  // notes removed
+  // notes removed
+  // store room by UUID (room id)
+  room?: string;
+}
+
+// Room Types
+export interface Room {
+  id: string;
+  roomNumber: string;
+  type?: string;
+  isAvailable?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

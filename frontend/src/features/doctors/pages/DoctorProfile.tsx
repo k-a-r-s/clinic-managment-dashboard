@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,7 +14,7 @@ import { getDoctorById, updateDoctor, deleteDoctor } from "../api/doctors.api";
 import type { Doctor, DoctorFormData } from "../../../types";
 
 interface DoctorProfileProps {
-  doctorId: number;
+  doctorId: string;
   initialEditMode?: boolean;
   onBack?: () => void;
   onDeleted?: () => void;
@@ -53,12 +54,12 @@ export function DoctorProfile({
         email: data.email,
         phoneNumber: data.phoneNumber,
         specialization: data.specialization,
-        salary: data.salary,
+        salary: data.salary ?? 0,
         isMedicalDirector: data.isMedicalDirector,
       });
     } catch (error) {
       console.error("Failed to load doctor:", error);
-      // TODO: Show error toast
+      toast.error("Failed to load doctor");
     } finally {
       setIsLoading(false);
     }
@@ -67,11 +68,12 @@ export function DoctorProfile({
   const handleSave = async () => {
     try {
       await updateDoctor(doctorId, formData);
+      toast.success("Doctor updated successfully");
       setIsEditMode(false);
       loadDoctor(); // Reload doctor data
     } catch (error) {
       console.error("Failed to update doctor:", error);
-      // TODO: Show error toast
+      toast.error("Failed to update doctor");
     }
   };
 
@@ -101,12 +103,13 @@ export function DoctorProfile({
     if (confirmed) {
       try {
         await deleteDoctor(doctorId);
+        toast.success("Doctor deleted successfully");
         if (onDeleted) {
           onDeleted();
         }
       } catch (error) {
         console.error("Failed to delete doctor:", error);
-        // TODO: Show error toast
+        toast.error("Failed to delete doctor");
       }
     }
   };

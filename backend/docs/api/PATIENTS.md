@@ -83,6 +83,7 @@
     insuranceNumber: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
+      medicalFileId: string | null;   // UUID of the medical file or null
     allergies: string[] | null;
     currentMedications: string[] | null;
     createdAt: string;              // ISO 8601 date-time
@@ -135,6 +136,7 @@
       insuranceNumber: string;
       emergencyContactName: string;
       emergencyContactPhone: string;
+        medicalFileId: string | null;
       allergies: string[] | null;
       currentMedications: string[] | null;
       createdAt: string;
@@ -192,6 +194,7 @@
     insuranceNumber: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
+      medicalFileId: string | null;
     allergies: string[] | null;
     currentMedications: string[] | null;
     createdAt: string;
@@ -284,6 +287,7 @@
     insuranceNumber: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
+      medicalFileId: string | null;
     allergies: string[] | null;
     currentMedications: string[] | null;
     createdAt: string;

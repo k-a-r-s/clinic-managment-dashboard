@@ -6,17 +6,17 @@ import type { Medication } from './PrescriptionsLayout';
 interface PrescriptionsHeaderProps {
   medications: Medication[];
   onClearAll: () => void;
-  onSave: () => void;
   onPrintRequestForm: () => void;
   onPrintPrescription: () => void;
+  patientName?: string;
 }
 
 const PrescriptionsHeader: React.FC<PrescriptionsHeaderProps> = ({
   medications,
   onClearAll,
-  onSave,
   onPrintRequestForm,
-  onPrintPrescription
+  onPrintPrescription,
+  patientName,
 }) => {
   const hasContent = medications.some(
     med => med.name || med.dosage || med.frequency || med.duration || med.notes
@@ -54,18 +54,11 @@ const PrescriptionsHeader: React.FC<PrescriptionsHeaderProps> = ({
             Clear All
           </button>
           
-          <button
-            onClick={onSave}
-            disabled={!hasContent}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save size={18} />
-            Save
-          </button>
+          {/* Save button removed per requirements */}
           
           <button
             onClick={onPrintRequestForm}
-            disabled={!hasContent}
+            disabled={!hasContent || !patientName || patientName.trim() === ""}
             className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 border border-teal-600 rounded-lg hover:bg-teal-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FileText size={18} />

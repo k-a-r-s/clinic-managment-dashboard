@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Mail, Lock, Info } from 'lucide-react';
 import { Logo } from '../components/Logo';
 import { BrandSection } from '../components/BrandSection';
@@ -43,7 +44,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onForgotPassword , onLogin
       // Notify parent (App) to refetch server-side auth if needed
       onLoginSuccess?.();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Login failed');
+      toast.error(error instanceof Error ? error.message : 'Login failed');
     } finally {
       setLoading(false);
     }

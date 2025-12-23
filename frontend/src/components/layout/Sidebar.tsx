@@ -1,14 +1,13 @@
 import {
   Home,
   Droplets,
-  FlaskConical,
   Users,
   Calendar,
   Settings,
   FileBarChart,
   Pill,
   Monitor,
-  Receipt,
+  MapPin,
   UserPlus,
   Shield,
   LogOut,
@@ -22,7 +21,6 @@ interface SidebarProps {
     | "lab-request"
     | "prescription"
     | "machines-management"
-    | "billing"
     | "settings"
     | "add-user"
     | "roles-permissions"
@@ -36,14 +34,14 @@ interface SidebarProps {
     | "create-appointment"
     | "appointment-details"
     | "calendar-view"
-    | "doctor-availability";
+    | "doctor-availability"
+    | "rooms";
   onNavigate: (
     page:
       | "dashboard"
       | "lab-request"
       | "prescription"
       | "machines-management"
-      | "billing"
       | "settings"
       | "add-user"
       | "roles-permissions"
@@ -57,7 +55,8 @@ interface SidebarProps {
       | "create-appointment"
       | "appointment-details"
       | "calendar-view"
-      | "doctor-availability"
+        | "doctor-availability"
+        | "rooms"
   ) => void;
   collapsed?: boolean;
   onLogout?: () => void;
@@ -81,10 +80,9 @@ export function Sidebar({
       label: "Machines Management",
       page: "machines-management" as const,
     },
+    { icon: MapPin, label: "Rooms", page: "rooms" as const },
     { icon: FileBarChart, label: "Lab Request", page: "lab-request" as const },
     { icon: Pill, label: "Prescriptions", page: "prescription" as const },
-    { icon: Receipt, label: "Billing & Payments", page: "billing" as const },
-    { icon: FlaskConical, label: "Laboratory", page: null },
     { icon: Users, label: "Patients", page: "patients-list" as const },
     { icon: UserCheck, label: "Doctors", page: "doctors-list" as const },
     {

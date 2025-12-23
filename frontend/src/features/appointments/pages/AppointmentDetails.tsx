@@ -8,6 +8,7 @@ import {
   BreadcrumbSeparator,
 } from "../../../components/ui/breadcrumb";
 import { Loader } from "../../../components/shared/Loader";
+import { toast } from "react-hot-toast";
 import { AppointmentCard } from "../components/AppointmentCard";
 import {
   getAppointmentById,
@@ -82,7 +83,7 @@ export function AppointmentDetails({
       });
     } catch (error) {
       console.error("Failed to load appointment:", error);
-      // TODO: Show error toast
+      toast.error("Failed to load appointment");
     } finally {
       setIsLoading(false);
     }
@@ -91,11 +92,12 @@ export function AppointmentDetails({
   const handleSave = async () => {
     try {
       await updateAppointment(appointmentId, formData);
+      toast.success("Appointment updated successfully");
       setIsEditMode(false);
       loadData(); // Reload appointment data
     } catch (error) {
       console.error("Failed to update appointment:", error);
-      // TODO: Show error toast
+      toast.error("Failed to update appointment");
     }
   };
 
@@ -125,12 +127,13 @@ export function AppointmentDetails({
     if (confirmed) {
       try {
         await deleteAppointment(appointmentId);
+        toast.success("Appointment deleted successfully");
         if (onDeleted) {
           onDeleted();
         }
       } catch (error) {
         console.error("Failed to delete appointment:", error);
-        // TODO: Show error toast
+        toast.error("Failed to delete appointment");
       }
     }
   };

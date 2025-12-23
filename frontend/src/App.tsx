@@ -176,6 +176,7 @@ function App() {
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <TopBar
+          user={user}
           onLogout={() => logout()}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />

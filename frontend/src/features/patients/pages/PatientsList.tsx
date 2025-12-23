@@ -24,8 +24,8 @@ const calculateAge = (birthDate: string): number => {
 };
 
 interface PatientsListPageProps {
-  onViewPatient?: (patientId: number) => void;
-  onEditPatient?: (patientId: number) => void;
+  onViewPatient?: (patientId: string) => void;
+  onEditPatient?: (patientId: string) => void;
   onRegisterNew?: () => void;
 }
 
@@ -37,7 +37,7 @@ export function PatientsList({
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
     null
   );
 
@@ -70,13 +70,13 @@ export function PatientsList({
     return matchesSearch;
   });
 
-  const handleViewPatient = (patientId: number) => {
+  const handleViewPatient = (patientId: string) => {
     if (onViewPatient) {
       onViewPatient(patientId);
     }
   };
 
-  const handleEditPatient = (patientId: number) => {
+  const handleEditPatient = (patientId: string) => {
     if (onEditPatient) {
       onEditPatient(patientId);
     }
@@ -167,7 +167,7 @@ export function PatientsList({
             variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
-              handleEditPatient(patient.id);
+              handleEditPatient(String(patient.id));
             }}
             className="gap-1 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
           >

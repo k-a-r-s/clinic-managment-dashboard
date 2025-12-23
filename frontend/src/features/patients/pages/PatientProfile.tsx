@@ -95,7 +95,7 @@ function CollapsibleSubsection({
 }
 
 interface PatientProfileProps {
-  patientId: number;
+  patientId: string;
   initialEditMode?: boolean;
   onBack?: () => void;
   onDeleted?: () => void;

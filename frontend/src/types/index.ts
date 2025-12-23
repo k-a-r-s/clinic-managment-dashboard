@@ -16,7 +16,7 @@ export interface UserProfile {
 // Patient Types
 export interface Patient {
   name: any;
-  id: number;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;

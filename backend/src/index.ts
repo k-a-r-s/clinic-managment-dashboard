@@ -14,6 +14,7 @@ import appointementRouter from "./interface/routes/appointement.route";
 import medicalFileRouter from "./interface/routes/medicalFile.route";
 import roomRouter from "./interface/routes/room.route";
 import machineRouter from "./interface/routes/machine.route";
+import receptionistRouter from "./interface/routes/receptionist.route";
 const app = express();
 app.use(helmet());
 app.use(
@@ -89,6 +90,9 @@ app.use("/medical-files", medicalFileRouter);
 app.use("/rooms", roomRouter);
 // Machines
 app.use("/machines", machineRouter);
+
+// Receptionists
+app.use("/receptionists", receptionistRouter);
 
 app.use(errorHandler);
 // Start the server

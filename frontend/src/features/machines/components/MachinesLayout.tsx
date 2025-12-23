@@ -24,7 +24,7 @@ export default function MachinesLayout() {
       <MachinesHeader onAddMachine={handleAddMachine} />
 
       {/* Stats Cards */}
-      <MachinesStats />
+      <MachinesStats refreshKey={refreshKey} selectedStatus={selectedStatus} onSelectStatus={(s) => setSelectedStatus(s)} />
 
       {/* Filters */}
       <MachinesFilters
@@ -43,6 +43,7 @@ export default function MachinesLayout() {
         selectedStatus={selectedStatus}
         onAddMachine={handleAddMachine}
         refreshKey={refreshKey}
+        onRefresh={() => setRefreshKey((k) => k + 1)}
       />
     </div>
   );

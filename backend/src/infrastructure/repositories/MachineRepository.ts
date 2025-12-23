@@ -149,6 +149,24 @@ export class MachineRepository implements IMachineRepository {
     });
   }
 
+  async getMachineStats(): Promise<{ total: number; available: number; inUse: number; maintenance: number; outOfService: number }> {
+    const { data, error } = await supabaseAdmin.from('machines').select('status');
+    if (error) {
+      throw new DatabaseError(error);
+    }
+    const counts = { total: 0, available: 0, inUse: 0, maintenance: 0, outOfService: 0 };
+    if (!data) return counts;
+    counts.total = data.length;
+    for (const row of data) {
+      const status = row.status;
+      if (status === 'available') counts.available++;
+      else if (status === 'in-use') counts.inUse++;
+      else if (status === 'maintenance') counts.maintenance++;
+      else if (status === 'out-of-service') counts.outOfService++;
+    }
+    return counts;
+  }
+
   async deactivateMachine(id: string): Promise<void> {
     const { error } = await supabaseAdmin
       .from("machines")

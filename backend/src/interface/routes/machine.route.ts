@@ -256,6 +256,14 @@ router.get(
   asyncWrapper(machineController.getMachines.bind(machineController))
 );
 
+/** Get machines stats */
+router.get(
+  "/stats",
+  authMiddleware,
+  requireRole([Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST]),
+  asyncWrapper(machineController.getStats.bind(machineController))
+);
+
 /** Get machine by id */
 router.get(
   "/:id",

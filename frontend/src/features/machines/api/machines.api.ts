@@ -43,3 +43,15 @@ export const updateMachine = async (id: string, data: Partial<MachineFormData>):
 export const deactivateMachine = async (id: string): Promise<void> => {
   await axiosInstance.patch(`/machines/${id}/deactivate`);
 };
+
+export const getMachineStats = async (): Promise<{
+  total: number;
+  available: number;
+  inUse: number;
+  maintenance: number;
+  outOfService: number;
+}> => {
+  const response = await axiosInstance.get('/machines/stats');
+  const body = response.data;
+  return body?.data ?? body;
+};

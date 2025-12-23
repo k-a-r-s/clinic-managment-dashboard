@@ -22,6 +22,7 @@ import { GetAllMachinesUseCase } from '../application/use-cases/machines/GetAllM
 import { GetMachineByIdUseCase } from '../application/use-cases/machines/GetMachineByIdUseCase';
 import { UpdateMachineUseCase } from '../application/use-cases/machines/UpdateMachineUseCase';
 import { DeactivateMachineUseCase } from '../application/use-cases/machines/DeactivateMachineUseCase';
+import { GetMachineStatsUseCase } from '../application/use-cases/machines/GetMachineStatsUseCase';
 import { MachineController } from '../interface/controllers/machineController';
 
 // Use Cases - Doctor
@@ -128,6 +129,7 @@ const getAllMachinesUseCase = new GetAllMachinesUseCase(machineRepository);
 const getMachineByIdUseCase = new GetMachineByIdUseCase(machineRepository);
 const updateMachineUseCase = new UpdateMachineUseCase(machineRepository);
 const deactivateMachineUseCase = new DeactivateMachineUseCase(machineRepository);
+const getMachineStatsUseCase = new GetMachineStatsUseCase(machineRepository);
 
 // Use Cases - Appointment History
 const getAppointmentHistoryUseCase = new GetAppointmentHistoryforPatientUseCase(appointmentHistoryRepository, appointementRepository);
@@ -190,6 +192,7 @@ export const machineController = new MachineController(
     getMachineByIdUseCase,
     updateMachineUseCase,
     deactivateMachineUseCase
+    , getMachineStatsUseCase
 );
 
 

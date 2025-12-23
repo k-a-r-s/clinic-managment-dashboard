@@ -5,6 +5,7 @@ import { GetAllMachinesUseCase } from '../../application/use-cases/machines/GetA
 import { GetMachineByIdUseCase } from '../../application/use-cases/machines/GetMachineByIdUseCase';
 import { UpdateMachineUseCase } from '../../application/use-cases/machines/UpdateMachineUseCase';
 import { DeactivateMachineUseCase } from '../../application/use-cases/machines/DeactivateMachineUseCase';
+import { GetMachineStatsUseCase } from '../../application/use-cases/machines/GetMachineStatsUseCase';
 import { ResponseFormatter } from '../utils/ResponseFormatter';
 
 export class MachineController {
@@ -13,7 +14,8 @@ export class MachineController {
     private getAllMachinesUseCase: GetAllMachinesUseCase,
     private getMachineByIdUseCase: GetMachineByIdUseCase,
     private updateMachineUseCase: UpdateMachineUseCase,
-    private deactivateMachineUseCase: DeactivateMachineUseCase
+    private deactivateMachineUseCase: DeactivateMachineUseCase,
+    private getMachineStatsUseCase?: GetMachineStatsUseCase
   ) {}
 
   async createMachine(req: AuthRequest, res: Response) {
@@ -48,5 +50,13 @@ export class MachineController {
     const { id } = req.params;
     await this.deactivateMachineUseCase.execute(id);
     return ResponseFormatter.success(res, null, 'Machine deactivated successfully');
+  }
+
+  async getStats(req: AuthRequest, res: Response) {
+    if (!this.getMachineStatsUseCase) {
+      return ResponseFormatter.serverError(res, 'Machine stats not available');
+    }
+    const result = await this.getMachineStatsUseCase.execute();
+    return ResponseFormatter.success(res, result, 'Machine stats retrieved successfully');
   }
 }

@@ -6,4 +6,5 @@ export interface IMachineRepository {
   getAllMachines(filters?: { status?: string; roomId?: string }): Promise<Machine[]>;
   updateMachine(machine: Machine): Promise<Machine>;
   deactivateMachine(id: string): Promise<void>;
+  getMachineStats(): Promise<{ total: number; available: number; inUse: number; maintenance: number; outOfService: number }>;
 }

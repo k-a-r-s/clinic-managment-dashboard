@@ -114,6 +114,7 @@ interface MachinesTableProps {
   selectedStatus: string
   refreshKey?: number
   onAddMachine?: (data: any) => void
+  onRefresh?: () => void
 }
 
 export default function MachinesTable({
@@ -215,6 +216,7 @@ export default function MachinesTable({
         toast.success('Machine deactivated')
         // refresh
         loadMachines()
+        onRefresh && onRefresh()
       } catch (error) {
         console.error('Failed to deactivate machine:', error)
         toast.error('Failed to deactivate machine')
@@ -243,6 +245,7 @@ export default function MachinesTable({
             })
         toast.success('Machine updated')
         loadMachines()
+        onRefresh && onRefresh()
       } catch (error) {
         console.error('Failed to update machine:', error)
         toast.error('Failed to update machine')

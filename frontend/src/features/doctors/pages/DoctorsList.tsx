@@ -10,8 +10,8 @@ import { getDoctors } from "../api/doctors.api";
 import type { Doctor } from "../../../types";
 import toast from "react-hot-toast";
 interface DoctorsListPageProps {
-  onViewDoctor?: (doctorId: string | number) => void;
-  onEditDoctor?: (doctorId: string | number) => void;
+  onViewDoctor?: (doctorId: string) => void;
+  onEditDoctor?: (doctorId: string) => void;
   onAddNew?: () => void;
 }
 
@@ -52,13 +52,13 @@ export function DoctorsList({
         });
   
  
-  const handleViewDoctor = (doctorId: string | number) => {
+  const handleViewDoctor = (doctorId: string) => {
     if (onViewDoctor) {
       onViewDoctor(doctorId);
     }
   };
 
-  const handleEditDoctor = (doctorId: string | number) => {
+  const handleEditDoctor = (doctorId: string) => {
     if (onEditDoctor) {
       onEditDoctor(doctorId);
     }

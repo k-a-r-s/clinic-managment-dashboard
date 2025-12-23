@@ -132,7 +132,8 @@ export function PatientProfile({
   const loadPatient = async () => {
     try {
       setIsLoading(true);
-      const data = await getPatientById(patientId);
+      const temp = await getPatientById(patientId);
+      const data = temp.props
       setPatient(data);
       setFormData({
         firstName: data.firstName,

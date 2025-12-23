@@ -14,6 +14,7 @@ import appointementRouter from "./interface/routes/appointement.route";
 import medicalFileRouter from "./interface/routes/medicalFile.route";
 import roomRouter from "./interface/routes/room.route";
 import machineRouter from "./interface/routes/machine.route";
+import statsRouter from "./interface/routes/stats.route";
 import { authMiddleware } from "./interface/middlewares/authMiddleware";
 import { requireRole } from "./interface/middlewares/requireRole";
 import { Role } from "./shared/lib/roles";
@@ -96,6 +97,9 @@ app.use("/medical-files", medicalFileRouter);
 app.use("/rooms", roomRouter);
 // Machines
 app.use("/machines", machineRouter);
+
+// Dashboard stats
+app.use("/stats", statsRouter);
 
 // (moved machine-stats route into machine.route.ts)
 

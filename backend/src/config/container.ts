@@ -26,6 +26,8 @@ import { DeactivateMachineUseCase } from '../application/use-cases/machines/Deac
 import { GetMachineStatsUseCase } from '../application/use-cases/machines/GetMachineStatsUseCase';
 import { GetMachineStatsFormattedUseCase } from '../application/use-cases/machines/GetMachineStatsFormattedUseCase';
 import { MachineController } from '../interface/controllers/machineController';
+import { GetDashboardStatsUseCase } from '../application/use-cases/stats/GetDashboardStatsUseCase';
+import { StatsController } from '../interface/controllers/statsController';
 
 // Use Cases - Doctor
 import { GetDoctorsListUseCase } from '../application/use-cases/doctors/GetAllDoctorsUseCase';
@@ -145,6 +147,12 @@ const updateMachineUseCase = new UpdateMachineUseCase(machineRepository);
 const deactivateMachineUseCase = new DeactivateMachineUseCase(machineRepository);
 const getMachineStatsUseCase = new GetMachineStatsUseCase(machineRepository);
 const getMachineStatsFormattedUseCase = new GetMachineStatsFormattedUseCase(machineRepository);
+const getDashboardStatsUseCase = new GetDashboardStatsUseCase(
+    patientRepository,
+    appointementRepository,
+    machineRepository,
+    userRepository
+);
 
 // Use Cases - Appointment History
 const getAppointmentHistoryUseCase = new GetAppointmentHistoryforPatientUseCase(appointmentHistoryRepository, appointementRepository);
@@ -216,6 +224,7 @@ export const machineController = new MachineController(
     getMachineStatsUseCase,
     getMachineStatsFormattedUseCase
 );
+export const statsController = new StatsController(getDashboardStatsUseCase);
 
 
 // Dependency Injection Container
@@ -246,3 +255,4 @@ container.register('appointementController', appointementController);
 container.register('medicalFileController', medicalFileController);
 container.register('roomController', roomController);
 container.register('machineController', machineController);
+container.register('statsController', statsController);

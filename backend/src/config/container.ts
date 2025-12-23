@@ -16,6 +16,13 @@ import { UserController } from '../interface/controllers/userController';
 import { AppointementController } from '../interface/controllers/appointmentController';
 import { MedicalFileController } from '../interface/controllers/medicalFileController';
 import { RoomController } from '../interface/controllers/roomController';
+import { MachineRepository } from '../infrastructure/repositories/MachineRepository';
+import { CreateMachineUseCase } from '../application/use-cases/machines/CreateMachineUseCase';
+import { GetAllMachinesUseCase } from '../application/use-cases/machines/GetAllMachinesUseCase';
+import { GetMachineByIdUseCase } from '../application/use-cases/machines/GetMachineByIdUseCase';
+import { UpdateMachineUseCase } from '../application/use-cases/machines/UpdateMachineUseCase';
+import { DeactivateMachineUseCase } from '../application/use-cases/machines/DeactivateMachineUseCase';
+import { MachineController } from '../interface/controllers/machineController';
 
 // Use Cases - Doctor
 import { GetDoctorsListUseCase } from '../application/use-cases/doctors/GetAllDoctorsUseCase';
@@ -67,6 +74,7 @@ const patientRepository = new PatientRepository();
 const userRepository = new UserRepository();
 const appointementRepository = new AppointementRepository();
 const roomRepository = new RoomRepository();
+const machineRepository = new MachineRepository();
 const appointmentHistoryRepository = new AppointmentHistoryRepository();
 
 // Services
@@ -114,6 +122,12 @@ const getAvailableRoomsUseCase = new GetAvailableRooms(roomRepository);
 const updateRoomUseCase = new UpdateRoom(roomRepository);
 const deleteRoomUseCase = new DeleteRoom(roomRepository);
 const updateRoomAvailabilityUseCase = new UpdateRoomAvailability(roomRepository);
+// Use Cases - Machines
+const createMachineUseCase = new CreateMachineUseCase(machineRepository);
+const getAllMachinesUseCase = new GetAllMachinesUseCase(machineRepository);
+const getMachineByIdUseCase = new GetMachineByIdUseCase(machineRepository);
+const updateMachineUseCase = new UpdateMachineUseCase(machineRepository);
+const deactivateMachineUseCase = new DeactivateMachineUseCase(machineRepository);
 
 // Use Cases - Appointment History
 const getAppointmentHistoryUseCase = new GetAppointmentHistoryforPatientUseCase(appointmentHistoryRepository, appointementRepository);
@@ -170,6 +184,13 @@ export const roomController = new RoomController(
     deleteRoomUseCase,
     updateRoomAvailabilityUseCase
 );
+export const machineController = new MachineController(
+    createMachineUseCase,
+    getAllMachinesUseCase,
+    getMachineByIdUseCase,
+    updateMachineUseCase,
+    deactivateMachineUseCase
+);
 
 
 // Dependency Injection Container
@@ -198,3 +219,4 @@ container.register('userController', userController);
 container.register('appointementController', appointementController);
 container.register('medicalFileController', medicalFileController);
 container.register('roomController', roomController);
+container.register('machineController', machineController);

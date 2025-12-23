@@ -5,14 +5,12 @@ interface AddMachineModalProps {
   onClose: () => void
   editData?: {
     id: string
-    serial: string
     room: string
     status: string
     manufacturer?: string
     model?: string
     lastMaintenance: string
     nextMaintenance: string
-    notes?: string
   } | null
   onSubmit: (data: any) => void
 }
@@ -24,15 +22,13 @@ export default function AddMachineModal({ isOpen, onClose, editData, onSubmit }:
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const data = {
-      id: formData.get("machineId"),
-      serial: formData.get("serialNumber"),
+      machineId: formData.get("machineId"),
       room: formData.get("room"),
       status: formData.get("status"),
       manufacturer: formData.get("manufacturer"),
       model: formData.get("model"),
       lastMaintenance: formData.get("lastMaintenance"),
       nextMaintenance: formData.get("nextMaintenance"),
-      notes: formData.get("notes"),
     }
     onSubmit(data)
     onClose()
@@ -81,21 +77,7 @@ export default function AddMachineModal({ isOpen, onClose, editData, onSubmit }:
                 />
               </div>
 
-              {/* Serial Number */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Hash className="w-4 h-4 text-teal-600" />
-                  Serial Number *
-                </label>
-                <input
-                  type="text"
-                  name="serialNumber"
-                  defaultValue={editData?.serial}
-                  placeholder="e.g., SN-2024-001"
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white"
-                />
-              </div>
+              {/* Serial Number removed per requirement */}
 
               {/* Room */}
               <div>
@@ -206,17 +188,7 @@ export default function AddMachineModal({ isOpen, onClose, editData, onSubmit }:
 
           {/* Additional Notes */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-              <FileText className="w-4 h-4 text-teal-600" />
-              Additional Notes
-            </label>
-            <textarea
-              name="notes"
-              defaultValue={editData?.notes}
-              rows={4}
-              placeholder="Enter any additional notes about this machine..."
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white resize-none"
-            />
+              {/* Notes removed per requirement */}
           </div>
 
           {/* Buttons */}

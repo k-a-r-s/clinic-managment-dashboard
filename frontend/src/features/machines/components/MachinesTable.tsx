@@ -1,12 +1,13 @@
 import { Monitor, Hash, MapPin, Calendar, Edit, Power } from "lucide-react"
 import { AlertCircle } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { toast } from "react-hot-toast"
+import { getMachines, deactivateMachine, updateMachine, createMachine } from "../api/machines.api"
 import DeactivateModal from "./DeactivateModal" 
 import AddMachineModal from "./AddMachineModal" 
 
 interface Machine { 
   id: string
-  serial: string
   room: string
   status: "in-use" | "available" | "maintenance" | "out-of-service"
   lastMaintenance: string
@@ -14,14 +15,12 @@ interface Machine {
   dueStatus?: "due-soon"
   manufacturer?: string
   model?: string
-  notes?: string
 }
 
 // Initial machines data
 const initialMachines: Machine[] = [
   {
     id: "HD-MAC-101",
-    serial: "SN-2024-001",
     room: "Room 3A",
     status: "in-use",
     lastMaintenance: "Oct 15, 2025",
@@ -29,7 +28,6 @@ const initialMachines: Machine[] = [
   },
   {
     id: "HD-MAC-102",
-    serial: "SN-2024-002",
     room: "Room 3B",
     status: "available",
     lastMaintenance: "Oct 20, 2025",
@@ -37,7 +35,6 @@ const initialMachines: Machine[] = [
   },
   {
     id: "HD-MAC-103",
-    serial: "SN-2024-003",
     room: "Room 2A",
     status: "maintenance",
     lastMaintenance: "Sep 10, 2025",
@@ -46,7 +43,6 @@ const initialMachines: Machine[] = [
   },
   {
     id: "HD-MAC-104",
-    serial: "SN-2024-004",
     room: "Room 2B",
     status: "available",
     lastMaintenance: "Nov 1, 2025",
@@ -54,7 +50,6 @@ const initialMachines: Machine[] = [
   },
   {
     id: "HD-MAC-105",
-    serial: "SN-2024-005",
     room: "Room 1C",
     status: "in-use",
     lastMaintenance: "Oct 25, 2025",
@@ -62,7 +57,6 @@ const initialMachines: Machine[] = [
   },
   {
     id: "HD-MAC-106",
-    serial: "SN-2024-006",
     room: "Room 1A",
     status: "out-of-service",
     lastMaintenance: "Aug 15, 2025",
@@ -71,7 +65,6 @@ const initialMachines: Machine[] = [
   },
   {
     id: "HD-MAC-107",
-    serial: "SN-2024-007",
     room: "Room 1B",
     status: "available",
     lastMaintenance: "Nov 5, 2025",
@@ -79,7 +72,6 @@ const initialMachines: Machine[] = [
   },
   {
     id: "HD-MAC-108",
-    serial: "SN-2024-008",
     room: "Room 1A",
     status: "in-use",
     lastMaintenance: "Oct 10, 2025",
@@ -128,6 +120,7 @@ export default function MachinesTable({
   onAddMachine,
 }: MachinesTableProps) {
   const [machines, setMachines] = useState<Machine[]>(initialMachines)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [deactivateModal, setDeactivateModal] = useState<{isOpen: boolean; machineId: string}>({
     isOpen: false,
     machineId: ""
@@ -140,7 +133,6 @@ export default function MachinesTable({
   const filteredMachines = machines.filter((machine) => {
     const matchesSearch =
       machine.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      machine.serial.toLowerCase().includes(searchTerm.toLowerCase()) ||
       machine.room.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesRoom = selectedRoom === "all" || machine.room.includes(selectedRoom)
@@ -153,16 +145,59 @@ export default function MachinesTable({
     setDeactivateModal({ isOpen: true, machineId })
   }
 
+  useEffect(() => {
+    loadMachines();
+  }, [])
+
+  const loadMachines = async () => {
+    try {
+      setIsLoading(true)
+      const data = await getMachines()
+      // map API fields to UI shape
+      const mapped = data.map((m) => ({
+        id: m.machineId ?? m.id,
+        room: m.room ?? "",
+        status: m.status as Machine['status'],
+        lastMaintenance: new Date(m.lastMaintenanceDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        nextMaintenance: new Date(m.nextMaintenanceDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        dueStatus: isDueSoon(m.nextMaintenanceDate) ? 'due-soon' : undefined,
+        manufacturer: m.manufacturer ?? undefined,
+        model: m.model ?? undefined,
+      
+      }))
+      setMachines(mapped)
+    } catch (error) {
+      console.error('Failed to load machines:', error)
+      toast.error('Failed to load machines')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const isDueSoon = (dateStr?: string) => {
+    if (!dateStr) return false
+    const today = new Date()
+    const next = new Date(dateStr)
+    const diffDays = Math.ceil((next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    return diffDays <= 30
+  }
+
   const handleConfirmDeactivate = () => {
-    // Update the machine status to "out-of-service"
-    setMachines(prevMachines => 
-      prevMachines.map(machine => 
-        machine.id === deactivateModal.machineId 
-          ? { ...machine, status: "out-of-service" as const }
-          : machine
-      )
-    )
-    setDeactivateModal({ isOpen: false, machineId: "" })
+    const doDeactivate = async () => {
+      try {
+        await deactivateMachine(deactivateModal.machineId)
+        toast.success('Machine deactivated')
+        // refresh
+        loadMachines()
+      } catch (error) {
+        console.error('Failed to deactivate machine:', error)
+        toast.error('Failed to deactivate machine')
+      } finally {
+        setDeactivateModal({ isOpen: false, machineId: '' })
+      }
+    }
+
+    doDeactivate()
   }
 
   const handleEdit = (machine: Machine) => {
@@ -170,25 +205,27 @@ export default function MachinesTable({
   }
 
   const handleSubmitEdit = (data: any) => {
-    // Update the machine with the new data
-    setMachines(prevMachines =>
-      prevMachines.map(machine =>
-        machine.id === data.id
-          ? {
-              ...machine,
-              id: data.id as string,
-              serial: data.serial as string,
-              room: data.room as string,
-              status: data.status as "in-use" | "available" | "maintenance" | "out-of-service",
-              lastMaintenance: data.lastMaintenance as string,
-              nextMaintenance: data.nextMaintenance as string,
-              manufacturer: data.manufacturer as string,
-              model: data.model as string,
-              notes: data.notes as string,
-            }
-          : machine
-      )
-    )
+    const doUpdate = async () => {
+      try {
+        await updateMachine(data.id, {
+              room: data.room,
+              status: data.status,
+              lastMaintenanceDate: new Date(data.lastMaintenance).toISOString(),
+              nextMaintenanceDate: new Date(data.nextMaintenance).toISOString(),
+              manufacturer: data.manufacturer,
+              model: data.model,
+            })
+        toast.success('Machine updated')
+        loadMachines()
+      } catch (error) {
+        console.error('Failed to update machine:', error)
+        toast.error('Failed to update machine')
+      } finally {
+        setEditModal({ isOpen: false, machineData: null })
+      }
+    }
+
+    doUpdate()
   }
 
   const handleAddMachine = (data: any) => {
@@ -198,18 +235,36 @@ export default function MachinesTable({
     
     const newMachine: Machine = {
       id: data.machineId as string || newId,
-      serial: data.serialNumber as string,
       room: data.room as string,
       status: data.status as "in-use" | "available" | "maintenance" | "out-of-service",
       lastMaintenance: data.lastMaintenance as string,
       nextMaintenance: data.nextMaintenance as string,
       manufacturer: data.manufacturer as string,
       model: data.model as string,
-      notes: data.notes as string,
     }
 
-    setMachines(prevMachines => [...prevMachines, newMachine])
-    onAddMachine(newMachine)
+    // Create via API instead of local-only update
+    const doCreate = async () => {
+      try {
+        const created = await createMachine({
+          machineId: newMachine.id,
+          room: newMachine.room,
+          status: newMachine.status,
+          lastMaintenanceDate: new Date(newMachine.lastMaintenance).toISOString(),
+          nextMaintenanceDate: new Date(newMachine.nextMaintenance).toISOString(),
+          manufacturer: newMachine.manufacturer,
+          model: newMachine.model,
+        })
+        toast.success('Machine added')
+        loadMachines()
+        onAddMachine(created)
+      } catch (error) {
+        console.error('Failed to add machine:', error)
+        toast.error('Failed to add machine')
+      }
+    }
+
+    doCreate()
   }
 
   return (
@@ -234,12 +289,7 @@ export default function MachinesTable({
                     Machine ID
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <Hash className="w-4 h-4" />
-                    Serial Number
-                  </div>
-                </th>
+                {/* Serial Number column removed per requirement */}
                 <th className="px-6 py-3 text-left">
                   <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                     <MapPin className="w-4 h-4" />
@@ -277,7 +327,7 @@ export default function MachinesTable({
                         <span className="font-semibold text-gray-900">{machine.id}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 text-sm">{machine.serial}</td>
+                    
                     <td className="px-6 py-4 text-gray-900 text-sm">{machine.room}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -343,14 +393,12 @@ export default function MachinesTable({
         onClose={() => setEditModal({ isOpen: false, machineData: null })}
         editData={editModal.machineData ? {
           id: editModal.machineData.id,
-          serial: editModal.machineData.serial,
           room: editModal.machineData.room,
           status: editModal.machineData.status,
           manufacturer: editModal.machineData.manufacturer,
           model: editModal.machineData.model,
           lastMaintenance: editModal.machineData.lastMaintenance,
           nextMaintenance: editModal.machineData.nextMaintenance,
-          notes: editModal.machineData.notes
         } : null}
         onSubmit={handleSubmitEdit}
       />

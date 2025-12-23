@@ -4,6 +4,7 @@ import type { Doctor, DoctorFormData } from "../../../types";
 export const getDoctors = async (): Promise<Doctor[]> => {
   const response = await axiosInstance.get("/doctors");
   const body = response.data as any;
+  console.log("Raw doctors data from API:", body);
 
   // Response may be paginated: { total, doctors } or direct array
   const raw = Array.isArray(body) ? body : body?.doctors ?? [];

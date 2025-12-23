@@ -13,8 +13,9 @@ export class DoctorRepository implements IDoctorRepository {
         `
         id,
         specialization,
-        salary,
         is_medical_director,
+        salary,
+        phone_number,
         profiles!inner (
           first_name,
           last_name,
@@ -56,6 +57,9 @@ export class DoctorRepository implements IDoctorRepository {
     doctor.setSpecialisation(data.specialization);
     doctor.setSalary(data.salary);
     doctor.setIsMedicalSupervisor(data.is_medical_director);
+    if (data.phone_number) {
+      doctor.setPhoneNumber(data.phone_number);
+    }
 
     return doctor;
   }
@@ -77,6 +81,9 @@ export class DoctorRepository implements IDoctorRepository {
         `
         id,
         specialization,
+        is_medical_director,
+        phone_number,
+        salary,
         profiles!inner (
           first_name,
           last_name,
@@ -90,7 +97,6 @@ export class DoctorRepository implements IDoctorRepository {
       Logger.error("Doctors not fetched", { error });
       throw new DatabaseError(error.message);
     }
-
     // Transform the data to match GetDoctorsList interface
     const doctors = (data || []).map((doctor: any) => {
       // profiles is a single object due to !inner join, not an array
@@ -98,13 +104,17 @@ export class DoctorRepository implements IDoctorRepository {
         first_name: string;
         last_name: string;
         email: string;
-      };
+      };  
+   
       return {
         id: doctor.id,
         first_name: profile.first_name,
         last_name: profile.last_name,
         email: profile.email,
         specialization: doctor.specialization,
+        salary: doctor.salary,
+        phone_number: doctor.phone_number,
+        is_medical_director: doctor.is_medical_director,
       };
     });
 
@@ -141,6 +151,9 @@ export class DoctorRepository implements IDoctorRepository {
     }
     if (payload.specialization !== undefined) {
       doctorUpdate.specialization = payload.specialization;
+    }
+    if (payload.phoneNumber !== undefined || payload.phone_number !== undefined) {
+      doctorUpdate.phone_number = payload.phoneNumber || payload.phone_number;
     }
     if (payload.isMedicalDirector !== undefined) {
       doctorUpdate.is_medical_director = payload.isMedicalDirector;
@@ -183,13 +196,8 @@ export class DoctorRepository implements IDoctorRepository {
       throw new DatabaseError("Doctor not found after update");
     }
 
-    return new Doctor(
-      updatedDoctor.getId(),
-      updatedDoctor.getEmail(),
-      updatedDoctor.getFirstName(),
-      updatedDoctor.getLastName(),
-      updatedDoctor.getSpecialisation()
-    );
+    // Return the fetched/updated Doctor instance (preserves phone number, salary, flags)
+    return updatedDoctor;
   }
   async deleteDoctorById(id: string): Promise<void> {
     const { error } = await supabaseAdmin.from("doctors").delete().eq("id", id);

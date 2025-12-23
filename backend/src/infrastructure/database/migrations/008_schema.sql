@@ -34,6 +34,7 @@ CREATE TABLE public.doctors (
   specialization character varying,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  phone_number character varying,
   CONSTRAINT doctors_pkey PRIMARY KEY (id),
   CONSTRAINT doctors_id_fkey FOREIGN KEY (id) REFERENCES public.profiles(id)
 );

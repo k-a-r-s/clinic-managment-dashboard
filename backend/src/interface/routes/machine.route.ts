@@ -7,6 +7,7 @@ import { createMachineSchemaDto } from "../../application/dto/requests/createMac
 import { updateMachineSchemaDto } from "../../application/dto/requests/updateMachineDto";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper";
 import { machineController } from "../../config/container";
+import { ResponseFormatter } from "../utils/ResponseFormatter";
 
 const router = Router();
 
@@ -79,6 +80,19 @@ const router = Router();
  *       allOf:
  *         - $ref: '#/components/schemas/CreateMachineDto'
  *       description: Partial fields allowed for update (all optional)
+ *     MachineStatsFormatted:
+ *       type: object
+ *       properties:
+ *         In_Use:
+ *           type: integer
+ *         Available:
+ *           type: integer
+ *         Out_of_Service:
+ *           type: integer
+ *         Maintenance:
+ *           type: integer
+ *         total:
+ *           type: integer
  *
  *     MachineResponse:
  *       type: object
@@ -262,6 +276,44 @@ router.get(
   authMiddleware,
   requireRole([Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST]),
   asyncWrapper(machineController.getStats.bind(machineController))
+);
+
+/**
+ * @swagger
+ * /machines/machine-stats:
+ *   get:
+ *     tags: [Machines]
+ *     summary: Returns machine statistics with formatted keys
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Machine statistics (formatted)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 status:
+ *                   type: number
+ *                 data:
+ *                   $ref: '#/components/schemas/MachineStatsFormatted'
+ *                 error:
+ *                   nullable: true
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin/Doctor/Receptionist
+ */
+/** Get machine stats (formatted keys) */
+router.get(
+  "/machine-stats",
+  authMiddleware,
+  requireRole([Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST]),
+  asyncWrapper(machineController.getFormattedStats.bind(machineController))
 );
 
 /** Get machine by id */

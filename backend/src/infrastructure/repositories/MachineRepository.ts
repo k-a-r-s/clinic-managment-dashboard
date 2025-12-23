@@ -71,13 +71,11 @@ export class MachineRepository implements IMachineRepository {
       lastMaintenanceDate: data.last_maintenance_date,
       nextMaintenanceDate: data.next_maintenance_date,
       isActive: data.is_active,
-      room: data.room,
+      roomId: data.room_id,
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     });
   }
-
-  async getAllMachines(): Promise<Machine[]> {
   async getAllMachines(filters?: { status?: string; roomId?: string }): Promise<Machine[]> {
     let query = supabaseAdmin.from("machines").select();
     if (filters?.status) {

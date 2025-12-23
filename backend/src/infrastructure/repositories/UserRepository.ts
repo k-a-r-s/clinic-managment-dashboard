@@ -110,4 +110,30 @@ export class UserRepository implements IUserRepository {
     }
     return new User(AuthData.user.id, email, firstName, lastName, role);
   }
+
+  async countStaff(): Promise<{ doctors: number; receptionists: number; total: number }> {
+    // Count doctors
+    const { count: doctorsCount, error: doctorsError } = await supabaseAdmin
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'doctor');
+    if (doctorsError) {
+      Logger.error('Failed to count doctors', { error: doctorsError });
+      throw new DatabaseError(doctorsError);
+    }
+
+    // Count receptionists
+    const { count: receptionistsCount, error: receptionistsError } = await supabaseAdmin
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'receptionist');
+    if (receptionistsError) {
+      Logger.error('Failed to count receptionists', { error: receptionistsError });
+      throw new DatabaseError(receptionistsError);
+    }
+
+    const doctors = doctorsCount || 0;
+    const receptionists = receptionistsCount || 0;
+    return { doctors, receptionists, total: doctors + receptionists };
+  }
 }

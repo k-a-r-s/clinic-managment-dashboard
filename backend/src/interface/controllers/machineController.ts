@@ -6,6 +6,7 @@ import { GetMachineByIdUseCase } from '../../application/use-cases/machines/GetM
 import { UpdateMachineUseCase } from '../../application/use-cases/machines/UpdateMachineUseCase';
 import { DeactivateMachineUseCase } from '../../application/use-cases/machines/DeactivateMachineUseCase';
 import { GetMachineStatsUseCase } from '../../application/use-cases/machines/GetMachineStatsUseCase';
+import { GetMachineStatsFormattedUseCase } from '../../application/use-cases/machines/GetMachineStatsFormattedUseCase';
 import { ResponseFormatter } from '../utils/ResponseFormatter';
 
 export class MachineController {
@@ -15,7 +16,8 @@ export class MachineController {
     private getMachineByIdUseCase: GetMachineByIdUseCase,
     private updateMachineUseCase: UpdateMachineUseCase,
     private deactivateMachineUseCase: DeactivateMachineUseCase,
-    private getMachineStatsUseCase?: GetMachineStatsUseCase
+    private getMachineStatsUseCase?: GetMachineStatsUseCase,
+    private getMachineStatsFormattedUseCase?: GetMachineStatsFormattedUseCase
   ) {}
 
   async createMachine(req: AuthRequest, res: Response) {
@@ -34,7 +36,12 @@ export class MachineController {
     const { id } = req.params;
     const result = await this.getMachineByIdUseCase.execute(id);
     if (!result) {
-      return ResponseFormatter.notFound(res, 'Machine not found');
+      return ResponseFormatter.error(
+        res,
+        { type: 'NotFoundError', message: 'Machine not found' },
+        404,
+        'Machine not found'
+      );
     }
     return ResponseFormatter.success(res, result.toJson(), 'Machine retrieved successfully');
   }
@@ -54,9 +61,27 @@ export class MachineController {
 
   async getStats(req: AuthRequest, res: Response) {
     if (!this.getMachineStatsUseCase) {
-      return ResponseFormatter.serverError(res, 'Machine stats not available');
+      return ResponseFormatter.error(
+        res,
+        { type: 'InternalServerError', message: 'Machine stats not available' },
+        500,
+        'Machine stats not available'
+      );
     }
     const result = await this.getMachineStatsUseCase.execute();
+    return ResponseFormatter.success(res, result, 'Machine stats retrieved successfully');
+  }
+
+  async getFormattedStats(req: AuthRequest, res: Response) {
+    if (!this.getMachineStatsFormattedUseCase) {
+      return ResponseFormatter.error(
+        res,
+        { type: 'InternalServerError', message: 'Machine stats not available' },
+        500,
+        'Machine stats not available'
+      );
+    }
+    const result = await this.getMachineStatsFormattedUseCase.execute();
     return ResponseFormatter.success(res, result, 'Machine stats retrieved successfully');
   }
 }

@@ -36,12 +36,12 @@ export function AppointmentForm({
   rooms = []
 }: AppointmentFormProps) {
   const [formData, setFormData] = useState<AppointmentFormData>({
-    date: initialData.date || "",
-    estimatedDuration: initialData.estimatedDuration || "",
+    appointmentDate: initialData.appointmentDate || "",
+    estimatedDuration: initialData.estimatedDuration || 0,
     doctorId: initialData.doctorId || "",
     patientId: initialData.patientId || "",
-    status: initialData.status || "scheduled",
-    reason: initialData.reason || "",
+    status: initialData.status || "SCHEDULED",
+    reasonForVisit: initialData.reasonForVisit || "",
     roomId: initialData.roomId || "",
   });
 
@@ -62,8 +62,8 @@ export function AppointmentForm({
   const validateForm = () => {
     const newErrors: Partial<Record<keyof AppointmentFormData, string>> = {};
 
-    if (!formData.date) {
-      newErrors.date = "Date is required";
+    if (!formData.appointmentDate) {
+      newErrors.appointmentDate = "Date is required";
     }
 
     if (!formData.estimatedDuration) {
@@ -78,12 +78,12 @@ export function AppointmentForm({
       newErrors.patientId = "Patient is required";
     }
 
-    if (!formData.reason.trim()) {
-      newErrors.reason = "Reason is required";
+    if (!formData.reasonForVisit?.trim()) {
+      newErrors.reasonForVisit = "Reason is required";
     }
 
-    if (!formData.roomId.trim()) {
-      newErrors.reason = "roomid is required";
+    if (!formData.roomId?.trim()) {
+      newErrors.roomId = "roomid is required";
     }
 
     setErrors(newErrors);
@@ -111,13 +111,13 @@ export function AppointmentForm({
               <Input
                 id="date"
                 type="date"
-                value={formData.date}
-                onChange={(e) => handleInputChange("date", e.target.value)}
-                className={`pl-10 ${errors.date ? "border-red-500" : ""}`}
+                value={formData.appointmentDate}
+                onChange={(e) => handleInputChange("appointmentDate", e.target.value)}
+                className={`pl-10 ${errors.appointmentDate ? "border-red-500" : ""}`}
               />
             </div>
-            {errors.date && (
-              <p className="text-sm text-red-500">{errors.date}</p>
+            {errors.appointmentDate && (
+              <p className="text-sm text-red-500">{errors.appointmentDate}</p>
             )}
           </div>
 
@@ -224,6 +224,7 @@ export function AppointmentForm({
                 ))}
               </SelectContent>
             </Select>
+
             {errors.roomId && (
               <p className="text-sm text-red-500">{errors.roomId}</p>
             )}
@@ -239,9 +240,9 @@ export function AppointmentForm({
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="canceled">Canceled</SelectItem>
+                <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="CANCELED">Canceled</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -255,15 +256,15 @@ export function AppointmentForm({
               <Textarea
                 id="reason"
                 placeholder="Enter reason for appointment..."
-                value={formData.reason}
-                onChange={(e) => handleInputChange("reason", e.target.value)}
+                value={formData.reasonForVisit}
+                onChange={(e) => handleInputChange("reasonForVisit", e.target.value)}
                 className={`pl-10 min-h-[100px] ${
-                  errors.reason ? "border-red-500" : ""
+                  errors.reasonForVisit ? "border-red-500" : ""
                 }`}
               />
             </div>
-            {errors.reason && (
-              <p className="text-sm text-red-500">{errors.reason}</p>
+            {errors.reasonForVisit && (
+              <p className="text-sm text-red-500">{errors.reasonForVisit}</p>
             )}
           </div>
         </div>

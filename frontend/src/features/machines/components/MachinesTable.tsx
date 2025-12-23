@@ -1,8 +1,8 @@
-import { Monitor, Hash, MapPin, Calendar, Edit, Power } from "lucide-react"
+import { Monitor, MapPin, Calendar, Edit, Power } from "lucide-react"
 import { AlertCircle } from "lucide-react"
 import { useState, useEffect } from "react"
 import { toast } from "react-hot-toast"
-import { getMachines, deactivateMachine, updateMachine, createMachine } from "../api/machines.api"
+import { getMachines, deactivateMachine, updateMachine } from "../api/machines.api"
 import DeactivateModal from "./DeactivateModal" 
 import AddMachineModal from "./AddMachineModal" 
 
@@ -110,17 +110,15 @@ interface MachinesTableProps {
   searchTerm: string
   selectedRoom: string
   selectedStatus: string
-  onAddMachine: (data: any) => void
 }
 
 export default function MachinesTable({
   searchTerm,
   selectedRoom,
   selectedStatus,
-  onAddMachine,
+  
 }: MachinesTableProps) {
   const [machines, setMachines] = useState<Machine[]>(initialMachines)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [deactivateModal, setDeactivateModal] = useState<{isOpen: boolean; machineId: string}>({
     isOpen: false,
     machineId: ""
@@ -151,7 +149,7 @@ export default function MachinesTable({
 
   const loadMachines = async () => {
     try {
-      setIsLoading(true)
+      // loading flag removed; keep minimal UI updates
       const data = await getMachines()
       // map API fields to UI shape
       const mapped = data.map((m) => ({
@@ -160,7 +158,7 @@ export default function MachinesTable({
         status: m.status as Machine['status'],
         lastMaintenance: new Date(m.lastMaintenanceDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
         nextMaintenance: new Date(m.nextMaintenanceDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-        dueStatus: isDueSoon(m.nextMaintenanceDate) ? 'due-soon' : undefined,
+        dueStatus: isDueSoon(m.nextMaintenanceDate) ? ('due-soon' as const) : undefined,
         manufacturer: m.manufacturer ?? undefined,
         model: m.model ?? undefined,
       
@@ -170,7 +168,7 @@ export default function MachinesTable({
       console.error('Failed to load machines:', error)
       toast.error('Failed to load machines')
     } finally {
-      setIsLoading(false)
+      // no-op
     }
   }
 
@@ -228,44 +226,7 @@ export default function MachinesTable({
     doUpdate()
   }
 
-  const handleAddMachine = (data: any) => {
-    // Generate a new machine ID based on the highest existing ID
-    const highestId = Math.max(...machines.map(m => parseInt(m.id.split('-').pop() || '0')))
-    const newId = `HD-MAC-${(highestId + 1).toString().padStart(3, '0')}`
-    
-    const newMachine: Machine = {
-      id: data.machineId as string || newId,
-      room: data.room as string,
-      status: data.status as "in-use" | "available" | "maintenance" | "out-of-service",
-      lastMaintenance: data.lastMaintenance as string,
-      nextMaintenance: data.nextMaintenance as string,
-      manufacturer: data.manufacturer as string,
-      model: data.model as string,
-    }
-
-    // Create via API instead of local-only update
-    const doCreate = async () => {
-      try {
-        const created = await createMachine({
-          machineId: newMachine.id,
-          room: newMachine.room,
-          status: newMachine.status,
-          lastMaintenanceDate: new Date(newMachine.lastMaintenance).toISOString(),
-          nextMaintenanceDate: new Date(newMachine.nextMaintenance).toISOString(),
-          manufacturer: newMachine.manufacturer,
-          model: newMachine.model,
-        })
-        toast.success('Machine added')
-        loadMachines()
-        onAddMachine(created)
-      } catch (error) {
-        console.error('Failed to add machine:', error)
-        toast.error('Failed to add machine')
-      }
-    }
-
-    doCreate()
-  }
+  // Note: creation is handled via API when needed; handler removed to avoid unused variable
 
   return (
     <>

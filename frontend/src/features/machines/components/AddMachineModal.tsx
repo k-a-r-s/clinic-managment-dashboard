@@ -1,4 +1,4 @@
-import { X, Monitor, Hash, MapPin, Calendar, AlertCircle, FileText } from "lucide-react"
+import { X, Monitor, MapPin, Calendar, AlertCircle, FileText } from "lucide-react"
 
 interface AddMachineModalProps {
   isOpen: boolean

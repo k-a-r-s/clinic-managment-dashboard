@@ -10,12 +10,18 @@ import authRouter from "./interface/routes/auth.route";
 import doctorRouter from "./interface/routes/doctor.route";
 import userRouter from "./interface/routes/user.route";
 import patientRouter from "./interface/routes/patient.route";
+import appointementRouter from "./interface/routes/appointement.route";
+import medicalFileRouter from "./interface/routes/medicalFile.route";
+import roomRouter from "./interface/routes/room.route";
+import machineRouter from "./interface/routes/machine.route";
 const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000", // Replace with your frontend URL
+    origin: "http://localhost:5173", // Replace with your frontend URL
     credentials: true, // Allow cookies to be sent with requests
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(cookieParser());
@@ -73,8 +79,17 @@ app.use("/auth", authRouter);
 app.use("/doctors", doctorRouter);
 // This mounts all user routes at /users prefix
 app.use("/users", userRouter);
-
+// This mounts all patient routes at /patients prefix
 app.use("/patients", patientRouter);
+// This mounts all appointment routes at /appointments prefix
+app.use("/appointments", appointementRouter);
+// This mounts all medical file routes at /medical-files prefix
+app.use("/medical-files", medicalFileRouter);
+// This mounts all room routes at /rooms prefix
+app.use("/rooms", roomRouter);
+// Machines
+app.use("/machines", machineRouter);
+
 app.use(errorHandler);
 // Start the server
 const PORT = process.env.PORT || 3000;

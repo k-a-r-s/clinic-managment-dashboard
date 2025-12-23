@@ -1,0 +1,1 @@
+export { LabRequestPage } from "./LabRequestPage";

@@ -2,18 +2,11 @@ import { Router } from "express";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper";
 import { requireRole } from "../middlewares/requireRole";
-import { DoctorController } from "../controllers/doctorController";
-import { DoctorRepository } from "../../infrastructure/repositories/DoctorRepository";
-import { GetDoctorsListUseCase } from "../../application/use-cases/doctors/GetAllDoctorsUseCase";
-import { GetDoctorUseCase } from "../../application/use-cases/doctors/getDoctorUseCase";
+import { validate } from "../middlewares/Validate";
+import { updateDoctorDtoSchema } from "../../application/dto/requests/updateDoctorDto";
+import { doctorController as doctorsController } from "../../config/container";
+
 const router = Router();
-const doctorRepository = new DoctorRepository();
-const getAllDoctorsUseCase = new GetDoctorsListUseCase(doctorRepository);
-const getDoctorUseCase = new GetDoctorUseCase(doctorRepository);
-const doctorsController = new DoctorController(
-  getAllDoctorsUseCase,
-  getDoctorUseCase
-);
 
 /**
  * @swagger
@@ -46,6 +39,10 @@ const doctorsController = new DoctorController(
  *         salary:
  *           type: number
  *           description: The salary of the doctor
+ *         phoneNumber:
+ *           type: string
+ *           nullable: true
+ *           description: The doctor's phone number
  *         isMedicalDirector:
  *           type: boolean
  *           description: Whether the doctor is a medical director
@@ -62,6 +59,7 @@ const doctorsController = new DoctorController(
  *         email: house@princeton.edu
  *         role: DOCTOR
  *         salary: 250000
+ *         phoneNumber: "+1 (555) 123-4567"
  *         isMedicalDirector: true
  *         specialization: Diagnostician
  */
@@ -71,46 +69,6 @@ const doctorsController = new DoctorController(
  * tags:
  *   name: Doctors
  *   description: The doctors managing API
- */
-
-/**
- * @swagger
- * /doctors:
- *   post:
- *     summary: Create a new doctor
- *     tags: [Doctors]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Doctor'
- *     responses:
- *       201:
- *         description: The doctor was successfully created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 status:
- *                   type: number
- *                   example: 201
- *                 data:
- *                   $ref: '#/components/schemas/Doctor'
- *                 error:
- *                   type: null
- *       400:
- *         description: Validation error
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden - Admin only
  */
 
 /**
@@ -244,18 +202,57 @@ router.get(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Doctor'
+ *             type: object
+ *             properties:
+ *               specialization:
+ *                 type: string
+ *                 description: The specialization of the doctor
+ *               salary:
+ *                 type: number
+ *                 description: The salary of the doctor
+ *               isMedicalDirector:
+ *                 type: boolean
+ *                 description: Whether the doctor is a medical director
+ *               phoneNumber:
+ *                 type: string
+ *                 description: The doctor's phone number
+ *           example:
+ *             specialization: "Cardiology"
+ *             salary: 150000
+ *             isMedicalDirector: false
+ *             phoneNumber: "+1 (555) 123-4567"
  *     responses:
  *       200:
- *         description: The doctor was updated
+ *         description: The doctor was updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 status:
+ *                   type: number
+ *                   example: 200
+ *                 data:
+ *                   $ref: '#/components/schemas/Doctor'
+ *                 error:
+ *                   type: null
  *       404:
  *         description: The doctor was not found
- *       501:
- *         description: Not Implemented
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin only
  */
-router.put("/:id", (req, res) => {
-  res.status(501).json({ message: "Not Implemented" });
-});
+router.put(
+  "/:id",
+  authMiddleware,
+  requireRole(["admin"]),
+  validate(updateDoctorDtoSchema),
+  asyncWrapper(doctorsController.updateDoctorById.bind(doctorsController))
+);
 
 /**
  * @swagger
@@ -274,14 +271,34 @@ router.put("/:id", (req, res) => {
  *         description: The doctor id
  *     responses:
  *       200:
- *         description: The doctor was deleted
+ *         description: The doctor was deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 status:
+ *                   type: number
+ *                   example: 200
+ *                 data:
+ *                   type: null
+ *                 error:
+ *                   type: null
  *       404:
  *         description: The doctor was not found
- *       501:
- *         description: Not Implemented
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin only
  */
-router.delete("/:id", (req, res) => {
-  res.status(501).json({ message: "Not Implemented" });
-});
+router.delete(
+  "/:id",
+  authMiddleware,
+  requireRole(["admin"]),
+  asyncWrapper(doctorsController.deleteDoctorById.bind(doctorsController))
+);
 
 export default router;

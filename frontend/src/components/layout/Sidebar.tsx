@@ -1,14 +1,13 @@
 import {
   Home,
   Droplets,
-  FlaskConical,
   Users,
   Calendar,
   Settings,
   FileBarChart,
   Pill,
   Monitor,
-  Receipt,
+  MapPin,
   UserPlus,
   Shield,
   LogOut,
@@ -18,11 +17,10 @@ import { Button } from "../ui/button";
 
 interface SidebarProps {
   currentPage:
-    | "dialysis-management"
+    | "dashboard"
     | "lab-request"
     | "prescription"
     | "machines-management"
-    | "billing"
     | "settings"
     | "add-user"
     | "roles-permissions"
@@ -36,14 +34,14 @@ interface SidebarProps {
     | "create-appointment"
     | "appointment-details"
     | "calendar-view"
-    | "doctor-availability";
+    | "doctor-availability"
+    | "rooms";
   onNavigate: (
     page:
-      | "dialysis-management"
+      | "dashboard"
       | "lab-request"
       | "prescription"
       | "machines-management"
-      | "billing"
       | "settings"
       | "add-user"
       | "roles-permissions"
@@ -57,32 +55,34 @@ interface SidebarProps {
       | "create-appointment"
       | "appointment-details"
       | "calendar-view"
-      | "doctor-availability"
+        | "doctor-availability"
+        | "rooms"
   ) => void;
   collapsed?: boolean;
+  onLogout?: () => void;
 }
 
 export function Sidebar({
   currentPage,
   onNavigate,
   collapsed = false,
+  onLogout,
 }: SidebarProps) {
   const menuItems = [
-    { icon: Home, label: "Dashboard", page: null },
+    { icon: Home, label: "Dashboard", page: "dashboard" as const },
     {
       icon: Droplets,
       label: "Dialysis Management",
-      page: "dialysis-management" as const,
+      page: "dashboard" as const,
     },
     {
       icon: Monitor,
       label: "Machines Management",
       page: "machines-management" as const,
     },
+    { icon: MapPin, label: "Rooms", page: "rooms" as const },
     { icon: FileBarChart, label: "Lab Request", page: "lab-request" as const },
     { icon: Pill, label: "Prescriptions", page: "prescription" as const },
-    { icon: Receipt, label: "Billing & Payments", page: "billing" as const },
-    { icon: FlaskConical, label: "Laboratory", page: null },
     { icon: Users, label: "Patients", page: "patients-list" as const },
     { icon: UserCheck, label: "Doctors", page: "doctors-list" as const },
     {
@@ -93,7 +93,7 @@ export function Sidebar({
   ];
 
   const adminMenuItems = [
-    { icon: UserPlus, label: "Add System User", page: "add-user" as const },
+    { icon: UserPlus, label: "Add User", page: "add-user" as const },
     {
       icon: Shield,
       label: "Roles & Permissions",
@@ -190,6 +190,7 @@ export function Sidebar({
             collapsed ? "justify-center px-2" : "justify-start"
           } gap-3 text-red-600 hover:bg-red-50 hover:text-red-700`}
           title={collapsed ? "Logout" : undefined}
+          onClick={() => onLogout && onLogout()}
         >
           <LogOut className="w-5 h-5 shrink-0" />
           {!collapsed && <span>Logout</span>}

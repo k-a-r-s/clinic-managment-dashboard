@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { UserAuthService } from "../../application/services/UserAuthService";
 import { AuthRequest } from "../middlewares/authMiddleware";
-import { success } from "zod";
-import { IUserRepository } from "../../domain/repositories/IUserRepository";
+import { ResponseFormatter } from "../utils/ResponseFormatter";
 
 export class AuthController {
   constructor(private userAuthService: UserAuthService) {}
@@ -16,7 +15,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 60 * 60 * 1000, // 1 hour
+      maxAge: 6 * 24 * 60 * 60 * 1000, // 6 days
       path: "/",
     });
 
@@ -26,7 +25,7 @@ export class AuthController {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: "/api/auth/refresh-token",
+      path: "/auth/refresh-token",
     });
 
     // Return response with only user info (no tokens)
@@ -34,12 +33,7 @@ export class AuthController {
     const { refreshToken, accessToken, ...dataWithoutTokens } =
       responseJson.data;
 
-    res.json({
-      status: 200,
-      success: true,
-      data: dataWithoutTokens,
-      error: null,
-    });
+    return ResponseFormatter.success(res, dataWithoutTokens, "Login successful");
   }
 
   async logout(req: AuthRequest, res: Response) {
@@ -62,12 +56,7 @@ export class AuthController {
       path: "/api/auth/refresh-token",
     });
 
-    res.json({
-      status: 200,
-      success: true,
-      data: { message: "Logged out successfully" },
-      error: null,
-    });
+    return ResponseFormatter.success(res, null, "Logged out successfully");
   }
 
   async refreshToken(req: Request, res: Response) {
@@ -75,15 +64,12 @@ export class AuthController {
     const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({
-        status: 401,
-        success: false,
-        data: null,
-        error: {
-          type: "AuthenticationError",
-          message: "Refresh token not found",
-        },
-      });
+      return ResponseFormatter.error(
+        res,
+        { type: "AuthenticationError", message: "Refresh token not found" },
+        401,
+        "Refresh token not found"
+      );
     }
 
     const result = await this.userAuthService.refreshToken(refreshToken);
@@ -107,23 +93,11 @@ export class AuthController {
     });
 
     // Return minimal response (no tokens in body)
-    res.json({
-      status: 200,
-      success: true,
-      data: { message: "Tokens refreshed successfully" },
-      error: null,
-    });
+    return ResponseFormatter.success(res, null, "Tokens refreshed successfully");
   }
 
   async getMe(req: AuthRequest, res: Response) {
     const { token, ...userWithoutToken } = req.user || {};
-    res.json({
-      status: 200,
-      success: true,
-      data: userWithoutToken,
-      error: null,
-    });
+    return ResponseFormatter.success(res, userWithoutToken, "User retrieved successfully");
   }
-
-  
 }

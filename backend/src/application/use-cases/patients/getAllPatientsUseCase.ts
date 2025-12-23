@@ -1,8 +1,16 @@
 import { IPatientRepository } from "../../../domain/repositories/IPatientRepository";
+import { GetPatientsListResponseDto } from "../../dto/responses/patients/getPatientsList";
 
 export class GetAllPatientsUseCase {
-  constructor(private patientRepository: IPatientRepository) {}
+  constructor(private patientRepository: IPatientRepository) { }
   async execute() {
-    return await this.patientRepository.getAllPatients();
+    const data = await this.patientRepository.getAllPatients();
+    return data.map(patient => ({
+      id: patient.getId(),
+      firstName: patient.getFirstName(),
+      lastName: patient.getLastName(),
+      email: patient.getEmail(),
+      phoneNumber: patient.getPhoneNumber(),
+    })) satisfies GetPatientsListResponseDto;
   }
 }

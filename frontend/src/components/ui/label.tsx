@@ -3,18 +3,19 @@ import * as LabelPrimitive from "@radix-ui/react-label";
 
 import { cn } from "./utils";
 
-function Label({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+function Label(props: React.LabelHTMLAttributes<HTMLLabelElement>) {
+  const { className, children, ...rest } = props;
+
   return (
     <LabelPrimitive.Root
       className={cn(
         "flex items-center gap-2 text-sm leading-none font-medium select-none",
         className,
       )}
-      {...props}
-    />
+      {...(rest as any)}
+    >
+      {children}
+    </LabelPrimitive.Root>
   );
 }
 

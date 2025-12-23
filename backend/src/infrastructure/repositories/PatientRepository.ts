@@ -100,6 +100,13 @@ export class PatientRepository implements IPatientRepository {
       });
     });
   }
+  async getPatientsCount(): Promise<number> {
+    const { count, error } = await supabaseAdmin.from('patients').select('*', { count: 'exact', head: true });
+    if (error) {
+      throw new DatabaseError(error);
+    }
+    return count || 0;
+  }
   async updatePatient(patient: Patient): Promise<null> {
     const { data, error } = await supabaseAdmin
       .from("patients")

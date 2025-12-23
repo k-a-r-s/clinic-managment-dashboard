@@ -1,3 +1,6 @@
+//absolute zina istg
+
+export * from "./doctors";
 // Admin Type
 
 export interface UserProfile {
@@ -12,6 +15,7 @@ export interface UserProfile {
 
 // Patient Types
 export interface Patient {
+  name: any;
   id: number;
   email: string;
   firstName: string;
@@ -58,6 +62,15 @@ export interface PatientFormData {
   insuranceNumber?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
+}
+
+// User Types
+export interface UserFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: "doctor" | "receptionist";
 }
 
 export interface VascularAccess {
@@ -108,7 +121,8 @@ export interface LabResult {
 
 // Doctor Types
 export interface Doctor {
-  id: number;
+  name: any;
+  id:  string;
   firstName: string;
   lastName: string;
   email: string;
@@ -120,15 +134,49 @@ export interface Doctor {
   updatedAt?: string;
 }
 
-export interface DoctorFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  salary: number;
-  isMedicalDirector?: boolean;
-  specialization: string;
+// Machine Types
+export interface Machine {
+  id: string;
+  machineId?: string;
+  manufacturer?: string | null;
+  model?: string | null;
+  status: 'available' | 'in-use' | 'maintenance' | 'out-of-service';
+  lastMaintenanceDate: string;
+  nextMaintenanceDate: string;
+  // notes removed per design
+  // notes removed
+  // notes removed
+  isActive?: boolean;
+  room?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+export interface MachineFormData {
+  machineId?: string;
+  manufacturer?: string;
+  model?: string;
+  status: 'available' | 'in-use' | 'maintenance' | 'out-of-service';
+  lastMaintenanceDate: string;
+  nextMaintenanceDate: string;
+  // notes removed
+  // notes removed
+  // notes removed
+  // store room by UUID (room id)
+  room?: string;
+}
+
+// Room Types
+export interface Room {
+  status: any;
+  id: string;
+  roomNumber: string;
+  type?: string;
+  isAvailable?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 
 // Appointment Types
 export interface Appointment {
@@ -149,12 +197,12 @@ export interface Appointment {
 }
 
 export interface AppointmentFormData {
-  patientId: number;
-  doctorId: number;
-  roomId?: number;
+  patientId: string;
+  doctorId: string;
+  roomId?: string;
   appointmentDate: string;
   estimatedDuration: number;
-  status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
+  status?: "SCHEDULED" | "in-progress" | "COMPLETED" | "CANCELED" | "no-show";
   notes?: string;
   reasonForVisit?: string;
 }

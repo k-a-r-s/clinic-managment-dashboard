@@ -39,6 +39,10 @@ const router = Router();
  *         salary:
  *           type: number
  *           description: The salary of the doctor
+ *         phoneNumber:
+ *           type: string
+ *           nullable: true
+ *           description: The doctor's phone number
  *         isMedicalDirector:
  *           type: boolean
  *           description: Whether the doctor is a medical director
@@ -55,6 +59,7 @@ const router = Router();
  *         email: house@princeton.edu
  *         role: DOCTOR
  *         salary: 250000
+ *         phoneNumber: "+1 (555) 123-4567"
  *         isMedicalDirector: true
  *         specialization: Diagnostician
  */
@@ -208,10 +213,14 @@ router.get(
  *               isMedicalDirector:
  *                 type: boolean
  *                 description: Whether the doctor is a medical director
+ *               phoneNumber:
+ *                 type: string
+ *                 description: The doctor's phone number
  *           example:
  *             specialization: "Cardiology"
  *             salary: 150000
  *             isMedicalDirector: false
+ *             phoneNumber: "+1 (555) 123-4567"
  *     responses:
  *       200:
  *         description: The doctor was updated successfully

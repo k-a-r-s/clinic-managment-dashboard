@@ -9,6 +9,7 @@ export const CreateDoctorDtoSchema = z.object({
   salary: z.number().positive().optional(),
   isMedicalDirector: z.boolean().optional(),
   specialization: z.string().min(3).max(255).optional(),
+  phoneNumber: z.string().optional().nullable(),
 });
 
 export type createDoctorDto = z.infer<typeof CreateDoctorDtoSchema>;

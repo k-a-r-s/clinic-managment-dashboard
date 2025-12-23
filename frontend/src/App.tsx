@@ -18,14 +18,15 @@ import { DashboardPage } from "./features/dashboard/pages/DashboardPage";
 import { LabRequestPage } from "./features/lab-requests/pages/LabRequestPage";
 import { PrescriptionsPage } from "./features/prescriptions/pages/PrescriptionsPage";
 import { MachinesPage } from "./features/machines/pages/MachinesPage";
+import { RoomsPage } from "./features/rooms/pages/RoomsPage";
 import { RolesPermissionsPage } from "./features/roles-permissions/pages/RolesPermissionsPage";
+import { AddUser } from "./features/users/pages/AddUser";
 
 type PageType =
   | "dashboard"
   | "lab-request"
   | "prescription"
   | "machines-management"
-  | "billing"
   | "settings"
   | "add-user"
   | "roles-permissions"
@@ -39,7 +40,7 @@ type PageType =
   | "create-appointment"
   | "appointment-details"
   | "calendar-view"
-  | "doctor-availability";
+  | "doctor-availability"  | "rooms";
 
 function App() {
   const { user, logout } = useAuth(); // use context instead of local isAuthenticated
@@ -276,8 +277,17 @@ function App() {
           {/* Machines Management */}
           {currentPage === "machines-management" && <MachinesPage />}
 
+          {/* Rooms Management */}
+          {currentPage === "rooms" && <RoomsPage />}
+
           {/* Roles & Permissions */}
           {currentPage === "roles-permissions" && <RolesPermissionsPage />}
+
+          {/* Add User */}
+          {currentPage === "add-user" && (
+            <AddUser
+            />
+          )}
 
           {/* Placeholder for other pages */}
           {![
@@ -297,6 +307,7 @@ function App() {
             "appointment-details",
             "calendar-view",
             "doctor-availability",
+            "add-user",   
           ].includes(currentPage) && (
             <div className="p-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">

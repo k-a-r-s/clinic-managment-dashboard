@@ -6,5 +6,6 @@ export interface IPatientRepository {
   getPatientByid(id: string): Promise<Patient>;
   deletePatientByid(id: string): Promise<void>;
   getAllPatients(): Promise<Patient[]>;
+  getPatientsCount(): Promise<number>;
   updatePatient(patient: Patient): Promise<null>;
 }

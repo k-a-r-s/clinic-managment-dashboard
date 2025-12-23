@@ -5,7 +5,9 @@ import { Label } from "../../../components/ui/label";
 import { FormCard } from "../../../components/shared/FormCard";
 import { PageHeader } from "../../../components/shared/PageHeader";
 import type { Doctor, DoctorFormData } from "../../../types";
-
+import { updateDoctor } from "../api/doctors.api";
+import { toast } from "react-hot-toast";
+import { useState } from "react";
 interface DoctorCardProps {
   doctor: Doctor;
   isEditMode: boolean;
@@ -25,11 +27,27 @@ export function DoctorCard({
   isEditMode,
   formData,
   onEdit,
-  onSave,
   onCancel,
   onDelete,
   onFormChange,
 }: DoctorCardProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const handleSave = async (data: any) => {
+    try {
+      setIsLoading(true);
+      await updateDoctor(doctor.id as string, data);
+      toast.success("Doctor updated successfully");
+    }
+    catch (error) {
+
+      console.error("Failed to update doctor:", error);
+      toast.error("Failed to update doctor");
+    }
+    finally {
+      setIsLoading(false);
+    }
+
+  }
   return (
     <>
       <PageHeader
@@ -46,11 +64,22 @@ export function DoctorCard({
                 Cancel
               </Button>
               <Button
-                onClick={onSave}
-                className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
+                onClick={() => handleSave(formData)}
+                disabled={isLoading}
+                aria-busy={isLoading}
+                className={`gap-2 bg-[#1C8CA8] hover:bg-[#157A93] ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
               >
-                <Save className="w-4 h-4" />
-                Save Changes
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save Changes
+                  </>
+                )}
               </Button>
             </>
           ) : (
@@ -58,6 +87,7 @@ export function DoctorCard({
               <Button
                 variant="outline"
                 onClick={onDelete}
+                disabled={isLoading}
                 className="gap-2 bg-white border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
               >
                 <Trash2 className="w-4 h-4" />
@@ -70,7 +100,7 @@ export function DoctorCard({
                 <Edit className="w-4 h-4" />
                 Edit Doctor
               </Button>
-            </>
+            </> 
           )
         }
       />
@@ -169,7 +199,7 @@ export function DoctorCard({
             ) : (
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
                 <p className="text-sm text-gray-900">
-                  ${formData.salary.toLocaleString()}
+                  {formData.salary != null ? `$${formData.salary.toLocaleString()}` : "—"}
                 </p>
               </div>
             )}

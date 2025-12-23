@@ -1,24 +1,22 @@
 // frontend/src/app/prescriptions/components/PatientInfoSection.tsx
 import React from 'react';
 
-interface PatientInfo {
-  name: string;
-  id: string;
-  age: string;
-  gender: string;
-}
-
 interface PatientInfoSectionProps {
-  patientInfo?: PatientInfo;
+  name: string;
+  onNameChange: (v: string) => void;
+  age?: string;
+  onAgeChange?: (v: string) => void;
+  gender?: string;
+  onGenderChange?: (v: string) => void;
 }
 
-const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({ 
-  patientInfo = {
-    name: 'John Michael Doe',
-    id: 'HD-2024-1234',
-    age: '58',
-    gender: 'Male'
-  }
+const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
+  name,
+  onNameChange,
+  age = "",
+  onAgeChange,
+  gender = "",
+  onGenderChange,
 }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -31,50 +29,35 @@ const PatientInfoSection: React.FC<PatientInfoSectionProps> = ({
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Patient Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Patient Name</label>
             <input
               type="text"
-              value={patientInfo.name}
-              readOnly
-              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 cursor-not-allowed"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-900"
             />
           </div>
-          
+
+          {/* Patient ID removed per requirements */}
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Patient ID
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
             <input
               type="text"
-              value={patientInfo.id}
-              readOnly
-              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 cursor-not-allowed"
+              value={age}
+              onChange={(e) => onAgeChange && onAgeChange(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-900"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Age
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
             <input
               type="text"
-              value={patientInfo.age}
-              readOnly
-              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 cursor-not-allowed"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Gender
-            </label>
-            <input
-              type="text"
-              value={patientInfo.gender}
-              readOnly
-              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 cursor-not-allowed"
+              value={gender}
+              onChange={(e) => onGenderChange && onGenderChange(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-900"
             />
           </div>
         </div>

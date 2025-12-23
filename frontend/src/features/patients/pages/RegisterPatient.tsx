@@ -10,6 +10,7 @@ import {
 import { PageHeader } from "../../../components/shared/PageHeader";
 import { PatientForm } from "../components/PatientForm";
 import { createPatient } from "../api/patients.api";
+import { toast } from "react-hot-toast";
 import type { PatientFormData } from "../../../types";
 
 export function RegisterPatient({
@@ -25,12 +26,13 @@ export function RegisterPatient({
     try {
       setIsLoading(true);
       await createPatient(data);
+      toast.success("Patient registered successfully");
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
       console.error("Failed to register patient:", error);
-      // TODO: Show error toast
+      toast.error("Failed to register patient");
     } finally {
       setIsLoading(false);
     }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import RolesPermissionsHeader from "./RolesPermissionsHeader";
 import SecurityWarning from "./SecurityWarning";
 import RoleCards from "./RoleCards";
@@ -149,7 +150,7 @@ const RolesPermissionsLayout: React.FC = () => {
 
     localStorage.setItem("roles_permissions", JSON.stringify(permissions));
 
-    alert("Permissions saved successfully!");
+    toast.success("Permissions saved successfully!");
     setHasUnsavedChanges(false);
   };
 

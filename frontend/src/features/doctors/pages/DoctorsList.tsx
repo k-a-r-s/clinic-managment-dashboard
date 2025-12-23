@@ -8,10 +8,10 @@ import { DataTable } from "../../../components/shared/DataTable";
 import type { Column } from "../../../components/shared/DataTable";
 import { getDoctors } from "../api/doctors.api";
 import type { Doctor } from "../../../types";
-
+import toast from "react-hot-toast";
 interface DoctorsListPageProps {
-  onViewDoctor?: (doctorId: number) => void;
-  onEditDoctor?: (doctorId: number) => void;
+  onViewDoctor?: (doctorId: string) => void;
+  onEditDoctor?: (doctorId: string) => void;
   onAddNew?: () => void;
 }
 
@@ -23,7 +23,7 @@ export function DoctorsList({
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null);
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string | number | null>(null);
 
   useEffect(() => {
     loadDoctors();
@@ -33,34 +33,32 @@ export function DoctorsList({
     try {
       setIsLoading(true);
       const data = await getDoctors();
-      setDoctors(data);
+      setDoctors(data || []);
     } catch (error) {
       console.error("Failed to load doctors:", error);
-      // TODO: Show error toast
+      toast.error("Failed to load doctors");
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Filter doctors
-  const filteredDoctors = doctors.filter((doctor) => {
-    const fullName = `${doctor.firstName} ${doctor.lastName}`.toLowerCase();
-    const matchesSearch =
-      fullName.includes(searchTerm.toLowerCase()) ||
-      doctor.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return matchesSearch;
-  });
-
-  const handleViewDoctor = (doctorId: number) => {
+  // Filter doctors by full name (case-insensitive)
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredDoctors =
+    normalizedSearch.length === 0
+      ? doctors
+      : doctors.filter((doctor) => {
+          const searchableText = `${doctor.firstName} ${doctor.lastName}`.toLowerCase();
+          return searchableText.includes(normalizedSearch);
+        });
+  
+ 
+  const handleViewDoctor = (doctorId: string) => {
     if (onViewDoctor) {
       onViewDoctor(doctorId);
     }
   };
 
-  const handleEditDoctor = (doctorId: number) => {
+  const handleEditDoctor = (doctorId: string) => {
     if (onEditDoctor) {
       onEditDoctor(doctorId);
     }
@@ -109,7 +107,7 @@ export function DoctorsList({
       header: "Salary",
       render: (doctor) => (
         <span className="text-sm text-gray-600">
-          ${doctor.salary.toLocaleString()}
+          {doctor.salary != null ? `$${doctor.salary.toLocaleString()}` : "—"}
         </span>
       ),
     },
@@ -165,21 +163,12 @@ export function DoctorsList({
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between gap-4 mb-6">
             <SearchBar
-              placeholder="Search by name, specialty, phone, or email..."
+              placeholder="Search by name"
               value={searchTerm}
               onChange={setSearchTerm}
             />
 
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <Button
-                onClick={handleAddNew}
-                className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
-              >
-                <Plus className="w-4 h-4" />
-                Add New Doctor
-              </Button>
-            </div>
+            
           </div>
         </div>
 
@@ -203,9 +192,9 @@ export function DoctorsList({
 
         {/* Pagination */}
         <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600">
             Showing {filteredDoctors.length} of {doctors.length} doctors
-          </p>
+            </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="border-gray-200">
               Previous

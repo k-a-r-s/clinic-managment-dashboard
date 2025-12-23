@@ -47,6 +47,7 @@ GET /doctors?page=1&limit=10
       email: string;
       role: string;                  // "DOCTOR"
       salary: number | null;
+        phoneNumber: string | null;   // Optional phone number
       isMedicalDirector: boolean;
       specialization: string | null;
       createdAt: string;             // ISO 8601 date-time
@@ -77,6 +78,7 @@ GET /doctors?page=1&limit=10
         "email": "house@princeton.edu",
         "role": "DOCTOR",
         "salary": 250000,
+        "phoneNumber": "+1 (555) 123-4567",
         "isMedicalDirector": true,
         "specialization": "Diagnostician",
         "createdAt": "2024-01-15T10:30:00.000Z",
@@ -127,6 +129,7 @@ GET /doctors?page=1&limit=10
     email: string;
     role: string;
     salary: number | null;
+      phoneNumber: string | null;
     isMedicalDirector: boolean;
     specialization: string | null;
     createdAt: string;
@@ -198,6 +201,7 @@ GET /doctors?page=1&limit=10
   email?: string;
   salary?: number | string;          // Accepts number or string (auto-converted)
   isMedicalDirector?: boolean;
+  phoneNumber?: string;              // Optional, phone number
   specialization?: string | null;
 }
 ```
@@ -208,6 +212,7 @@ GET /doctors?page=1&limit=10
   "firstName": "Gregory",
   "lastName": "House",
   "salary": 275000,
+  "phoneNumber": "+1 (555) 123-4567",
   "specialization": "Diagnostic Medicine",
   "isMedicalDirector": true
 }
@@ -337,6 +342,7 @@ GET /doctors?page=1&limit=10
 - `salary`: Optional positive number (accepts string, auto-converts to number)
 - `isMedicalDirector`: Optional boolean
 - `specialization`: Optional string or null
+ - `phoneNumber`: Optional string (E.164 or readable formats supported)
 
 ---
 

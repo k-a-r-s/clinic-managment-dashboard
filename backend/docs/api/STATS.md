@@ -1,8 +1,11 @@
-````markdown
+# Dashboard Stats API
+
+Docs placeholder: Dashboard statistics endpoint.
 # Dashboard Stats API
 
 ## Base URL
-```
+
+```text
 /stats
 ```
 
@@ -21,6 +24,7 @@
 **Required Role:** `admin`, `doctor`, `receptionist`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -37,8 +41,9 @@
 ```
 
 **Notes:**
-- `activeSessions` counts appointments scheduled for today with status `SCHEDULED`.
-- `activemachines` equals total machines minus out_of_service machines.
-- `staffCount` is computed by summing users with role `doctor` and `receptionist`.
 
-````
+- `activeSessions` counts appointments scheduled for today with status `SCHEDULED`.
+
+- `activemachines` equals total machines minus out_of_service machines.
+
+- `staffCount` is computed by summing users with role `doctor` and `receptionist`.

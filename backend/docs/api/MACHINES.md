@@ -1,12 +1,14 @@
 # Machines API Endpoints
 
 ## Base URL
-```
+
+```text
 /machines
 ```
 
 **Authentication:** All endpoints require Bearer token
 
+---
 
 ## 1. Create Machine
 
@@ -19,21 +21,21 @@
 **Required Role:** `admin`
 
 ### Request Body
+
 ```typescript
 {
   machineId: string;           // Required (HD-MAC-...)
-  
   manufacturer?: string;
   model?: string;
   status?: 'available' | 'in-use' | 'maintenance' | 'out-of-service';
   lastMaintenanceDate: string; // YYYY-MM-DD
   nextMaintenanceDate: string; // YYYY-MM-DD
-  
   room?: string;
 }
 ```
 
 ### Response
+
 **Success (201):** returns created machine object
 
 ---
@@ -49,6 +51,7 @@
 **Required Role:** `admin`, `doctor`, `receptionist`
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -115,6 +118,7 @@
 **Required Role:** `admin`, `doctor`, `receptionist`
 
 **Response:** 200
+
 ```json
 {
   "success": true,
@@ -143,6 +147,7 @@
 **Required Role:** `admin`, `doctor`, `receptionist`
 
 **Response:** 200
+
 ```json
 {
   "success": true,

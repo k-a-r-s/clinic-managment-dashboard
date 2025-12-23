@@ -68,7 +68,7 @@ export function AppointmentDetails({
         getDoctors(),
         getPatients(),
       ]);
-
+      console.log("worked")
       setAppointment(appointmentData);
       setDoctors(doctorsData.map((d) => ({ id: d.id, name: d.name })));
       setPatients(patientsData.map((p) => ({ id: p.id, name: p.name })));

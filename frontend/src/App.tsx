@@ -244,6 +244,7 @@ function App() {
             <CreateAppointment
               onCancel={handleBackToAppointmentsList}
               onSuccess={handleSaveAppointment}
+              user={user}
             />
           )}
 

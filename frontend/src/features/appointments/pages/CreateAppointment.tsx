@@ -14,14 +14,16 @@ import { toast } from "react-hot-toast";
 import { getDoctors } from "../../doctors/api/doctors.api";
 import { getPatients } from "../../patients/api/patients.api";
 import { getAvailableRooms } from "../../rooms/api/rooms.api";
-import type { AppointmentFormData } from "../../../types";
+import type { AppointmentFormData , UserProfile} from "../../../types";
 
 export function CreateAppointment({
   onCancel,
   onSuccess,
+  user
 }: {
   onCancel?: () => void;
   onSuccess?: () => void;
+  user?: UserProfile
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [doctors, setDoctors] = useState<Array<{ id: string; name: string }>>(
@@ -33,11 +35,11 @@ export function CreateAppointment({
   const [rooms, setRooms] = useState<Array<{ id: string; name: string }>>(
     []
   );
-
+  
   useEffect(() => {
     loadData();
   }, []);
-
+  
   const loadData = async () => {
     try {
       const [doctorsData, patientsData , roomsData] = await Promise.all([
@@ -48,7 +50,6 @@ export function CreateAppointment({
       setDoctors(doctorsData.map((d) => ({ id: d.id, name: `${d.firstName} ${d.lastName}` })));
       setPatients(patientsData.map((p) => ({ id: p.id.toString(), name: `${p.firstName} ${p.lastName}` })));
       setRooms(roomsData.map((r) => ({ id: r.id, name: r.roomNumber })));
-      console.log("gggggggggggggggggg")
       console.log(rooms)
       console.log(doctors)
       console.log(patients)
@@ -62,6 +63,11 @@ export function CreateAppointment({
   const handleSubmit = async (data: AppointmentFormData) => {
     try {
       setIsLoading(true);
+      data.appointmentDate = new Date(
+        `${data.appointmentDate}T00:00:00`
+      ).toISOString(),
+      data.createdByDoctorId= "2717119e-e353-4ebe-beee-3586f1802e01",
+      data.createdByReceptionId= user?.role === "reception" ? user.id : null,
       await createAppointment(data);
       if (onSuccess) {
         onSuccess();

@@ -61,10 +61,10 @@ export function AppointmentsList({
   // Filter appointments
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
-      appointment.patientName
+      appointment.patientId
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      appointment.doctorName
+      appointment.doctorId
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       appointment.reason?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -152,7 +152,7 @@ export function AppointmentsList({
       header: "Date",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm">{formatDate(appointment.date)}</span>
+        <span className="text-sm">{formatDate(appointment.appointmentDate)}</span>
       ),
     },
     {
@@ -160,7 +160,7 @@ export function AppointmentsList({
       header: "Patient",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm font-medium">{appointment.patientName}</span>
+        <span className="text-sm font-medium">{appointment.patientId}</span>
       ),
     },
     {
@@ -168,7 +168,7 @@ export function AppointmentsList({
       header: "Doctor",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm">{appointment.doctorName}</span>
+        <span className="text-sm">{appointment.doctorId}</span>
       ),
     },
     {
@@ -178,7 +178,7 @@ export function AppointmentsList({
       render: (appointment) => (
         <div className="flex items-center gap-1 text-sm text-gray-600">
           <Clock className="w-3 h-3" />
-          {appointment.estimatedDuration} min
+          {appointment.estimatedDurationInMinutes} min
         </div>
       ),
     },

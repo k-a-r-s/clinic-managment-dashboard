@@ -1,10 +1,11 @@
 //absolute zina istg
 
 export * from "./doctors";
+export * from "./dashboard";
 // Admin Type
 
 export interface UserProfile {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -181,30 +182,39 @@ export interface Room {
 // Appointment Types
 export interface Appointment {
   id: number;
-  patientId: number;
-  doctorId: number;
+  patientId: string;
+  doctorId: string;
   roomId?: number;
   createdByReceptionistId?: string;
   createdByDoctorId?: string;
   appointmentDate: string;
-  estimatedDuration: number; // in minutes
+  estimatedDurationInMinutes: number; // in minutes
   actualDuration?: number;
   status: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
   notes?: string;
-  reasonForVisit?: string;
+  reason?: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
+export type AppointmentStatus =
+  | "SCHEDULED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELED"
+  | "NO_SHOW";
+
 export interface AppointmentFormData {
   patientId: string;
   doctorId: string;
-  roomId?: string;
+  roomId: string;
   appointmentDate: string;
-  estimatedDuration: number;
-  status?: "SCHEDULED" | "in-progress" | "COMPLETED" | "CANCELED" | "no-show";
+  estimatedDurationInMinutes: number;
+  status?: AppointmentStatus;
   notes?: string;
-  reasonForVisit?: string;
+  reason?: string;
+  createdByDoctorId?: string | null,
+  createdByReceptionId?: string | null,
 }
 
 export interface AppointmentWithDetails extends Appointment {

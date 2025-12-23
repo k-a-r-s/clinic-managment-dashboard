@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import LabRequestHeader from "./LabRequestHeader";
 import PatientInfoSection from "./PatientInfoSection";
 import BiologicalExamsSection from "./BiologicalExamsSection";
@@ -68,7 +69,7 @@ const LabRequestLayout: React.FC = () => {
     // Save to localStorage as backup
     localStorage.setItem("lab_request_draft", JSON.stringify(labRequest));
 
-    alert("Lab request saved successfully!");
+    toast.success("Lab request saved successfully!");
     setHasUnsavedChanges(false);
   };
 
@@ -93,7 +94,7 @@ const LabRequestLayout: React.FC = () => {
 
   const handlePrint = () => {
     if (selectedTests.length === 0 && !otherTests.trim()) {
-      alert("Please select at least one test before printing.");
+      toast.error("Please select at least one test before printing.");
       return;
     }
 
@@ -127,6 +128,7 @@ const LabRequestLayout: React.FC = () => {
         }
       } catch (error) {
         console.error("Failed to load draft:", error);
+        toast.error("Failed to load saved lab request draft");
         localStorage.removeItem("lab_request_draft");
       }
     }

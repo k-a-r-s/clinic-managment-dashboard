@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import PrescriptionsHeader from "./PrescriptionsHeader";
 import PatientInfoSection from "./PatientInfoSection";
 import PharmacyMedicationsInfo from "./PharmacyMedicationsInfo";
@@ -121,7 +122,7 @@ const PrescriptionsLayout: React.FC = () => {
     // Save to localStorage as backup
     localStorage.setItem("prescription_draft", JSON.stringify(prescription));
 
-    alert("Prescription saved successfully!");
+    toast.success("Prescription saved successfully!");
     setHasUnsavedChanges(false);
   };
 
@@ -131,7 +132,7 @@ const PrescriptionsLayout: React.FC = () => {
     );
 
     if (filledMedications.length === 0) {
-      alert("Please add at least one medication before printing.");
+      toast.error("Please add at least one medication before printing.");
       return;
     }
 
@@ -164,14 +165,14 @@ const PrescriptionsLayout: React.FC = () => {
             setMedications(parsed.medications);
           }
         } else {
-          alert("No previous prescription found.");
+          toast.error("No previous prescription found.");
         }
       } catch (error) {
         console.error("Failed to load prescription:", error);
-        alert("Failed to load previous prescription.");
+        toast.error("Failed to load previous prescription.");
       }
     } else {
-      alert("No previous prescription found.");
+      toast.error("No previous prescription found.");
     }
   };
 
@@ -191,6 +192,7 @@ const PrescriptionsLayout: React.FC = () => {
         }
       } catch (error) {
         console.error("Failed to load draft:", error);
+        toast.error("Failed to load saved prescription draft");
         localStorage.removeItem("prescription_draft");
       }
     }

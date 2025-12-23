@@ -24,7 +24,7 @@ export const getDoctors = async (): Promise<Doctor[]> => {
   return mapped;
 };
 
-export const getDoctorById = async (id: number): Promise<Doctor> => {
+export const getDoctorById = async (id: string): Promise<Doctor> => {
   const response = await axiosInstance.get(`/doctors/${id}`);
   return response.data;
 };
@@ -42,6 +42,6 @@ export const updateDoctor = async (
   return response.data;
 };
 
-export const deleteDoctor = async (id: number): Promise<void> => {
+export const deleteDoctor = async (id: string): Promise<void> => {
   await axiosInstance.delete(`/doctors/${id}`);
 };

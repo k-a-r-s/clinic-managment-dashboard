@@ -117,14 +117,62 @@ export class DoctorRepository implements IDoctorRepository {
     id: string,
     doctorData: Partial<Doctor>
   ): Promise<Doctor> {
-    const { error } = await supabaseAdmin
-      .from("doctors")
-      .update(doctorData)
-      .eq("id", id);
+    // Split incoming payload into profile fields and doctor-specific fields
+    const payload: any = doctorData as any;
+    const profileUpdate: any = {};
+    const doctorUpdate: any = {};
 
-    if (error) {
-      Logger.error("Doctor not updated", { error });
-      throw new DatabaseError(error.message);
+    if (payload.firstName ?? payload["first_name"]) {
+      profileUpdate.first_name = payload.firstName || payload["first_name"];
+    }
+    if (payload.lastName ?? payload["last_name"]) {
+      profileUpdate.last_name = payload.lastName || payload["last_name"];
+    }
+    if (payload.email) {
+      profileUpdate.email = payload.email;
+    }
+    if (payload.role) {
+      // Normalize role to lowercase string as stored in profiles.role
+      profileUpdate.role = String(payload.role).toLowerCase();
+    }
+
+    if (payload.salary !== undefined) {
+      doctorUpdate.salary = payload.salary;
+    }
+    if (payload.specialization !== undefined) {
+      doctorUpdate.specialization = payload.specialization;
+    }
+    if (payload.isMedicalDirector !== undefined) {
+      doctorUpdate.is_medical_director = payload.isMedicalDirector;
+    }
+    if (payload.is_medical_director !== undefined) {
+      doctorUpdate.is_medical_director = payload.is_medical_director;
+    }
+
+    // Update profile first (profiles.id == doctors.id FK)
+    if (Object.keys(profileUpdate).length > 0) {
+      const { error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .update(profileUpdate)
+        .eq("id", id);
+
+      if (profileError) {
+        Logger.error("Profile not updated", { profileError });
+        throw new DatabaseError(profileError.message);
+      }
+    }
+
+    // Update doctors table
+    if (Object.keys(doctorUpdate).length > 0) {
+      const { error: doctorError } = await supabaseAdmin
+        .from("doctors")
+        .update(doctorUpdate)
+        .eq("id", id);
+
+      if (doctorError) {
+        Logger.error("Doctor not updated", { doctorError });
+        throw new DatabaseError(doctorError.message);
+      }
     }
 
     // Fetch the updated doctor with profile information

@@ -12,7 +12,7 @@ export interface Doctor {
   updatedAt?: string;
 }
 
-//CreateDoctorDto
+//CreateDoctorDto 
 export interface DoctorFormData {
   firstName: string;
   lastName: string;

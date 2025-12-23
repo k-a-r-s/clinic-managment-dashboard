@@ -10,8 +10,8 @@ import { getDoctors } from "../api/doctors.api";
 import type { Doctor } from "../../../types";
 import toast from "react-hot-toast";
 interface DoctorsListPageProps {
-  onViewDoctor?: (doctorId: number) => void;
-  onEditDoctor?: (doctorId: number) => void;
+  onViewDoctor?: (doctorId: string | number) => void;
+  onEditDoctor?: (doctorId: string | number) => void;
   onAddNew?: () => void;
 }
 
@@ -23,7 +23,7 @@ export function DoctorsList({
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null);
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string | number | null>(null);
 
   useEffect(() => {
     loadDoctors();
@@ -33,7 +33,7 @@ export function DoctorsList({
     try {
       setIsLoading(true);
       const data = await getDoctors();
-      setDoctors(data);
+      setDoctors(data || []);
     } catch (error) {
       console.error("Failed to load doctors:", error);
       toast.error("Failed to load doctors");
@@ -41,22 +41,24 @@ export function DoctorsList({
       setIsLoading(false);
     }
   };
-
-  //Filter doctors
-  const filteredDoctors = doctors.length > 0 ? doctors.filter((doctor) => {
-    const fullName = `${doctor.firstName} ${doctor.lastName}`.toLowerCase();
-    const matchesSearch =
-      fullName.includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  }) : [];
-
-  const handleViewDoctor = (doctorId: number) => {
+  // Filter doctors by full name (case-insensitive)
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredDoctors =
+    normalizedSearch.length === 0
+      ? doctors
+      : doctors.filter((doctor) => {
+          const searchableText = `${doctor.firstName} ${doctor.lastName}`.toLowerCase();
+          return searchableText.includes(normalizedSearch);
+        });
+  
+ 
+  const handleViewDoctor = (doctorId: string | number) => {
     if (onViewDoctor) {
       onViewDoctor(doctorId);
     }
   };
 
-  const handleEditDoctor = (doctorId: number) => {
+  const handleEditDoctor = (doctorId: string | number) => {
     if (onEditDoctor) {
       onEditDoctor(doctorId);
     }
@@ -166,16 +168,7 @@ export function DoctorsList({
               onChange={setSearchTerm}
             />
 
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <Button
-                onClick={handleAddNew}
-                className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
-              >
-                <Plus className="w-4 h-4" />
-                Add New Doctor
-              </Button>
-            </div>
+            
           </div>
         </div>
 
@@ -199,9 +192,9 @@ export function DoctorsList({
 
         {/* Pagination */}
         <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600">
             Showing {filteredDoctors.length} of {doctors.length} doctors
-          </p>
+            </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="border-gray-200">
               Previous

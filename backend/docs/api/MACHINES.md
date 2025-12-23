@@ -7,7 +7,6 @@
 
 **Authentication:** All endpoints require Bearer token
 
----
 
 ## 1. Create Machine
 
@@ -102,3 +101,59 @@
 **Required Role:** `admin`
 
 **Response:** 200 success
+
+---
+
+## 6. Machine Statistics (basic)
+
+**Endpoint:** `GET /machines/stats`
+
+**Description:** Returns raw machine stats with camelCase keys used by the frontend: total, available, inUse, maintenance, outOfService
+
+**Authentication:** Required
+
+**Required Role:** `admin`, `doctor`, `receptionist`
+
+**Response:** 200
+```json
+{
+  "success": true,
+  "message": "Machine stats retrieved successfully",
+  "data": {
+    "total": 42,
+    "available": 30,
+    "inUse": 5,
+    "maintenance": 4,
+    "outOfService": 3
+  },
+  "error": null
+}
+```
+
+---
+
+## 7. Machine Statistics (formatted keys)
+
+**Endpoint:** `GET /machines/machine-stats`
+
+**Description:** Returns machine stats formatted per product request using explicit keys: In_Use, Available, Out_of_Service, Maintenance, total
+
+**Authentication:** Required
+
+**Required Role:** `admin`, `doctor`, `receptionist`
+
+**Response:** 200
+```json
+{
+  "success": true,
+  "message": "Machine stats retrieved successfully",
+  "data": {
+    "In_Use": 5,
+    "Available": 30,
+    "Out_of_Service": 3,
+    "Maintenance": 4,
+    "total": 42
+  },
+  "error": null
+}
+```

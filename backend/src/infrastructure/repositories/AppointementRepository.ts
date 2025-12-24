@@ -3,6 +3,7 @@ import { IAppointementsRepository } from "../../domain/repositories/IAppointemen
 import { supabaseAdmin } from "../database/supabase";
 import { DatabaseError } from "../errors/DatabaseError";
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+
 export class AppointementRepository implements IAppointementsRepository {
     async addAppointement(appointementData: Appointement): Promise<null> {
         const { error } = await supabaseAdmin.from('appointments').insert({
@@ -12,7 +13,7 @@ export class AppointementRepository implements IAppointementsRepository {
             room_id: appointementData.roomId,
             created_by_receptionist_id: appointementData.createdByReceptionId,
             created_by_doctor_id: appointementData.createdByDoctorId,
-            appointment_date: appointementData.appointementDate,
+            appointment_date: appointementData.appointmentDate,
             estimated_duration: appointementData.estimatedDurationInMinutes,
             status: appointementData.status
         });
@@ -21,6 +22,7 @@ export class AppointementRepository implements IAppointementsRepository {
         }
         return null;
     };
+
     async deleteAppointement(appointementId: string): Promise<null> {
         const { error } = await supabaseAdmin.from('appointments').delete().eq('id', appointementId);
         if (error) {
@@ -28,6 +30,32 @@ export class AppointementRepository implements IAppointementsRepository {
         }
         return Promise.resolve(null);
     };
+
+    async getAppointmentById(appointmentId: string): Promise<Appointement | null> {
+        const { data, error } = await supabaseAdmin
+            .from("appointments")
+            .select("*")
+            .eq("id", appointmentId)
+            .single();
+
+        if (error) {
+            throw new DatabaseError(`Error fetching appointment: ${error.message}`);
+        }
+        if (!data) return null;
+
+        return new Appointement(
+            data.id,
+            data.patient_id,
+            data.doctor_id,
+            data.room_id,
+            data.created_by_receptionist_id,
+            data.created_by_doctor_id,
+            new Date(data.appointment_date),
+            data.estimated_duration,
+            data.status
+        );
+    }
+
     async getAppointmentsByPatientId(
         patientId: string,
         view: "year" | "month" | "week" | "day" | "all" = "month"
@@ -91,6 +119,7 @@ export class AppointementRepository implements IAppointementsRepository {
             item.status
         ));
     };
+
     async getAppointementsByDoctorId(doctorId: string, view: "year" | "month" | "week" | "day" | "all" = "month"): Promise<Appointement[]> {
         const now = new Date();
         let from: Date | null = null;
@@ -152,7 +181,10 @@ export class AppointementRepository implements IAppointementsRepository {
         ));
     }
 
-    async getAppointements(view: "year" | "month" | "week" | "day" | "all" = "month"): Promise<Appointement[]> {
+    async getAppointements(
+        view: "year" | "month" | "week" | "day" | "all" = "month",
+        filters?: { patientName?: string; doctorName?: string }
+    ): Promise<Appointement[]> {
         const now = new Date();
         let from: Date | null = null;
         let to: Date | null = null;
@@ -181,9 +213,15 @@ export class AppointementRepository implements IAppointementsRepository {
             }
         }
 
-        let query = supabaseAdmin
-            .from("appointments")
-            .select("*");
+        let query = supabaseAdmin.from("appointments").select("*, patients!inner(first_name, last_name), doctors!inner(first_name, last_name)");
+
+        if (filters?.patientName) {
+            query = query.ilike('patients.first_name', `%${filters.patientName}%`);
+        }
+
+        if (filters?.doctorName) {
+            query = query.ilike('doctors.first_name', `%${filters.doctorName}%`);
+        }
 
         if (from && to) {
             query = query
@@ -210,6 +248,7 @@ export class AppointementRepository implements IAppointementsRepository {
             item.status
         ));
     };
+
     async updateAppointementStatus(appointementId: string, status: string): Promise<null> {
         const { error } = await supabaseAdmin.from('appointments').update({ status: status }).eq('id', appointementId);
         if (error) {

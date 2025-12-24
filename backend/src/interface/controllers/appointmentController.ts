@@ -3,6 +3,7 @@ import { GetAppointementsUseCase } from "../../application/use-cases/appointemen
 import { GetAppointmentsByDoctorUseCase } from "../../application/use-cases/appointement/GetAppointmentsByDoctorUseCase";
 import { GetAppointementsByPatientUseCase } from "../../application/use-cases/appointement/GetAppointementsByPatientUseCase";
 import { deleteAppointementUseCase } from "../../application/use-cases/appointement/DeleteAppointmentUseCase";
+import { GetAppointmentByIdUseCase } from "../../application/use-cases/appointement/GetAppointmentByIdUseCase";
 import { GetAppointmentHistoryforPatientUseCase } from "../../application/use-cases/AppointmentHistory/GetAppointmentHistoryforPatientUseCase";
 import { GetHistoriesByPatientUseCase } from "../../application/use-cases/AppointmentHistory/GetHistoriesByPatientUseCase";
 import { UpdateAppointmentHistoryUseCase } from "../../application/use-cases/AppointmentHistory/UpdateAppointmentHistoryUseCase";
@@ -19,6 +20,7 @@ export class AppointementController {
         private getAppointementsByDoctorUseCase: GetAppointmentsByDoctorUseCase,
         private getAppointementsByPatientUseCase: GetAppointementsByPatientUseCase,
         private deleteAppointementUseCase: deleteAppointementUseCase,
+        private getAppointmentByIdUseCase: GetAppointmentByIdUseCase,
         private getAppointmentHistoryUseCase: GetAppointmentHistoryforPatientUseCase,
         private getHistoriesByPatientUseCase: GetHistoriesByPatientUseCase,
         private updateAppointmentHistoryUseCase: UpdateAppointmentHistoryUseCase,
@@ -33,9 +35,24 @@ export class AppointementController {
     }
 
     async getAllAppointments(request: AuthRequest, response: Response) {
-        const { view = "month" } = request.query;
-        const appointments = await this.getAppointementsUseCase.execute(view as "year" | "month" | "week" | "day");
+        const { view = "month", patientName, doctorName } = request.query;
+        const filters = {
+            patientName: patientName as string | undefined,
+            doctorName: doctorName as string | undefined
+        };
+        const appointments = await this.getAppointementsUseCase.execute(view as "year" | "month" | "week" | "day", filters);
         return ResponseFormatter.success(response, appointments, "Appointments retrieved successfully");
+    }
+
+    async getAppointmentById(request: AuthRequest, response: Response) {
+        const { appointmentId } = request.params;
+        const appointment = await this.getAppointmentByIdUseCase.execute(appointmentId);
+        
+        if (!appointment) {
+            return ResponseFormatter.error(response, null, 404, "Appointment not found");
+        }
+        
+        return ResponseFormatter.success(response, appointment, "Appointment retrieved successfully");
     }
 
     async getAppointmentsByDoctor(request: AuthRequest, response: Response) {

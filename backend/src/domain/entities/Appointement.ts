@@ -12,18 +12,18 @@ export class Appointement {
     public roomId: UUID
     public createdByReceptionId: UUID | null
     public createdByDoctorId: UUID | null
-    public appointementDate: Date
+    public appointmentDate: Date
     public estimatedDurationInMinutes: number
     public status: status
 
-    constructor(id: UUID, patientId: UUID, doctorId: UUID, roomId: UUID, createdByReceptionId: UUID | null, createdByDoctorId: UUID | null, appointementDate: Date, estimatedDurationInMinutes: number, status: status) {
+    constructor(id: UUID, patientId: UUID, doctorId: UUID, roomId: UUID, createdByReceptionId: UUID | null, createdByDoctorId: UUID | null, appointmentDate: Date, estimatedDurationInMinutes: number, status: status) {
         this.id = id
         this.patientId = patientId
         this.doctorId = doctorId
         this.roomId = roomId
         this.createdByReceptionId = createdByReceptionId
         this.createdByDoctorId = createdByDoctorId
-        this.appointementDate = appointementDate
+        this.appointmentDate = appointmentDate
         this.estimatedDurationInMinutes = estimatedDurationInMinutes
         this.status = status
     }
@@ -42,7 +42,7 @@ export class Appointement {
             roomId: this.roomId,
             createdByReceptionId: this.createdByReceptionId,
             createdByDoctorId: this.createdByDoctorId,
-            appointementDate: this.appointementDate,
+            appointmentDate: this.appointmentDate,
             estimatedDurationInMinutes: this.estimatedDurationInMinutes,
             status: this.status
         }

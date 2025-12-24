@@ -1,3 +1,4 @@
+import { differenceInYears } from "date-fns";
 
 export interface PatientProps {
   id: string;
@@ -78,6 +79,9 @@ export class Patient {
     return this.props.emergencyContactPhone;
   }
 
+  public getAge(): number {
+    return differenceInYears(new Date(), new Date(this.props.birthDate));
+  }
 
   public toJson() {
     return {
@@ -87,6 +91,7 @@ export class Patient {
       email: this.props.email,
       phoneNumber: this.props.phoneNumber,
       birthDate: this.props.birthDate,
+      age: this.getAge(),
       gender: this.props.gender,
       address: this.props.address,
       profession: this.props.profession,

@@ -11,6 +11,8 @@ export class GetAllPatientsUseCase {
       lastName: patient.getLastName(),
       email: patient.getEmail(),
       phoneNumber: patient.getPhoneNumber(),
+      age: patient.getAge(),
+      gender: patient.getGender(),
     })) satisfies GetPatientsListResponseDto;
   }
 }

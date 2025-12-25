@@ -60,6 +60,7 @@ import { GetAppointementsUseCase } from '../application/use-cases/appointement/G
 import { GetAppointmentsByDoctorUseCase } from '../application/use-cases/appointement/GetAppointmentsByDoctorUseCase';
 import { GetAppointementsByPatientUseCase } from '../application/use-cases/appointement/GetAppointementsByPatientUseCase';
 import { deleteAppointementUseCase } from '../application/use-cases/appointement/DeleteAppointmentUseCase';
+import { GetAppointmentByIdUseCase } from '../application/use-cases/appointement/GetAppointmentByIdUseCase';
 
 // Use Cases - Room
 import { CreateRoom } from '../application/use-cases/rooms/CreateRoom';
@@ -130,6 +131,7 @@ const getAppointementsUseCase = new GetAppointementsUseCase(appointementReposito
 const getAppointmentsByDoctorUseCase = new GetAppointmentsByDoctorUseCase(appointementRepository);
 const getAppointementsByPatientUseCase = new GetAppointementsByPatientUseCase(appointementRepository);
 const deleteAppointementUseCaseInstance = new deleteAppointementUseCase(appointementRepository);
+const getAppointmentByIdUseCase = new GetAppointmentByIdUseCase(appointementRepository);
 
 // Use Cases - Room
 const createRoomUseCase = new CreateRoom(roomRepository);
@@ -194,6 +196,7 @@ export const appointementController = new AppointementController(
     getAppointmentsByDoctorUseCase,
     getAppointementsByPatientUseCase,
     deleteAppointementUseCaseInstance,
+    getAppointmentByIdUseCase,
     getAppointmentHistoryUseCase,
     getHistoriesByPatientUseCase,
     updateAppointmentHistoryUseCase,

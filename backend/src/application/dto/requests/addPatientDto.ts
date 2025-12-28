@@ -14,6 +14,8 @@ export const addPatientSchemaDto = z.object({
   insuranceNumber: z.string().min(1, 'Insurance number is required'),
   emergencyContactName: z.string().min(1, 'Emergency contact name is required'),
   emergencyContactPhone: z.string().min(1, 'Emergency contact phone is required'),
+  // Optional: if provided, associate the new patient with this doctor and create the medical file
+  doctorId: z.string().uuid().optional(),
   
 });
 

@@ -8,26 +8,19 @@ import {
   getVaccinations,
   updateVaccinations,
 } from "../api/medical.api";
+import type { Vaccination , Dose } from "../../../types";
 
-type Dose = {
-  doseNumber?: number;
-  date?: string;
-  reminderDate?: string;
-};
-
-type Vaccination = {
-  vaccineName?: string;
-  doses?: Dose[];
-};
 
 interface Props {
   patientId: string;
+  medicalFileId: string;
   editable?: boolean;
 }
 
 export function VaccinationSection({
   patientId,
-  editable = false,
+  medicalFileId,
+  editable = true,
 }: Props) {
   const [data, setData] = useState<Vaccination[]>([]);
   const [formData, setFormData] = useState<Vaccination[]>([]);
@@ -59,6 +52,7 @@ export function VaccinationSection({
       prev.map((v, i) => (i === index ? { ...v, [field]: value } : v))
     );
   };
+  
 
   const handleDoseChange = (
     vIndex: number,
@@ -126,7 +120,7 @@ export function VaccinationSection({
 
   const handleSave = async () => {
     try {
-      await updateVaccinations(patientId, formData);
+      await updateVaccinations(medicalFileId, formData);
       setData(formData);
       toast.success("Vaccinations updated");
     } catch {

@@ -24,7 +24,7 @@ interface Props {
 
 export function VascularAccessSection({
   patientId,
-  editable = false,
+  editable = true,
 }: Props) {
   const [data, setData] = useState<VascularAccess[]>([]);
   const [formData, setFormData] = useState<VascularAccess[]>([]);

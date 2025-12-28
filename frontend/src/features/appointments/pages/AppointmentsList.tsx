@@ -61,10 +61,10 @@ export function AppointmentsList({
   // Filter appointments
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
-      appointment.patientId
+      (appointment.patient.firstName + ' ' + appointment.patient.lastName)
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      appointment.doctorId
+      (appointment.patient.firstName + ' ' + appointment.patient.lastName)
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       appointment.reason?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -161,7 +161,7 @@ export function AppointmentsList({
       header: "Patient",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm font-medium">{appointment.patientId}</span>
+        <span className="text-sm font-medium">{appointment.patient.firstName + ' ' + appointment.patient.lastName}</span>
       ),
     },
     {
@@ -169,7 +169,7 @@ export function AppointmentsList({
       header: "Doctor",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm">{appointment.doctorId}</span>
+        <span className="text-sm">{appointment.doctor.firstName + ' ' + appointment.doctor.lastName}</span>
       ),
     },
     {

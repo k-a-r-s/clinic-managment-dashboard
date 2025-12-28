@@ -4,6 +4,7 @@ export * from "./doctors";
 export * from "./patient";
 export * from "./dashboard";
 export * from "./appointment";
+export * from "./medicalfield";
 // Admin Type
 
 export interface UserProfile {

@@ -207,7 +207,7 @@ export function AppointmentCard({
             ) : (
               <div className="bg-gray-50 h-9 px-3 flex items-center rounded">
                 <UserCheck className="w-4 h-4 mr-2 text-gray-400" />
-                {appointment.doctor.first_name + " " + appointment.doctor.last_name}
+                {appointment.doctor.firstName + " " + appointment.doctor.lastName}
               </div>
             )}
           </div>
@@ -234,7 +234,7 @@ export function AppointmentCard({
             ) : (
               <div className="bg-gray-50 h-9 px-3 flex items-center rounded">
                 <User className="w-4 h-4 mr-2 text-gray-400" />
-                {appointment.patient.first_name + " " + appointment.patient.last_name}
+                {appointment.patient.firstName + " " + appointment.patient.lastName}
               </div>
             )}
           </div>

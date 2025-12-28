@@ -42,16 +42,16 @@ export interface Medication {
 
 export type Medications = Medication[];
 
-export interface VaccineDose {
-  doseNumber: number;
-  date: ISODateString;
-  reminderDate: ISODateString;
-}
+export type Dose = {
+  doseNumber?: number;
+  date?: string;
+  reminderDate?: string;
+};
 
-export interface Vaccination {
-  vaccineName: string;
-  doses: VaccineDose[];
-}
+export type Vaccination = {
+  vaccineName?: string;
+  doses?: Dose[];
+};
 
 export type Vaccinations = Vaccination[];
 

@@ -31,6 +31,7 @@ import {
   deletePatient,
 } from "../api/patients.api";
 import type { PatientFormData } from "../../../types";
+import { getmedicalFileId } from "../api/medical.api";
 
 interface CollapsibleSectionProps {
   title: string;
@@ -125,6 +126,7 @@ export function PatientProfile({
     emergencyContactName: "",
     emergencyContactPhone: "",
   });
+  const [medicalFileId ,setmedicalFileId] = useState<string>("")
 
   useEffect(() => {
     loadPatient();
@@ -150,6 +152,8 @@ export function PatientProfile({
         emergencyContactName: data.emergencyContactName,
         emergencyContactPhone: data.emergencyContactPhone,
       });
+      const medicalId = await getmedicalFileId(patientId);
+      setmedicalFileId(medicalId)
     } catch (error) {
       console.error("Failed to load patient:", error);
       toast.error("Failed to load patient");
@@ -589,19 +593,19 @@ export function PatientProfile({
 
           {/* Vaccinations */}
           <CollapsibleSubsection title="Vaccinations" defaultOpen={true}>
-            <VaccinationSection />
+            <VaccinationSection patientId={patientId} medicalFileId={medicalFileId}/>
           </CollapsibleSubsection>
 
           {/* Dialysis Protocol */}
           <CollapsibleSubsection title="Dialysis Protocol" defaultOpen={true}>
-            <DialysisProtocolSection />
+            <DialysisProtocolSection  patientId={patientId}/>
           </CollapsibleSubsection>
-
+{/*  */}
           {/* Current Medications */}
           <CollapsibleSubsection title="Current Medications" defaultOpen={true}>
-            <MedicationsSection />
+            <MedicationsSection patientId={patientId} />
           </CollapsibleSubsection>
-
+{/*  */}
           {/* Lab Results */}
           <CollapsibleSubsection title="Recent Lab Results" defaultOpen={true}>
             <LabResultsSection />

@@ -113,8 +113,8 @@ export function AppointmentDetails({
       setFormData({
         appointmentDate: appointment.appointmentDate,
         estimatedDurationInMinutes: appointment.estimatedDurationInMinutes || 0,
-        doctorId: appointment.doctorId,
-        patientId: appointment.patientId,
+        doctorId: appointment.doctor.id,
+        patientId: appointment.patient.id,
         roomId: appointment.roomId || "",
         status: appointment.status || "SCHEDULED",
         reason: appointment.reason || "",

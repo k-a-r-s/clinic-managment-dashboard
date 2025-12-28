@@ -7,21 +7,21 @@ export type AppointmentStatus =
 
 export interface doctor_app {
     id:string;
-    first_name:string;
-    last_name:string;
+    firstName:string;
+    lastName:string;
 }
 
 export interface patient_app {
     id:string;
-    first_name:string;
-    last_name:string;
+    firstName:string;
+    lastName:string;
 }
 
 
 export interface Appointment {
   id: string;
-  patientId: string;
-  doctorId: string;
+  patient: patient_app;
+  doctor: doctor_app;
   roomId?: string;
   createdByReceptionistId?: string;
   createdByDoctorId?: string;

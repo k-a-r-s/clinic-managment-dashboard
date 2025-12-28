@@ -26,7 +26,7 @@ interface Props {
 
 export function MedicationsSection({
   patientId,
-  editable = false,
+  editable = true,
 }: Props) {
   const [data, setData] = useState<Medication[]>([]);
   const [formData, setFormData] = useState<Medication[]>([]);

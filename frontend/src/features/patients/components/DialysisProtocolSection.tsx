@@ -38,7 +38,7 @@ interface Props {
 
 export function DialysisProtocolSection({
   patientId,
-  editable = false,
+  editable = true,
 }: Props) {
   const [data, setData] = useState<DialysisProtocol | null>(null);
   const [formData, setFormData] = useState<DialysisProtocol>({

@@ -8,8 +8,7 @@ import {
   getVaccinations,
   updateVaccinations,
 } from "../api/medical.api";
-import type { Vaccination , Dose } from "../../../types";
-
+import type { Vaccination, Dose } from "../../../types";
 
 interface Props {
   patientId: string;
@@ -41,7 +40,7 @@ export function VaccinationSection({
 
   useEffect(() => {
     if (!editable) setFormData(data);
-  }, [editable]);
+  }, [editable, data]);
 
   const handleVaccineChange = (
     index: number,
@@ -52,7 +51,6 @@ export function VaccinationSection({
       prev.map((v, i) => (i === index ? { ...v, [field]: value } : v))
     );
   };
-  
 
   const handleDoseChange = (
     vIndex: number,
@@ -77,7 +75,16 @@ export function VaccinationSection({
   const addVaccine = () => {
     setFormData((prev) => [
       ...prev,
-      { vaccineName: "", doses: [] },
+      {
+        vaccineName: "",
+        doses: [
+          {
+            doseNumber: 1,
+            date: "",
+            reminderDate: "",
+          },
+        ],
+      },
     ]);
   };
 
@@ -131,7 +138,7 @@ export function VaccinationSection({
   const list = editable ? formData : data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {list.length === 0 && (
         <p className="text-sm text-gray-500 italic">
           No vaccinations recorded
@@ -139,8 +146,9 @@ export function VaccinationSection({
       )}
 
       {list.map((vaccination, vIndex) => (
-        <div key={vIndex} className="border rounded-lg p-4 space-y-3">
-          <div className="flex justify-between items-center">
+        <div key={vIndex} className="border rounded-lg p-4 space-y-4">
+          {/* Vaccine header */}
+          <div className="flex items-center gap-4">
             {editable ? (
               <Input
                 placeholder="Vaccine name"
@@ -170,6 +178,7 @@ export function VaccinationSection({
             )}
           </div>
 
+          {/* Doses */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(vaccination.doses ?? []).map((dose, dIndex) => (
               <div key={dIndex} className="space-y-1">
@@ -191,7 +200,6 @@ export function VaccinationSection({
                     />
                     <Input
                       type="date"
-                      placeholder="Reminder"
                       value={dose.reminderDate ?? ""}
                       onChange={(e) =>
                         handleDoseChange(

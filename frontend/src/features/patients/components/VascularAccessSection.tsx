@@ -8,22 +8,17 @@ import {
   getVascularAccess,
   updateVascularAccess,
 } from "../api/medical.api";
-
-type VascularAccess = {
-  type?: string;
-  site?: string;
-  operator?: string;
-  firstUseDate?: string;
-  creationDates?: string[];
-};
+import type { VascularAccess } from "../../../types";
 
 interface Props {
   patientId: string;
+  medicalFileId: string;
   editable?: boolean;
 }
 
 export function VascularAccessSection({
   patientId,
+  medicalFileId,
   editable = true,
 }: Props) {
   const [data, setData] = useState<VascularAccess[]>([]);
@@ -74,7 +69,7 @@ export function VascularAccessSection({
 
   const handleSave = async () => {
     try {
-      await updateVascularAccess(patientId, formData);
+      await updateVascularAccess(medicalFileId, formData);
       setData(formData);
       toast.success("Vascular access updated");
     } catch {

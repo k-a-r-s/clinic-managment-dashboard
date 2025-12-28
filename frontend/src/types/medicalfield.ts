@@ -1,6 +1,6 @@
 export type ISODateString = string; // e.g. "2024-11-25"
 
-export type DialysisDay =
+export type weekDays =
   | "Monday"
   | "Tuesday"
   | "Wednesday"
@@ -9,19 +9,19 @@ export type DialysisDay =
   | "Saturday"
   | "Sunday";
 
-export interface DialysisProtocol {
-  dialysisDays: DialysisDay[];
-  sessionsPerWeek: number;
-  generator: string;
-  sessionDuration: string; // e.g. "4 hours"
-  dialyser: string;
-  needle: string;
-  bloodFlow: string; // could be number later
-  anticoagulation: string;
-  dryWeight: string;
-  interDialyticWeightGain: string;
-  incidents: string[];
-}
+export type DialysisProtocol = {
+  dialysisDays?: string[];
+  sessionsPerWeek?: number | null;
+  generator?: string;
+  sessionDuration?: string;
+  dialyser?: string;
+  needle?: string;
+  bloodFlow?: string;
+  anticoagulation?: string;
+  dryWeight?: string;
+  interDialyticWeightGain?: string;
+  incidents?: string[];
+};
 
 export interface LabResultEntry {
   date: ISODateString;
@@ -77,4 +77,9 @@ export interface MedicalField {
   id: string;
   patientId: string;
   data: MedicalDataPayload;
+}
+
+export interface LabResult {
+  date: string;
+  parameters: Record<string, string>;
 }

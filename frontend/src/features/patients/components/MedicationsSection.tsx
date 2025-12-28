@@ -8,24 +8,17 @@ import {
   getMedications,
   updateMedications,
 } from "../api/medical.api";
-
-type MedicationHistory = {
-  startDate?: string;
-  dosage?: string;
-};
-
-type Medication = {
-  name?: string;
-  history?: MedicationHistory[];
-};
+import type { Medication , MedicationHistory } from "../../../types";
 
 interface Props {
   patientId: string;
+  medicalFileId: string;
   editable?: boolean;
 }
 
 export function MedicationsSection({
   patientId,
+  medicalFileId,
   editable = true,
 }: Props) {
   const [data, setData] = useState<Medication[]>([]);
@@ -82,7 +75,10 @@ export function MedicationsSection({
   const addMedication = () => {
     setFormData((prev) => [
       ...prev,
-      { name: "", history: [] },
+      {
+        name: "",
+        history: [{ startDate: "", dosage: "" }],
+      },
     ]);
   };
 
@@ -121,7 +117,7 @@ export function MedicationsSection({
 
   const handleSave = async () => {
     try {
-      await updateMedications(patientId, formData);
+      await updateMedications(medicalFileId, formData);
       setData(formData);
       toast.success("Medications updated");
     } catch {
@@ -176,16 +172,6 @@ export function MedicationsSection({
                       />
                     ) : (
                       med.name || "—"
-                    )}
-
-                    {editable && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeMedication(mIndex)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
                     )}
                   </td>
                 )}

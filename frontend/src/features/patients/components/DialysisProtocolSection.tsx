@@ -6,6 +6,7 @@ import {
   getDialysisProtocol,
   updateDialysisProtocol,
 } from "../api/medical.api";
+import type { DialysisProtocol } from "../../../types";
 
 const weekDays = [
   "Monday",
@@ -17,33 +18,30 @@ const weekDays = [
   "Sunday",
 ];
 
-type DialysisProtocol = {
-  dialysisDays?: string[];
-  sessionsPerWeek?: number | null;
-  generator?: string;
-  sessionDuration?: string;
-  dialyser?: string;
-  needle?: string;
-  bloodFlow?: string;
-  anticoagulation?: string;
-  dryWeight?: string;
-  interDialyticWeightGain?: string;
-  incidents?: string[];
-};
-
 interface Props {
   patientId: string;
+  medicalFileId: string;
   editable?: boolean;
 }
 
 export function DialysisProtocolSection({
   patientId,
+  medicalFileId,
   editable = true,
 }: Props) {
   const [data, setData] = useState<DialysisProtocol | null>(null);
   const [formData, setFormData] = useState<DialysisProtocol>({
     dialysisDays: [],
     incidents: [],
+    sessionsPerWeek: 0,
+    generator: "",
+    sessionDuration: "",
+    dialyser: "",
+    needle: "",
+    bloodFlow: "",
+    anticoagulation: "",
+    dryWeight: "",
+    interDialyticWeightGain: "",
   });
 
   useEffect(() => {
@@ -53,10 +51,10 @@ export function DialysisProtocolSection({
   const loadData = async () => {
     try {
       const res = await getDialysisProtocol(patientId);
-      setData(res);
-      setFormData(
-        res ?? { dialysisDays: [], incidents: [] }
-      );
+      const protocol = res ?? null;
+
+      setData(protocol);
+      setFormData(protocol ?? { dialysisDays: [], incidents: [] });
     } catch {
       toast.error("Failed to load dialysis protocol");
     }
@@ -104,7 +102,7 @@ export function DialysisProtocolSection({
 
   const handleSave = async () => {
     try {
-      await updateDialysisProtocol(patientId, formData);
+      await updateDialysisProtocol(medicalFileId, formData);
       setData(formData);
       toast.success("Dialysis protocol updated");
     } catch {

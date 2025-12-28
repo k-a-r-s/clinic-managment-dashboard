@@ -46,7 +46,7 @@ const router = Router();
  *                 type: string
  *               example:
  *                 - accessToken=jwt_access_token; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=3600
- *                 - refreshToken=jwt_refresh_token; Path=/api/auth/refresh-token; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
+*                 - refreshToken=jwt_refresh_token; Path=/auth/refresh-token; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
  *         content:
  *           application/json:
  *             schema:
@@ -137,7 +137,7 @@ router.post(
  *                 type: string
  *               example:
  *                 - accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT
- *                 - refreshToken=; Path=/api/auth/refresh-token; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+*                 - refreshToken=; Path=/auth/refresh-token; Expires=Thu, 01 Jan 1970 00:00:00 GMT
  *       401:
  *         description: Unauthorized
  */
@@ -174,7 +174,7 @@ router.post(
  *                 type: string
  *               example:
  *                 - accessToken=jwt_new_access_token; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=3600
- *                 - refreshToken=jwt_new_refresh_token; Path=/api/auth/refresh-token; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
+*                 - refreshToken=jwt_new_refresh_token; Path=/auth/refresh-token; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
  *         content:
  *           application/json:
  *             schema:

@@ -21,6 +21,7 @@ import type {
   AppointmentWithDetails,
   AppointmentFormData,
 } from "../../../types";
+import { getRooms } from "../../rooms/api/rooms.api";
 
 interface AppointmentDetailsProps {
   appointmentId: string;
@@ -46,6 +47,9 @@ export function AppointmentDetails({
   const [patients, setPatients] = useState<Array<{ id: string; name: string }>>(
     []
   );
+  const [rooms, setRooms] = useState<Array<{ id: string; name: string }>>(
+    []
+  );
   const [formData, setFormData] = useState<AppointmentFormData>({
     appointmentDate: "",
     estimatedDurationInMinutes: 0,
@@ -63,24 +67,26 @@ export function AppointmentDetails({
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const [appointmentData, doctorsData, patientsData] = await Promise.all([
+      const [appointmentData, doctorsData, patientsData , roomsData] = await Promise.all([
         getAppointmentById(appointmentId),
         getDoctors(),
         getPatients(),
+        getRooms()
       ]);
-      console.log("worked")
       setAppointment(appointmentData);
-      setDoctors(doctorsData.map((d) => ({ id: d.id, name: d.name })));
-      setPatients(patientsData.map((p) => ({ id: p.id, name: p.name })));
+      setDoctors(doctorsData.map((d) => ({ id: d.id, name: d.firstName + " "  +d.lastName })));
+      setPatients(patientsData.map((p) => ({ id: p.id, name: p.firstName + " "  +p.lastName  })));
+      setRooms(roomsData.map((r) => ({ id: r.id, name: r.roomNumber  })));
       setFormData({
         appointmentDate: appointmentData.appointmentDate,
         estimatedDurationInMinutes: appointmentData.estimatedDurationInMinutes || 0,
-        doctorId: appointmentData.doctorId,
-        patientId: appointmentData.patientId,
+        doctorId: appointmentData.doctor.id,
+        patientId: appointmentData.patient.id,
         roomId: appointmentData.roomId || "",
         status: appointmentData.status || "SCHEDULED",
         reason: appointmentData.reason || "",
       });
+      console.log("appointmentData aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaqsdqsdqsdqsdsqdsqdqsdqsdqsa" , rooms)
     } catch (error) {
       console.error("Failed to load appointment:", error);
       toast.error("Failed to load appointment");
@@ -183,6 +189,7 @@ export function AppointmentDetails({
         onFormChange={handleFormChange}
         doctors={doctors}
         patients={patients}
+        rooms={rooms}
       />
     </div>
   );

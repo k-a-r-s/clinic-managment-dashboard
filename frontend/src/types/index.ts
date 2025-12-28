@@ -2,6 +2,7 @@
 
 export * from "./doctors";
 export * from "./dashboard";
+export * from "./appointment";
 // Admin Type
 
 export interface UserProfile {
@@ -178,52 +179,6 @@ export interface Room {
   updatedAt?: string;
 }
 
-
-// Appointment Types
-
-export type AppointmentStatus =
-  | "SCHEDULED"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CANCELED"
-  | "NO_SHOW";
-
-
-export interface Appointment {
-  id: number;
-  patientId: string;
-  doctorId: string;
-  roomId?: string;
-  createdByReceptionistId?: string;
-  createdByDoctorId?: string;
-  appointmentDate: string;
-  estimatedDurationInMinutes: number; // in minutes
-  actualDuration?: number;
-  status: AppointmentStatus;
-  notes?: string;
-  reason?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface AppointmentFormData {
-  patientId: string;
-  doctorId: string;
-  roomId: string;
-  appointmentDate: string;
-  estimatedDurationInMinutes: number;
-  status?: AppointmentStatus;
-  notes?: string;
-  reason?: string;
-  createdByDoctorId?: string | null,
-  createdByReceptionId?: string | null,
-}
-
-export interface AppointmentWithDetails extends Appointment {
-  doctorName: string;
-  patientName: string;
-  roomNumber?: string;
-}
 
 // API Response Types
 export interface ApiSuccessResponse<T = any> {

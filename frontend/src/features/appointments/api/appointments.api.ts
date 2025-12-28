@@ -14,13 +14,14 @@ export const getAppointmentById = async (
   id: string
 ): Promise<AppointmentWithDetails> => {
   const response = await axiosInstance.get(`/appointments/${id}`);
-  return response.data;
+  const body = response.data
+  console.log(body)
+  return body?.data ?? body;
 };
 
 export const createAppointment = async (
   data: AppointmentFormData
 ): Promise<Appointment> => {
-  console.log(data) 
   const response = await axiosInstance.post("/appointments", data);
   return response.data;
 };

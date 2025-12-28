@@ -12,3 +12,10 @@ export interface MachineStats{
   Out_of_Service: number;
   Maintenance: number;
 }
+
+export interface DyalisisStats{
+  In_Use: number;
+  Available: number;
+  Out_of_Service: number;
+  Maintenance: number;
+}

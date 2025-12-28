@@ -19,8 +19,8 @@ import { getAppointments } from "../api/appointments.api";
 import type { AppointmentWithDetails } from "../../../types";
 
 interface AppointmentsListPageProps {
-  onViewAppointment?: (appointmentId: number) => void;
-  onEditAppointment?: (appointmentId: number) => void;
+  onViewAppointment?: (appointmentId: string) => void;
+  onEditAppointment?: (appointmentId: string) => void;
   onCreate?: () => void;
   onViewCalendar?: () => void;
 }
@@ -38,7 +38,7 @@ export function AppointmentsList({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<
-    number | null
+    string | null
   >(null);
 
   useEffect(() => {
@@ -76,13 +76,13 @@ export function AppointmentsList({
     return matchesSearch && matchesStatus;
   });
 
-  const handleViewAppointment = (appointmentId: number) => {
+  const handleViewAppointment = (appointmentId: string) => {
     if (onViewAppointment) {
       onViewAppointment(appointmentId);
     }
   };
 
-  const handleEditAppointment = (appointmentId: number) => {
+  const handleEditAppointment = (appointmentId: string) => {
     if (onEditAppointment) {
       onEditAppointment(appointmentId);
     }
@@ -153,7 +153,7 @@ export function AppointmentsList({
       header: "Date",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm text-gray-600">{formatDate(appointment.appointementDate)}</span>
+        <span className="text-sm text-gray-600">{formatDate(appointment.appointmentDate)}</span>
       ),
     },
     {

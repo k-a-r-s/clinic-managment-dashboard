@@ -13,6 +13,12 @@ export const getMachinesStats = async (): Promise<MachineStats> => {
   return body?.data ?? body;
 };
 
+export const getDialysisSessionsStats = async (): Promise<MachineStats> => {
+  const response = await axiosInstance.get("/machines/machine-stats");
+  const body = response.data
+  return body?.data ?? body;
+};
+
 // export const getPatientById = async (id: string): Promise<Patient> => {
 //   const response = await axiosInstance.get(`/patients/${id}`);
 //   const body = response.data;

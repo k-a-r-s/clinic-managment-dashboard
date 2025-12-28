@@ -17,6 +17,7 @@ export class Doctor extends User {
     this.speciality = speciality;
     this.isMedicalSupervisor = false;
     this.specialisation = "general";
+    this.salary = 0;
   }
   setIsMedicalSupervisor(isMedicalSupervisor: boolean) {
     this.isMedicalSupervisor = isMedicalSupervisor;

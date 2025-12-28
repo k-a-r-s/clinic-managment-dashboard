@@ -13,7 +13,7 @@ export class createMedicalFileUseCase {
         if (!patient) {
             throw new Error("Patient not found");
         }
-        const medicalFile = new MedicalFile(createMedicalFileDto.doctorId as UUID, createMedicalFileDto.data);
+        const medicalFile = new MedicalFile(createMedicalFileDto.doctorId as UUID, createMedicalFileDto.data ?? {});
         const medicalFileCreated = await this.medicalFileRepository.createMedicalFile(medicalFile);
         await this.updatePatientUseCase.execute(patient.getId(), {
             medicalFileId: medicalFileCreated.id,

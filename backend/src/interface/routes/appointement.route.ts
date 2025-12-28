@@ -26,24 +26,24 @@ const router = Router();
  *         patientId:
  *           type: string
  *           format: uuid
- *           description: The patient ID
- *         doctorId:
- *           type: string
- *           format: uuid
- *           description: The doctor ID
- *         appointmentDate:
- *           type: string
+                            id:
+                                type: string
+                                format: uuid
+                            firstName:
+                                type: string
+                            lastName:
+                                type: string
  *           format: date-time
  *           description: Appointment date and time
  *         reason:
  *           type: string
- *           description: Reason for appointment
- *         status:
- *           type: string
- *           example: SCHEDULED
- *           description: Appointment status
- *         notes:
- *           type: string
+                            id:
+                                type: string
+                                format: uuid
+                            firstName:
+                                type: string
+                            lastName:
+                                type: string
  *           nullable: true
  *           description: Additional notes
  *         roomId:

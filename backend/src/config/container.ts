@@ -28,7 +28,8 @@ import { GetMachineStatsFormattedUseCase } from '../application/use-cases/machin
 import { MachineController } from '../interface/controllers/machineController';
 import { GetDashboardStatsUseCase } from '../application/use-cases/stats/GetDashboardStatsUseCase';
 import { StatsController } from '../interface/controllers/statsController';
-
+import { GetPatientsPerDayUseCase } from '../application/use-cases/stats/GetPatientsPerDayUseCase';
+import { GetAppointmentsPerDayUseCase } from '../application/use-cases/stats/GetAppointmentsPerDayUseCase';
 // Use Cases - Doctor
 import { GetDoctorsListUseCase } from '../application/use-cases/doctors/GetAllDoctorsUseCase';
 import { GetDoctorUseCase } from '../application/use-cases/doctors/getDoctorUseCase';
@@ -156,6 +157,9 @@ const getDashboardStatsUseCase = new GetDashboardStatsUseCase(
     userRepository
 );
 
+const getPatientsPerDayUseCase = new GetPatientsPerDayUseCase(patientRepository);
+const getAppointmentsPerDayUseCase = new GetAppointmentsPerDayUseCase(appointementRepository);
+
 // Use Cases - Appointment History
 const getAppointmentHistoryUseCase = new GetAppointmentHistoryforPatientUseCase(appointmentHistoryRepository, appointementRepository);
 const getHistoriesByPatientUseCase = new GetHistoriesByPatientUseCase(appointmentHistoryRepository);
@@ -227,7 +231,11 @@ export const machineController = new MachineController(
     getMachineStatsUseCase,
     getMachineStatsFormattedUseCase
 );
-export const statsController = new StatsController(getDashboardStatsUseCase);
+export const statsController = new StatsController(
+    getDashboardStatsUseCase,
+    getPatientsPerDayUseCase,
+    getAppointmentsPerDayUseCase
+);
 
 
 // Dependency Injection Container
@@ -244,6 +252,15 @@ class Container {
         }
         return this.dependencies.get(name) as T;
     }
+    
+    // convenience alias to match other container APIs
+    get<T>(name: string): T {
+        return this.resolve<T>(name);
+    }
+
+    has(name: string): boolean {
+        return this.dependencies.has(name);
+    }
 }
 
 export const container = new Container();
@@ -259,3 +276,8 @@ container.register('medicalFileController', medicalFileController);
 container.register('roomController', roomController);
 container.register('machineController', machineController);
 container.register('statsController', statsController);
+container.register('GetPatientsPerDayUseCase', getPatientsPerDayUseCase);
+container.register('GetAppointmentsPerDayUseCase', getAppointmentsPerDayUseCase);
+
+// convenience helpers
+// (get/has methods are implemented on the class above)

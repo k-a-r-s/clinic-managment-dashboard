@@ -49,7 +49,7 @@ export class AppointementController {
         const appointment = await this.getAppointmentByIdUseCase.execute(appointmentId);
         
         if (!appointment) {
-            return ResponseFormatter.error(response, null, 404, "Appointment not found");
+            return ResponseFormatter.error(response, { type: 'NOT_FOUND', message: 'Appointment not found' }, 404, "Appointment not found");
         }
         
         return ResponseFormatter.success(response, appointment, "Appointment retrieved successfully");

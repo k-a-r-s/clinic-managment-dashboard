@@ -489,12 +489,12 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
     "patient": {
       "id": "123e4567-e89b-12d3-a456-426614174000",
       "firstName": "John",
-      "last_name": "Doe"
+      "lastName": "Doe"
     },
     "doctor": {
       "id": "987fcdeb-51a2-43f1-b9c8-123456789abc",
       "firstName": "Alice",
-      "last_name": "Smith"
+      "lastName": "Smith"
     },
     "roomId": "abc12345-6789-def0-1234-567890abcdef",
     "createdByReceptionistId": "11111111-2222-3333-4444-555555555555",

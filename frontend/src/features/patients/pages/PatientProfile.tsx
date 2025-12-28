@@ -30,7 +30,7 @@ import {
   updatePatient,
   deletePatient,
 } from "../api/patients.api";
-import type { Patient, PatientFormData } from "../../../types";
+import type { PatientFormData } from "../../../types";
 
 interface CollapsibleSectionProps {
   title: string;
@@ -584,7 +584,7 @@ export function PatientProfile({
 
           {/* Vascular Access */}
           <CollapsibleSubsection title="Vascular Access" defaultOpen={true}>
-            <VascularAccessSection />
+            <VascularAccessSection patientId={patientId}/>
           </CollapsibleSubsection>
 
           {/* Vaccinations */}
@@ -607,21 +607,6 @@ export function PatientProfile({
             <LabResultsSection />
           </CollapsibleSubsection>
 
-          {/* Clinical Summary */}
-          <CollapsibleSubsection title="Clinical Summary" defaultOpen={true}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-900 leading-relaxed">
-                Patient is a 62-year-old male with end-stage renal disease
-                secondary to diabetic nephropathy. He has been on hemodialysis
-                since March 2022. Current vascular access is an arteriovenous
-                fistula in the left forearm, functioning well. Patient is
-                compliant with his dialysis schedule (MWF) and medication
-                regimen. Recent lab results show stable hemoglobin levels with
-                adequate anemia management. Blood pressure is well-controlled.
-                Patient reports good quality of life and minimal complications.
-              </p>
-            </div>
-          </CollapsibleSubsection>
         </div>
       </CollapsibleSection>
     </div>

@@ -8,4 +8,6 @@ export interface IRoomRepository {
   updateRoom(id: string, roomData: any): Promise<Room>;
   deleteRoom(id: string): Promise<void>;
   updateRoomAvailability(id: string, isAvailable: boolean): Promise<void>;
+  isAvailableFor(roomId: string, start: Date, end: Date): Promise<{ available: boolean; conflictingAppointmentId?: string | null }>;
+  isAvailable(roomId: string): Promise<boolean>;
 }

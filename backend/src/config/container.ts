@@ -126,7 +126,7 @@ const createMedicalFileUseCaseInstance = new createMedicalFileUseCase(
 const addPatientUseCase = new AddPatientUseCase(patientRepository, createMedicalFileUseCaseInstance);
 
 // Use Cases - Appointment
-const addAppointementUseCase = new AddAppointementUseCase(appointementRepository);
+const addAppointementUseCase = new AddAppointementUseCase(appointementRepository, roomRepository);
 const getAppointementsUseCase = new GetAppointementsUseCase(appointementRepository);
 const getAppointmentsByDoctorUseCase = new GetAppointmentsByDoctorUseCase(appointementRepository);
 const getAppointementsByPatientUseCase = new GetAppointementsByPatientUseCase(appointementRepository);

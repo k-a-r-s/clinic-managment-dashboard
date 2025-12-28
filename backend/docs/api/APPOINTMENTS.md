@@ -37,7 +37,7 @@
 {
   "patientId": "123e4567-e89b-12d3-a456-426614174000",
   "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
-  "date": "2024-12-15T14:30:00.000Z",
+  "appointmentDate": "2024-12-15T14:30:00.000Z",
   "reason": "Regular checkup",
   "status": "scheduled",
   "notes": "Patient requested afternoon slot",
@@ -52,7 +52,17 @@
 {
   success: boolean;
   message: string;
-  data: null; // The endpoint returns no entity; just confirmation message
+  data: {
+    id: string;
+    patient: { id: string; firstName?: string; lastName?: string } | null;
+    doctor: { id: string; firstName?: string; lastName?: string } | null;
+    roomId: string | null;
+    createdByReceptionistId: string | null;
+    createdByDoctorId: string | null;
+    appointmentDate: string; // ISO 8601 date-time
+    estimatedDurationInMinutes: number | null;
+    status: string;
+  } | null;
   error: null;
 }
 ```
@@ -64,19 +74,27 @@
   "message": "Appointment created successfully",
   "data": {
     "id": "456def78-90ab-cdef-1234-567890abcdef",
-    "patientId": "123e4567-e89b-12d3-a456-426614174000",
-    "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
-    "date": "2024-12-15T14:30:00.000Z",
-    "reason": "Regular checkup",
-    "status": "scheduled",
-    "notes": "Patient requested afternoon slot",
+    "patient": { "id": "123e4567-e89b-12d3-a456-426614174000", "firstName": "John", "lastName": "Doe" },
+    "doctor": { "id": "987fcdeb-51a2-43f1-b9c8-123456789abc", "firstName": "Alice", "lastName": "Smith" },
     "roomId": "abc12345-6789-def0-1234-567890abcdef",
-    "createdAt": "2024-12-11T10:00:00.000Z",
-    "updatedAt": "2024-12-11T10:00:00.000Z"
+    "createdByReceptionistId": null,
+    "createdByDoctorId": null,
+    "appointmentDate": "2024-12-15T14:30:00.000Z",
+    "estimatedDurationInMinutes": 30,
+    "status": "SCHEDULED"
   },
   "error": null
 }
 ```
+
+---
+
+**Errors:**
+
+- **400**: Validation error (bad request)
+- **404**: Room not found
+- **409**: Conflict — room already booked or unavailable for requested time
+
 
 ---
 
@@ -117,18 +135,14 @@ GET /appointments
   message: string;
   data: Array<{
     id: string;
-    patientId: string;
-    doctorId: string;
-    date: string;
-    reason: string;
-    status: string;
-    notes: string | null;
+    patient: { id: string; firstName?: string; lastName?: string } | null;
+    doctor: { id: string; firstName?: string; lastName?: string } | null;
     roomId: string | null;
-    createdByReceptionId: string | null; // UUID of receptionist who created (if any)
-    createdByDoctorId: string | null; // UUID of doctor who created (if any)
+    createdByReceptionistId: string | null;
+    createdByDoctorId: string | null;
+    appointmentDate: string; // ISO 8601 date-time
     estimatedDurationInMinutes: number | null;
-    createdAt: string;
-    updatedAt: string;
+    status: string;
   }>;
   error: null;
 }
@@ -142,15 +156,14 @@ GET /appointments
   "data": [
     {
       "id": "456def78-90ab-cdef-1234-567890abcdef",
-      "patientId": "123e4567-e89b-12d3-a456-426614174000",
-      "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
-      "date": "2024-12-15T14:30:00.000Z",
-      "reason": "Regular checkup",
-      "status": "scheduled",
-      "notes": "Patient requested afternoon slot",
+      "patient": { "id": "123e4567-e89b-12d3-a456-426614174000", "firstName": "John", "lastName": "Doe" },
+      "doctor": { "id": "987fcdeb-51a2-43f1-b9c8-123456789abc", "firstName": "Alice", "lastName": "Smith" },
       "roomId": "abc12345-6789-def0-1234-567890abcdef",
-      "createdAt": "2024-12-11T10:00:00.000Z",
-      "updatedAt": "2024-12-11T10:00:00.000Z"
+      "createdByReceptionistId": null,
+      "createdByDoctorId": null,
+      "appointmentDate": "2024-12-15T14:30:00.000Z",
+      "estimatedDurationInMinutes": 30,
+      "status": "SCHEDULED"
     }
   ],
   "error": null
@@ -211,9 +224,9 @@ GET /appointments
     "id": "456def78-90ab-cdef-1234-567890abcdef",
     "patientId": "123e4567-e89b-12d3-a456-426614174000",
     "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
-    "date": "2024-12-15T14:30:00.000Z",
+    "appointmentDate": "2024-12-15T14:30:00.000Z",
     "reason": "Regular checkup",
-    "status": "scheduled",
+    "status": "SCHEDULED",
     "notes": "Patient requested afternoon slot",
     "roomId": "abc12345-6789-def0-1234-567890abcdef",
     "createdAt": "2024-12-11T10:00:00.000Z",
@@ -280,14 +293,14 @@ GET /appointments/doctor/987fcdeb-51a2-43f1-b9c8-123456789abc?view=week
     id: string;
     patient: {
       id: string;
-      first_name?: string;
-      last_name?: string;
+      firstName?: string;
+      lastName?: string;
       [key: string]: any;
     } | null;
     doctor: {
       id: string;
-      first_name?: string;
-      last_name?: string;
+      firstName?: string;
+      lastName?: string;
       [key: string]: any;
     } | null;
     roomId: string | null;
@@ -475,12 +488,12 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
     "id": "456def78-90ab-cdef-1234-567890abcdef",
     "patient": {
       "id": "123e4567-e89b-12d3-a456-426614174000",
-      "first_name": "John",
+      "firstName": "John",
       "last_name": "Doe"
     },
     "doctor": {
       "id": "987fcdeb-51a2-43f1-b9c8-123456789abc",
-      "first_name": "Alice",
+      "firstName": "Alice",
       "last_name": "Smith"
     },
     "roomId": "abc12345-6789-def0-1234-567890abcdef",
@@ -488,7 +501,7 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
     "createdByDoctorId": null,
     "appointmentDate": "2024-12-15T14:30:00.000Z",
     "estimatedDurationInMinutes": 30,
-    "status": "scheduled"
+    "status": "SCHEDULED"
   },
     "name": "ValidationError",
     "message": "Patient ID and Doctor ID are required",

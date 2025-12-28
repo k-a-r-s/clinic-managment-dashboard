@@ -7,11 +7,12 @@ export interface IAppointementsRepository {
     getAppointmentById(appointmentId: string): Promise<GetAppointmentByIdResponseDto | null>;
     getAppointmentsByPatientId(
         patientId: string,
-        view: "year" | "month" | "week" | "day"
-    ): Promise<Appointement[]>;
-    getAppointementsByDoctorId(doctorId: string, view: "year" | "month" | "week" | "day"): Promise<Appointement[]>;
+        view: "year" | "month" | "week" | "day" | "all"
+    ): Promise<any[]>;
+    getAppointementsByDoctorId(doctorId: string, view: "year" | "month" | "week" | "day" | "all"): Promise<any[]>;
+    getAppointementsByRoomId(roomId: string, view: "year" | "month" | "week" | "day" | "all"): Promise<any[]>;
     getAppointements(
-        view: "year" | "month" | "week" | "day",
+        view: "year" | "month" | "week" | "day" | "all",
         filters?: { patientName?: string; doctorName?: string }
-    ): Promise<Appointement[]>;
+    ): Promise<any[]>;
 }

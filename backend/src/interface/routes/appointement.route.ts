@@ -31,7 +31,7 @@ const router = Router();
  *           type: string
  *           format: uuid
  *           description: The doctor ID
- *         date:
+ *         appointmentDate:
  *           type: string
  *           format: date-time
  *           description: Appointment date and time
@@ -40,7 +40,7 @@ const router = Router();
  *           description: Reason for appointment
  *         status:
  *           type: string
- *           example: scheduled
+ *           example: SCHEDULED
  *           description: Appointment status
  *         notes:
  *           type: string
@@ -62,7 +62,7 @@ const router = Router();
  *       required:
  *         - patientId
  *         - doctorId
- *         - date
+ *         - appointmentDate
  *         - reason
  *       properties:
  *         patientId:
@@ -73,7 +73,7 @@ const router = Router();
  *           type: string
  *           format: uuid
  *           example: 987fcdeb-51a2-43f1-b9c8-123456789abc
- *         date:
+ *         appointmentDate:
  *           type: string
  *           format: date-time
  *           example: 2024-12-15T14:30:00.000Z
@@ -82,7 +82,7 @@ const router = Router();
  *           example: Regular checkup
  *         status:
  *           type: string
- *           example: scheduled
+ *           example: SCHEDULED
  *         notes:
  *           type: string
  *           nullable: true
@@ -213,7 +213,7 @@ const router = Router();
  * @swagger
  * /appointments:
  *   post:
- *     summary: Create a new appointment
+ *     summary: Create an appointment
  *     tags: [Appointments]
  *     security:
  *       - bearerAuth: []
@@ -247,6 +247,10 @@ const router = Router();
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Receptionist, Doctor or Admin role required
+ *       404:
+ *         description: Room not found
+ *       409:
+ *         description: Conflict - room is already booked or not available for the requested time
  */
 router.post(
     '/',

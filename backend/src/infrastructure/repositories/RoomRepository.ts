@@ -3,6 +3,7 @@ import { IRoomRepository } from "../../domain/repositories/IRoomRepository";
 import { supabaseAdmin } from "../database/supabase";
 import { DatabaseError } from "../errors/DatabaseError";
 import { Logger } from "../../shared/utils/logger";
+import { startOfDay, endOfDay } from 'date-fns';
 
 export class RoomRepository implements IRoomRepository {
   async createRoom(roomData: any): Promise<Room> {
@@ -175,5 +176,48 @@ export class RoomRepository implements IRoomRepository {
       Logger.error("Error updating room availability", { error });
       throw new DatabaseError(`Error updating room availability: ${error.message}`);
     }
+  }
+
+  async isAvailableFor(roomId: string, start: Date, end: Date): Promise<{ available: boolean; conflictingAppointmentId?: string | null }> {
+    try {
+      const room = await this.getRoomById(roomId);
+      if (!room) return { available: false, conflictingAppointmentId: null };
+      if (!room.getIsAvailable()) return { available: false, conflictingAppointmentId: null };
+
+      const from = startOfDay(start);
+      const to = endOfDay(start);
+
+      const { data, error } = await supabaseAdmin
+        .from('appointments')
+        .select('*')
+        .eq('room_id', roomId)
+        .gte('appointment_date', from.toISOString())
+        .lte('appointment_date', to.toISOString())
+        .eq('status', 'SCHEDULED');
+
+      if (error) {
+        throw new DatabaseError(`Error fetching appointments: ${error.message}`);
+      }
+
+      if (!data || data.length === 0) return { available: true };
+
+      for (const item of data) {
+        const existingStart = new Date(item.appointment_date);
+        const existingEnd = new Date(existingStart.getTime() + (item.estimated_duration || 0) * 60 * 1000);
+        if (start < existingEnd && end > existingStart) {
+          return { available: false, conflictingAppointmentId: item.id };
+        }
+      }
+
+      return { available: true };
+    } catch (err: any) {
+      throw new DatabaseError(err);
+    }
+  }
+
+  async isAvailable(roomId: string): Promise<boolean> {
+    const room = await this.getRoomById(roomId);
+    if (!room) return false;
+    return room.getIsAvailable();
   }
 }

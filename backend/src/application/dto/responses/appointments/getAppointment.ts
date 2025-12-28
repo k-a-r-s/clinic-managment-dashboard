@@ -1,14 +1,14 @@
 export interface AppointmentPatientDto {
   id: string;
-  first_name?: string;
-  last_name?: string;
+  firstName?: string;
+  lastName?: string;
   [key: string]: any;
 }
 
 export interface AppointmentDoctorDto {
   id: string;
-  first_name?: string;
-  last_name?: string;
+  firstName?: string;
+  lastName?: string;
   [key: string]: any;
 }
 

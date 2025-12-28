@@ -22,10 +22,10 @@
 
 **Response:** 200
 
-        "first_name": "Jane",
-        "last_name": "Doe",
+        "firstName": "Jane",
+        "lastName": "Doe",
         "email": "jane@example.com",
-        "phone_number": "+1 555 123"
+        "phoneNumber": "+1 555 123"
       }
     ]
   },
@@ -93,10 +93,10 @@
     "receptionists": [
       {
         "id": "uuid",
-        "first_name": "Jane",
-        "last_name": "Doe",
+        "firstName": "Jane",
+        "lastName": "Doe",
         "email": "jane@example.com",
-        "phone_number": "+1 555 123"
+        "phoneNumber": "+1 555 123"
       }
     ]
   },

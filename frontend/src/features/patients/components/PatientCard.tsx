@@ -37,7 +37,7 @@ export function PatientCard({
   return (
     <>
       <PageHeader
-        title={`Patient Details — ${patient.name}`}
+        title={`Patient Details — ${patient.firstName + " " + patient.lastName}`}
         actions={
           isEditMode ? (
             <>
@@ -86,12 +86,12 @@ export function PatientCard({
             {isEditMode ? (
               <Input
                 id="name"
-                value={formData.name}
+                value={formData.}
                 onChange={(e) => onFormChange("name", e.target.value)}
               />
             ) : (
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">{formData.name}</p>
+                <p className="text-sm text-gray-900">{formData.id}</p>
               </div>
             )}
           </div>

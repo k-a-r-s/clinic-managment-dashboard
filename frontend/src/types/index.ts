@@ -1,6 +1,7 @@
 //absolute zina istg
 
 export * from "./doctors";
+export * from "./patient";
 export * from "./dashboard";
 export * from "./appointment";
 // Admin Type
@@ -16,55 +17,55 @@ export interface UserProfile {
 }
 
 // Patient Types
-export interface Patient {
-  name: any;
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  phoneNumber: string;
-  profession: string;
-  childrenNumber: number;
-  familySituation: string;
-  birthDate: string;
-  gender: string;
-  insuranceNumber?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-  allergies?: string[];
-  currentMedications?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-  // Medical file data (if included in response)
-  medicalInfo?: {
-    initialNephropathy?: string;
-    firstDialysisDate?: string;
-    careStartDate?: string;
-    vascularAccess?: VascularAccess[];
-    vaccinations?: Vaccination[];
-    dialysisProtocol?: DialysisProtocol;
-    medications?: Medication[];
-    labResults?: LabResult[];
-    clinicalSummary?: string;
-  };
-}
+// export interface Patient {
+//   name: any;
+//   id: string;
+//   email: string;
+//   firstName: string;
+//   lastName: string;
+//   address: string;
+//   phoneNumber: string;
+//   profession: string;
+//   childrenNumber: number;
+//   familySituation: string;
+//   birthDate: string;
+//   gender: string;
+//   insuranceNumber?: string;
+//   emergencyContactName?: string;
+//   emergencyContactPhone?: string;
+//   allergies?: string[];
+//   currentMedications?: string[];
+//   createdAt?: string;
+//   updatedAt?: string;
+//   // Medical file data (if included in response)
+//   medicalInfo?: {
+//     initialNephropathy?: string;
+//     firstDialysisDate?: string;
+//     careStartDate?: string;
+//     vascularAccess?: VascularAccess[];
+//     vaccinations?: Vaccination[];
+//     dialysisProtocol?: DialysisProtocol;
+//     medications?: Medication[];
+//     labResults?: LabResult[];
+//     clinicalSummary?: string;
+//   };
+// }
 
-export interface PatientFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  address: string;
-  phoneNumber: string;
-  profession: string;
-  childrenNumber: number;
-  familySituation: string;
-  birthDate: string;
-  gender: string;
-  insuranceNumber?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-}
+// export interface PatientFormData {
+//   firstName: string;
+//   lastName: string;
+//   email: string;
+//   address: string;
+//   phoneNumber: string;
+//   profession: string;
+//   childrenNumber: number;
+//   familySituation: string;
+//   birthDate: string;
+//   gender: string;
+//   insuranceNumber?: string;
+//   emergencyContactName?: string;
+//   emergencyContactPhone?: string;
+// }
 
 // User Types
 export interface UserFormData {

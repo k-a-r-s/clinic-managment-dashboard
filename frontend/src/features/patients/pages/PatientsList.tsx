@@ -11,18 +11,6 @@ import { getPatients } from "../api/patients.api";
 import { toast } from "react-hot-toast";
 import type { Patient } from "../../../types";
 
-// Utility function to calculate age from birth date
-const calculateAge = (birthDate: string): number => {
-  const today = new Date();
-  const birth = new Date(birthDate);
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-  return age;
-};
-
 interface PatientsListPageProps {
   onViewPatient?: (patientId: string) => void;
   onEditPatient?: (patientId: string) => void;
@@ -120,7 +108,7 @@ export function PatientsList({
       header: "Age",
       render: (patient) => (
         <span className="text-sm text-gray-600">
-          {calculateAge(patient.birthDate)}
+          {patient.age}
         </span>
       ),
     },
@@ -149,7 +137,7 @@ export function PatientsList({
       header: "Actions",
       className: "text-center",
       render: (patient) => (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-left gap-1 ">
           <Button
             size="sm"
             variant="ghost"

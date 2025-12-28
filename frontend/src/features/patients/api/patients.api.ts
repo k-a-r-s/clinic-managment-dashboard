@@ -14,7 +14,7 @@ export const getPatients = async (): Promise<Patient[]> => {
   return body?.data ?? body;
 };
 
-export const getPatientById = async (id: string): Promise<Patient> => {
+export const getPatientById = async (id: string): Promise<PatientFormData> => {
   // Return mock data with medical file information
   // return new Promise((resolve, reject) => {
     // setTimeout(() => {

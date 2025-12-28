@@ -19,3 +19,13 @@ export interface DyalisisStats{
   Out_of_Service: number;
   Maintenance: number;
 }
+
+export interface DialysisSession{
+  date: string // ISO date string
+  count: number
+}
+
+export interface patientsperDay{
+  date: string // ISO date string
+  count: number
+}

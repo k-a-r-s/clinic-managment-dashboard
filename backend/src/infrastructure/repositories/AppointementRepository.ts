@@ -2,6 +2,7 @@ import { Appointement } from "../../domain/entities/Appointement";
 import { IAppointementsRepository } from "../../domain/repositories/IAppointementRepository";
 import { supabaseAdmin } from "../database/supabase";
 import { DatabaseError } from "../errors/DatabaseError";
+import { GetAppointmentByIdResponseDto } from "../../application/dto/responses/appointments/getAppointment";
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
 
 export class AppointementRepository implements IAppointementsRepository {
@@ -31,10 +32,10 @@ export class AppointementRepository implements IAppointementsRepository {
         return Promise.resolve(null);
     };
 
-    async getAppointmentById(appointmentId: string): Promise<Appointement | null> {
+    async getAppointmentById(appointmentId: string): Promise<GetAppointmentByIdResponseDto | null> {
         const { data, error } = await supabaseAdmin
             .from("appointments")
-            .select("*")
+            .select("*,patients!inner(id,first_name, last_name), doctors!inner(id,profiles!inner(first_name, last_name))")
             .eq("id", appointmentId)
             .single();
 
@@ -43,17 +44,19 @@ export class AppointementRepository implements IAppointementsRepository {
         }
         if (!data) return null;
 
-        return new Appointement(
-            data.id,
-            data.patient_id,
-            data.doctor_id,
-            data.room_id,
-            data.created_by_receptionist_id,
-            data.created_by_doctor_id,
-            new Date(data.appointment_date),
-            data.estimated_duration,
-            data.status
-        );
+        const result: GetAppointmentByIdResponseDto = {
+            id: data.id,
+            patient: data.patients ?? null,
+            doctor: data.doctors ? { id: data.doctor_id, ...data.doctors.profiles } : null,
+            roomId: data.room_id ?? null,
+            createdByReceptionistId: data.created_by_receptionist_id ?? null,
+            createdByDoctorId: data.created_by_doctor_id ?? null,
+            appointmentDate: new Date(data.appointment_date),
+            estimatedDurationInMinutes: data.estimated_duration ?? null,
+            status: data.status
+        };
+
+        return result;
     }
 
     async getAppointmentsByPatientId(
@@ -213,8 +216,7 @@ export class AppointementRepository implements IAppointementsRepository {
             }
         }
 
-        let query = supabaseAdmin.from("appointments").select("*, patients!inner(first_name, last_name), doctors!inner(first_name, last_name)");
-
+        let query = supabaseAdmin.from("appointments").select("*,patients!inner(first_name, last_name), doctors!inner(id,profiles!inner(first_name, last_name))");
         if (filters?.patientName) {
             query = query.ilike('patients.first_name', `%${filters.patientName}%`);
         }

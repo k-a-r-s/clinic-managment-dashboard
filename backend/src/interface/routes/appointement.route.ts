@@ -119,6 +119,53 @@ const router = Router();
  *         appointmentData:
  *           type: object
  *           description: Updated appointment data
+ *     AppointmentDetail:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         patient:
+ *           type: object
+ *           nullable: true
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             first_name:
+ *               type: string
+ *             last_name:
+ *               type: string
+ *         doctor:
+ *           type: object
+ *           nullable: true
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             first_name:
+ *               type: string
+ *             last_name:
+ *               type: string
+ *         roomId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         createdByReceptionistId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         createdByDoctorId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         appointmentDate:
+ *           type: string
+ *           format: date-time
+ *         estimatedDurationInMinutes:
+ *           type: number
+ *         status:
+ *           type: string
  *     CreateAppointmentRequest:
  *       type: object
  *       required:
@@ -191,7 +238,7 @@ const router = Router();
  *                   type: string
  *                   example: Appointment created successfully
  *                 data:
- *                   $ref: '#/components/schemas/Appointment'
+ *                   $ref: '#/components/schemas/AppointmentDetail'
  *                 error:
  *                   type: null
  *       400:

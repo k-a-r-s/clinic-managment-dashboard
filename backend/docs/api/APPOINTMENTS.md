@@ -52,18 +52,7 @@
 {
   success: boolean;
   message: string;
-  data: {
-    id: string;                  // UUID
-    patientId: string;           // UUID
-    doctorId: string;            // UUID
-    date: string;                // ISO 8601 date-time
-    reason: string;
-    status: string;
-    notes: string | null;
-    roomId: string | null;       // UUID
-    createdAt: string;           // ISO 8601 date-time
-    updatedAt: string;           // ISO 8601 date-time
-  };
+  data: null; // The endpoint returns no entity; just confirmation message
   error: null;
 }
 ```
@@ -135,6 +124,9 @@ GET /appointments
     status: string;
     notes: string | null;
     roomId: string | null;
+    createdByReceptionId: string | null; // UUID of receptionist who created (if any)
+    createdByDoctorId: string | null; // UUID of doctor who created (if any)
+    estimatedDurationInMinutes: number | null;
     createdAt: string;
     updatedAt: string;
   }>;
@@ -284,18 +276,27 @@ GET /appointments/doctor/987fcdeb-51a2-43f1-b9c8-123456789abc?view=week
 {
   success: boolean;
   message: string;
-  data: Array<{
+  data: {
     id: string;
-    patientId: string;
-    doctorId: string;
-    date: string;
-    reason: string;
-    status: string;
-    notes: string | null;
+    patient: {
+      id: string;
+      first_name?: string;
+      last_name?: string;
+      [key: string]: any;
+    } | null;
+    doctor: {
+      id: string;
+      first_name?: string;
+      last_name?: string;
+      [key: string]: any;
+    } | null;
     roomId: string | null;
-    createdAt: string;
-    updatedAt: string;
-  }>;
+    createdByReceptionistId: string | null;
+    createdByDoctorId: string | null;
+    appointmentDate: string; // ISO 8601 date-time
+    estimatedDurationInMinutes: number | null;
+    status: string;
+  };
   error: null;
 }
 ```
@@ -470,18 +471,25 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
 {
   "success": true,
   "message": "Appointment completed successfully",
-  "data": null,
-  "error": null
-}
-```
-
-**Error (400):**
-```json
-{
-  "success": false,
-  "message": "Patient ID and Doctor ID are required",
-  "data": null,
-  "error": {
+  "data": {
+    "id": "456def78-90ab-cdef-1234-567890abcdef",
+    "patient": {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "first_name": "John",
+      "last_name": "Doe"
+    },
+    "doctor": {
+      "id": "987fcdeb-51a2-43f1-b9c8-123456789abc",
+      "first_name": "Alice",
+      "last_name": "Smith"
+    },
+    "roomId": "abc12345-6789-def0-1234-567890abcdef",
+    "createdByReceptionistId": "11111111-2222-3333-4444-555555555555",
+    "createdByDoctorId": null,
+    "appointmentDate": "2024-12-15T14:30:00.000Z",
+    "estimatedDurationInMinutes": 30,
+    "status": "scheduled"
+  },
     "name": "ValidationError",
     "message": "Patient ID and Doctor ID are required",
     "statusCode": 400

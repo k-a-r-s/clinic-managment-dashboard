@@ -2,6 +2,7 @@ import { Patient } from "../../domain/entities/Patient";
 import { IPatientRepository } from "../../domain/repositories/IPatientRepository";
 import { supabaseAdmin } from "../database/supabase";
 import { DatabaseError } from "../errors/DatabaseError";
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 export class PatientRepository implements IPatientRepository {
   async addPatient(patient: Patient): Promise<null> {
     const { data, error } = await supabaseAdmin
@@ -100,12 +101,89 @@ export class PatientRepository implements IPatientRepository {
       });
     });
   }
-  async getPatientsCount(): Promise<number> {
-    const { count, error } = await supabaseAdmin.from('patients').select('*', { count: 'exact', head: true });
-    if (error) {
-      throw new DatabaseError(error);
+  async getPatientsCount(view?: "year" | "month" | "week" | "day" | "all"): Promise<number> {
+    try {
+      if (!view || view === 'all') {
+        const { count, error } = await supabaseAdmin.from('patients').select('*', { count: 'exact', head: true });
+        if (error) throw error;
+        return count || 0;
+      }
+
+      const now = new Date();
+      let from: Date | null = null;
+      let to: Date | null = null;
+
+      switch (view) {
+        case 'year':
+          from = startOfYear(now);
+          to = endOfYear(now);
+          break;
+        case 'month':
+          from = startOfMonth(now);
+          to = endOfMonth(now);
+          break;
+        case 'week':
+          from = startOfWeek(now, { weekStartsOn: 1 });
+          to = endOfWeek(now, { weekStartsOn: 1 });
+          break;
+        case 'day':
+          from = startOfDay(now);
+          to = endOfDay(now);
+          break;
+      }
+
+      let query = supabaseAdmin.from('patients').select('*', { count: 'exact', head: true });
+      if (from && to) {
+        query = query.gte('created_at', from.toISOString()).lte('created_at', to.toISOString());
+      }
+
+      const { count, error } = await query;
+      if (error) throw error;
+      return count || 0;
+    } catch (err: any) {
+      throw new DatabaseError(err);
     }
-    return count || 0;
+  }
+
+  async getPatientsCreated(view?: "year" | "month" | "week" | "day" | "all"): Promise<{ createdAt: string }[]> {
+    try {
+      const now = new Date();
+      let from: Date | null = null;
+      let to: Date | null = null;
+
+      if (view && view !== 'all') {
+        switch (view) {
+          case 'year':
+            from = startOfYear(now);
+            to = endOfYear(now);
+            break;
+          case 'month':
+            from = startOfMonth(now);
+            to = endOfMonth(now);
+            break;
+          case 'week':
+            from = startOfWeek(now, { weekStartsOn: 1 });
+            to = endOfWeek(now, { weekStartsOn: 1 });
+            break;
+          case 'day':
+            from = startOfDay(now);
+            to = endOfDay(now);
+            break;
+        }
+      }
+
+      let query = supabaseAdmin.from('patients').select('created_at');
+      if (from && to) {
+        query = query.gte('created_at', from.toISOString()).lte('created_at', to.toISOString());
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      if (!data) return [];
+      return data.map((r: any) => ({ createdAt: r.created_at }));
+    } catch (err: any) {
+      throw new DatabaseError(err);
+    }
   }
   async updatePatient(patient: Patient): Promise<null> {
     const { data, error } = await supabaseAdmin

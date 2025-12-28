@@ -112,7 +112,7 @@ const router = Router();
 router.post(
   "/login",
   validate(LoginDto),
-  asyncWrapper((req, res) => authController.login(req, res))
+  asyncWrapper(authController.login.bind(authController))
 );
 
 /**
@@ -144,7 +144,7 @@ router.post(
 router.post(
   "/logout",
   authMiddleware,
-  asyncWrapper((req, res) => authController.logout(req, res))
+  asyncWrapper(authController.logout.bind(authController))
 );
 
 /**
@@ -221,7 +221,7 @@ router.post(
 router.post(
   "/refresh-token",
 
-  asyncWrapper((req, res) => authController.refreshToken(req, res))
+  asyncWrapper(authController.refreshToken.bind(authController))
 );
 
 /**
@@ -298,7 +298,7 @@ router.post(
 router.post(
   "/me",
   authMiddleware,
-  asyncWrapper((req, res) => authController.getMe(req, res))
+  asyncWrapper(authController.getMe.bind(authController))
 );
 
 

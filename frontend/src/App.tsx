@@ -176,6 +176,7 @@ function App() {
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <TopBar
+          user={user}
           onLogout={() => logout()}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
@@ -243,6 +244,7 @@ function App() {
             <CreateAppointment
               onCancel={handleBackToAppointmentsList}
               onSuccess={handleSaveAppointment}
+              user={user}
             />
           )}
 

@@ -12,7 +12,7 @@ import {
 } from "../../../components/ui/select";
 import { Textarea } from "../../../components/ui/textarea";
 import { FormCard } from "../../../components/shared/FormCard";
-import type { AppointmentFormData } from "../../../types";
+import type { AppointmentFormData , AppointmentStatus} from "../../../types";
 
 interface AppointmentFormProps {
   initialData?: Partial<AppointmentFormData>;
@@ -35,28 +35,35 @@ export function AppointmentForm({
   patients = [],
   rooms = []
 }: AppointmentFormProps) {
+
   const [formData, setFormData] = useState<AppointmentFormData>({
     appointmentDate: initialData.appointmentDate || "",
-    estimatedDuration: initialData.estimatedDuration || 0,
+    estimatedDurationInMinutes: initialData.estimatedDurationInMinutes || 0,
     doctorId: initialData.doctorId || "",
     patientId: initialData.patientId || "",
     status: initialData.status || "SCHEDULED",
-    reasonForVisit: initialData.reasonForVisit || "",
+    reason: initialData.reason || "",
     roomId: initialData.roomId || "",
   });
 
+  console.log("qsddqsd",formData)
   const [errors, setErrors] = useState<
     Partial<Record<keyof AppointmentFormData, string>>
   >({});
 
-  const handleInputChange = (
-    field: keyof AppointmentFormData,
-    value: string | number
+  const handleInputChange = <K extends keyof AppointmentFormData>(
+    field: K,
+    value: AppointmentFormData[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  };
+
+  const handleStatusChange = (value: AppointmentStatus) => {
+    handleInputChange("status", value);
   };
 
   const validateForm = () => {
@@ -66,8 +73,8 @@ export function AppointmentForm({
       newErrors.appointmentDate = "Date is required";
     }
 
-    if (!formData.estimatedDuration) {
-      newErrors.estimatedDuration = "Duration is required";
+    if (!formData.estimatedDurationInMinutes) {
+      newErrors.estimatedDurationInMinutes = "Duration is required";
     }
 
     if (!formData.doctorId) {
@@ -78,8 +85,8 @@ export function AppointmentForm({
       newErrors.patientId = "Patient is required";
     }
 
-    if (!formData.reasonForVisit?.trim()) {
-      newErrors.reasonForVisit = "Reason is required";
+    if (!formData.reason?.trim()) {
+      newErrors.reason = "Reason is required";
     }
 
     if (!formData.roomId?.trim()) {
@@ -112,8 +119,10 @@ export function AppointmentForm({
                 id="date"
                 type="date"
                 value={formData.appointmentDate}
-                onChange={(e) => handleInputChange("appointmentDate", e.target.value)}
-                className={`pl-10 ${errors.appointmentDate ? "border-red-500" : ""}`}
+                onChange={(e) =>
+                  handleInputChange("appointmentDate", e.target.value)
+                }
+                className="pl-10"
               />
             </div>
             {errors.appointmentDate && (
@@ -132,18 +141,18 @@ export function AppointmentForm({
                 id="estimatedDuration"
                 type="text"
                 placeholder="30"
-                value={formData.estimatedDuration}
+                value={formData.estimatedDurationInMinutes}
                 onChange={(e) =>
-                  handleInputChange("estimatedDuration", e.target.value)
+                  handleInputChange("estimatedDurationInMinutes", Number(e.target.value))
                 }
                 className={`pl-10 ${
-                  errors.estimatedDuration ? "border-red-500" : ""
+                  errors.estimatedDurationInMinutes ? "border-red-500" : ""
                 }`}
               />
             </div>
-            {errors.estimatedDuration && (
+            {errors.estimatedDurationInMinutes && (
               <p className="text-sm text-red-500">
-                {errors.estimatedDuration}
+                {errors.estimatedDurationInMinutes}
               </p>
             )}
           </div>
@@ -234,7 +243,7 @@ export function AppointmentForm({
             <Label htmlFor="status">Status</Label>
             <Select
               value={formData.status}
-              onValueChange={(value) => handleInputChange("status", value)}
+              onValueChange={handleStatusChange}
             >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
@@ -256,15 +265,15 @@ export function AppointmentForm({
               <Textarea
                 id="reason"
                 placeholder="Enter reason for appointment..."
-                value={formData.reasonForVisit}
-                onChange={(e) => handleInputChange("reasonForVisit", e.target.value)}
+                value={formData.reason}
+                onChange={(e) => handleInputChange("reason", e.target.value)}
                 className={`pl-10 min-h-[100px] ${
-                  errors.reasonForVisit ? "border-red-500" : ""
+                  errors.reason ? "border-red-500" : ""
                 }`}
               />
             </div>
-            {errors.reasonForVisit && (
-              <p className="text-sm text-red-500">{errors.reasonForVisit}</p>
+            {errors.reason && (
+              <p className="text-sm text-red-500">{errors.reason}</p>
             )}
           </div>
         </div>

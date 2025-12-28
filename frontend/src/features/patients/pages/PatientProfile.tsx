@@ -30,7 +30,8 @@ import {
   updatePatient,
   deletePatient,
 } from "../api/patients.api";
-import type { Patient, PatientFormData } from "../../../types";
+import type { PatientFormData } from "../../../types";
+import { getmedicalFileId } from "../api/medical.api";
 
 interface CollapsibleSectionProps {
   title: string;
@@ -95,7 +96,7 @@ function CollapsibleSubsection({
 }
 
 interface PatientProfileProps {
-  patientId: number;
+  patientId: string;
   initialEditMode?: boolean;
   onBack?: () => void;
   onDeleted?: () => void;
@@ -107,7 +108,7 @@ export function PatientProfile({
   onBack,
   onDeleted,
 }: PatientProfileProps) {
-  const [patient, setPatient] = useState<Patient | null>(null);
+  const [patient, setPatient] = useState<PatientFormData | null>(null);
   const [isEditMode, setIsEditMode] = useState(initialEditMode);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<PatientFormData>({
@@ -125,6 +126,7 @@ export function PatientProfile({
     emergencyContactName: "",
     emergencyContactPhone: "",
   });
+  const [medicalFileId ,setmedicalFileId] = useState<string>("")
 
   useEffect(() => {
     loadPatient();
@@ -150,6 +152,8 @@ export function PatientProfile({
         emergencyContactName: data.emergencyContactName,
         emergencyContactPhone: data.emergencyContactPhone,
       });
+      const medicalId = await getmedicalFileId(patientId);
+      setmedicalFileId(medicalId)
     } catch (error) {
       console.error("Failed to load patient:", error);
       toast.error("Failed to load patient");
@@ -362,9 +366,9 @@ export function PatientProfile({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
@@ -584,44 +588,29 @@ export function PatientProfile({
 
           {/* Vascular Access */}
           <CollapsibleSubsection title="Vascular Access" defaultOpen={true}>
-            <VascularAccessSection />
+            <VascularAccessSection patientId={patientId}/>
           </CollapsibleSubsection>
 
           {/* Vaccinations */}
           <CollapsibleSubsection title="Vaccinations" defaultOpen={true}>
-            <VaccinationSection />
+            <VaccinationSection patientId={patientId} medicalFileId={medicalFileId}/>
           </CollapsibleSubsection>
 
           {/* Dialysis Protocol */}
           <CollapsibleSubsection title="Dialysis Protocol" defaultOpen={true}>
-            <DialysisProtocolSection />
+            <DialysisProtocolSection  patientId={patientId}/>
           </CollapsibleSubsection>
-
+{/*  */}
           {/* Current Medications */}
           <CollapsibleSubsection title="Current Medications" defaultOpen={true}>
-            <MedicationsSection />
+            <MedicationsSection patientId={patientId} />
           </CollapsibleSubsection>
-
+{/*  */}
           {/* Lab Results */}
           <CollapsibleSubsection title="Recent Lab Results" defaultOpen={true}>
             <LabResultsSection />
           </CollapsibleSubsection>
 
-          {/* Clinical Summary */}
-          <CollapsibleSubsection title="Clinical Summary" defaultOpen={true}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-900 leading-relaxed">
-                Patient is a 62-year-old male with end-stage renal disease
-                secondary to diabetic nephropathy. He has been on hemodialysis
-                since March 2022. Current vascular access is an arteriovenous
-                fistula in the left forearm, functioning well. Patient is
-                compliant with his dialysis schedule (MWF) and medication
-                regimen. Recent lab results show stable hemoglobin levels with
-                adequate anemia management. Blood pressure is well-controlled.
-                Patient reports good quality of life and minimal complications.
-              </p>
-            </div>
-          </CollapsibleSubsection>
         </div>
       </CollapsibleSection>
     </div>

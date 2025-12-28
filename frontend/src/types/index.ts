@@ -1,10 +1,14 @@
 //absolute zina istg
 
 export * from "./doctors";
+export * from "./patient";
+export * from "./dashboard";
+export * from "./appointment";
+export * from "./medicalfield";
 // Admin Type
 
 export interface UserProfile {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -14,55 +18,55 @@ export interface UserProfile {
 }
 
 // Patient Types
-export interface Patient {
-  name: any;
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  address: string;
-  phoneNumber: string;
-  profession: string;
-  childrenNumber: number;
-  familySituation: string;
-  birthDate: string;
-  gender: string;
-  insuranceNumber?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-  allergies?: string[];
-  currentMedications?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-  // Medical file data (if included in response)
-  medicalInfo?: {
-    initialNephropathy?: string;
-    firstDialysisDate?: string;
-    careStartDate?: string;
-    vascularAccess?: VascularAccess[];
-    vaccinations?: Vaccination[];
-    dialysisProtocol?: DialysisProtocol;
-    medications?: Medication[];
-    labResults?: LabResult[];
-    clinicalSummary?: string;
-  };
-}
+// export interface Patient {
+//   name: any;
+//   id: string;
+//   email: string;
+//   firstName: string;
+//   lastName: string;
+//   address: string;
+//   phoneNumber: string;
+//   profession: string;
+//   childrenNumber: number;
+//   familySituation: string;
+//   birthDate: string;
+//   gender: string;
+//   insuranceNumber?: string;
+//   emergencyContactName?: string;
+//   emergencyContactPhone?: string;
+//   allergies?: string[];
+//   currentMedications?: string[];
+//   createdAt?: string;
+//   updatedAt?: string;
+//   // Medical file data (if included in response)
+//   medicalInfo?: {
+//     initialNephropathy?: string;
+//     firstDialysisDate?: string;
+//     careStartDate?: string;
+//     vascularAccess?: VascularAccess[];
+//     vaccinations?: Vaccination[];
+//     dialysisProtocol?: DialysisProtocol;
+//     medications?: Medication[];
+//     labResults?: LabResult[];
+//     clinicalSummary?: string;
+//   };
+// }
 
-export interface PatientFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  address: string;
-  phoneNumber: string;
-  profession: string;
-  childrenNumber: number;
-  familySituation: string;
-  birthDate: string;
-  gender: string;
-  insuranceNumber?: string;
-  emergencyContactName?: string;
-  emergencyContactPhone?: string;
-}
+// export interface PatientFormData {
+//   firstName: string;
+//   lastName: string;
+//   email: string;
+//   address: string;
+//   phoneNumber: string;
+//   profession: string;
+//   childrenNumber: number;
+//   familySituation: string;
+//   birthDate: string;
+//   gender: string;
+//   insuranceNumber?: string;
+//   emergencyContactName?: string;
+//   emergencyContactPhone?: string;
+// }
 
 // User Types
 export interface UserFormData {
@@ -177,41 +181,6 @@ export interface Room {
   updatedAt?: string;
 }
 
-
-// Appointment Types
-export interface Appointment {
-  id: number;
-  patientId: number;
-  doctorId: number;
-  roomId?: number;
-  createdByReceptionistId?: string;
-  createdByDoctorId?: string;
-  appointmentDate: string;
-  estimatedDuration: number; // in minutes
-  actualDuration?: number;
-  status: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
-  notes?: string;
-  reasonForVisit?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface AppointmentFormData {
-  patientId: string;
-  doctorId: string;
-  roomId?: string;
-  appointmentDate: string;
-  estimatedDuration: number;
-  status?: "SCHEDULED" | "in-progress" | "COMPLETED" | "CANCELED" | "no-show";
-  notes?: string;
-  reasonForVisit?: string;
-}
-
-export interface AppointmentWithDetails extends Appointment {
-  doctorName: string;
-  patientName: string;
-  roomNumber?: string;
-}
 
 // API Response Types
 export interface ApiSuccessResponse<T = any> {

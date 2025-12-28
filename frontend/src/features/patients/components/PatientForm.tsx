@@ -204,20 +204,19 @@ export function PatientForm({
             </Label>
             <Select
               value={formData.gender}
-              onValueChange={(value) => handleInputChange("gender", value)}
+              onValueChange={(value) =>
+                handleInputChange("gender", value)
+              }
             >
-              <SelectTrigger
-                id="gender"
-                className={errors.gender ? "border-red-500" : ""}
-              >
+              <SelectTrigger id="gender">
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Male">Male</SelectItem>
-                <SelectItem value="Female">Female</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
-            </Select>
+              </Select>
             {errors.gender && (
               <p className="text-sm text-red-500">{errors.gender}</p>
             )}

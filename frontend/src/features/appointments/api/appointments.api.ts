@@ -11,10 +11,12 @@ export const getAppointments = async (): Promise<AppointmentWithDetails[]> => {
 };
 
 export const getAppointmentById = async (
-  id: number
+  id: string
 ): Promise<AppointmentWithDetails> => {
   const response = await axiosInstance.get(`/appointments/${id}`);
-  return response.data;
+  const body = response.data
+  console.log(body)
+  return body?.data ?? body;
 };
 
 export const createAppointment = async (
@@ -25,13 +27,13 @@ export const createAppointment = async (
 };
 
 export const updateAppointment = async (
-  id: number,
+  id: string,
   data: Partial<AppointmentFormData>
 ): Promise<Appointment> => {
   const response = await axiosInstance.put(`/appointments/${id}`, data);
   return response.data;
 };
 
-export const deleteAppointment = async (id: number): Promise<void> => {
+export const deleteAppointment = async (id: string): Promise<void> => {
   await axiosInstance.delete(`/appointments/${id}`);
 };

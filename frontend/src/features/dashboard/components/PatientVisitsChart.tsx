@@ -1,27 +1,65 @@
 "use client"
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { useEffect, useState } from "react"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts"
+import { getPatientVisistsStats } from "../api/dashboard.api" // your API call
+import type { patientsperDay } from "../../../types"
 
-const data = [
-  { name: "Mon", visits: 45 },
-  { name: "Tue", visits: 52 },
-  { name: "Wed", visits: 48 },
-  { name: "Thu", visits: 61 },
-  { name: "Fri", visits: 55 },
-  { name: "Sat", visits: 38 },
-  { name: "Sun", visits: 28 },
-]
+type ChartData = {
+  name: string
+  visits: number
+}
 
 export default function PatientVisitsChart() {
+  const [data, setData] = useState<ChartData[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res: patientsperDay[] = await getPatientVisistsStats()
+
+        // 🔹 Map API data to chart format
+        const mappedData: ChartData[] = res.map((item) => ({
+          name: formatDay(item.date), // or item.day
+          visits: item.count,
+        }))
+
+        setData(mappedData)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   return (
     <div className="bg-white rounded-lg border border-border p-6">
-      <h3 className="text-lg font-semibold text-foreground mb-4">Patient Visits This Week</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-4">
+        Patient Visits This Week
+      </h3>
+
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="name" stroke="#9ca3af" style={{ fontSize: "12px" }} />
-            <YAxis stroke="#9ca3af" style={{ fontSize: "12px" }} />
+            <XAxis
+              dataKey="name"
+              stroke="#9ca3af"
+              style={{ fontSize: "12px" }}
+            />
+            <YAxis
+              stroke="#9ca3af"
+              style={{ fontSize: "12px" }}
+            />
             <Tooltip
               contentStyle={{
                 backgroundColor: "#fff",
@@ -42,4 +80,11 @@ export default function PatientVisitsChart() {
       </div>
     </div>
   )
+}
+
+// 🔹 Optional helper to convert date → weekday
+function formatDay(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    weekday: "short", // Mon, Tue, Wed
+  })
 }

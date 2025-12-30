@@ -19,7 +19,19 @@ export function LabResultsSection({
 }: Props) {
   const [data, setData] = useState<LabResult[]>([]);
   const [formData, setFormData] = useState<LabResult[]>([]);
-  const [editingParamName, setEditingParamName] = useState<Record<string, string>>({});
+  const [editingParamName, setEditingParamName] = useState<Record<string, string>>(
+    {}
+  );
+
+  /**
+   * errors[resultIndex] = {
+   *   _date?: string,
+   *   [parameterName]: string
+   * }
+   */
+  const [errors, setErrors] = useState<
+    Record<number, { _date?: string } & Record<string, string>>
+  >({});
 
   useEffect(() => {
     loadData();
@@ -39,13 +51,31 @@ export function LabResultsSection({
     if (!editable) setFormData(data);
   }, [editable, data]);
 
-  const handleResultChange = (index: number, field: keyof LabResult, value: any) => {
+  const handleResultChange = (
+    index: number,
+    field: keyof LabResult,
+    value: any
+  ) => {
     setFormData((prev) =>
       prev.map((r, i) => (i === index ? { ...r, [field]: value } : r))
     );
+
+    // clear date error while editing
+    if (field === "date" && errors[index]?._date) {
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy[index]._date;
+        if (Object.keys(copy[index]).length === 0) delete copy[index];
+        return copy;
+      });
+    }
   };
 
-  const handleParameterChange = (index: number, paramName: string, value: string) => {
+  const handleParameterChange = (
+    index: number,
+    paramName: string,
+    value: string
+  ) => {
     setFormData((prev) =>
       prev.map((r, i) =>
         i === index
@@ -53,6 +83,16 @@ export function LabResultsSection({
           : r
       )
     );
+
+    // clear parameter error while typing
+    if (errors[index]?.[paramName]) {
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy[index][paramName];
+        if (Object.keys(copy[index]).length === 0) delete copy[index];
+        return copy;
+      });
+    }
   };
 
   const addLabResult = () => {
@@ -64,36 +104,28 @@ export function LabResultsSection({
   };
 
   const addParameter = (index: number) => {
-    const existingNumbers = Object.keys(formData[index].parameters)
-      .filter((p) => p.match(/^Parameter \d+$/))
+    const existingNumbers = Object.keys(formData[index].parameters || {})
+      .filter((p) => /^Parameter \d+$/.test(p))
       .map((p) => parseInt(p.replace("Parameter ", "")))
       .filter((n) => !isNaN(n));
-    const nextNum = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-    const tempKey = `Parameter ${nextNum}`;
+
+    const nextNum =
+      existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+
+    const key = `Parameter ${nextNum}`;
+
     setFormData((prev) =>
       prev.map((r, i) =>
         i === index
-          ? { ...r, parameters: { ...r.parameters, [tempKey]: "" } }
+          ? { ...r, parameters: { ...r.parameters, [key]: "" } }
           : r
       )
     );
   };
 
-  const removeParameter = (index: number, paramName: string) => {
-    setFormData((prev) =>
-      prev.map((r, i) => {
-        if (i === index) {
-          const newParams = { ...r.parameters };
-          delete newParams[paramName];
-          return { ...r, parameters: newParams };
-        }
-        return r;
-      })
-    );
-  };
-
   const applyRename = (oldName: string) => {
     const newName = (editingParamName[oldName] ?? oldName).trim();
+
     if (!newName || newName === oldName) {
       setEditingParamName((prev) => {
         const copy = { ...prev };
@@ -105,12 +137,12 @@ export function LabResultsSection({
 
     setFormData((prev) =>
       prev.map((r) => {
-        const newParams = { ...r.parameters };
-        if (oldName in newParams) {
-          newParams[newName] = newParams[oldName];
-          delete newParams[oldName];
+        const params = { ...r.parameters };
+        if (oldName in params) {
+          params[newName] = params[oldName];
+          delete params[oldName];
         }
-        return { ...r, parameters: newParams };
+        return { ...r, parameters: params };
       })
     );
 
@@ -121,7 +153,37 @@ export function LabResultsSection({
     });
   };
 
+  // ✅ VALIDATION: date + numeric parameters
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+
+    formData.forEach((result, index) => {
+      // date required
+      if (!result.date) {
+        newErrors[index] = { ...(newErrors[index] || {}), _date: "Date is required" };
+      }
+
+      // parameters must be numbers
+      Object.entries(result.parameters || {}).forEach(([param, value]) => {
+        if (value === "" || value === null || value === undefined) return;
+
+        if (isNaN(Number(value))) {
+          if (!newErrors[index]) newErrors[index] = {};
+          newErrors[index][param] = "Value must be a number";
+        }
+      });
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = async () => {
+    if (!validateForm()) {
+      toast.error("Please fix validation errors");
+      return;
+    }
+
     try {
       await updateLabResults(medicalFileId, formData);
       setData(formData);
@@ -133,7 +195,7 @@ export function LabResultsSection({
 
   const list = editable ? formData : data;
   const allParameters = Array.from(
-    new Set(list.flatMap((result) => Object.keys(result.parameters || {})))
+    new Set(list.flatMap((r) => Object.keys(r.parameters || {})))
   );
 
   return (
@@ -149,92 +211,90 @@ export function LabResultsSection({
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                <tr className="bg-gray-50 border-b">
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase">
                     Date
                   </th>
                   {allParameters.map((param) => (
-                    <th
-                      key={param}
-                      className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
-                    >
+                    <th key={param} className="px-6 py-4 text-left text-xs font-semibold uppercase">
                       {editable ? (
-                        <div className="flex items-center gap-2">
-                          <Input
-                            value={editingParamName[param] ?? param}
-                            onChange={(e) =>
-                              setEditingParamName((prev) => ({ ...prev, [param]: e.target.value }))
-                            }
-                            onBlur={() => applyRename(param)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                applyRename(param);
-                                e.currentTarget.blur();
-                              }
-                            }}
-                            className="min-w-[120px] bg-white"
-                          />
-                        </div>
+                        <Input
+                          value={editingParamName[param] ?? param}
+                          onChange={(e) =>
+                            setEditingParamName((prev) => ({
+                              ...prev,
+                              [param]: e.target.value,
+                            }))
+                          }
+                          onBlur={() => applyRename(param)}
+                        />
                       ) : (
                         param
                       )}
                     </th>
                   ))}
-                  {editable && (
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  )}
+                  {editable && <th className="px-6 py-4 text-right">Actions</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+
+              <tbody className="divide-y">
                 {list.map((result, index) => (
-                  <tr key={index} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={index}>
+                    <td className="px-6 py-4">
                       {editable ? (
-                        <Input
-                          type="date"
-                          value={result.date ?? ""}
-                          onChange={(e) => handleResultChange(index, "date", e.target.value)}
-                          className="w-full"
-                        />
+                        <>
+                          <Input
+                            type="date"
+                            value={result.date ?? ""}
+                            onChange={(e) =>
+                              handleResultChange(index, "date", e.target.value)
+                            }
+                            className={errors[index]?._date ? "border-red-500" : ""}
+                          />
+                          {errors[index]?._date && (
+                            <p className="text-xs text-red-500 mt-1">
+                              {errors[index]._date}
+                            </p>
+                          )}
+                        </>
                       ) : (
-                        <span className="text-sm font-medium text-gray-900">{result.date || "—"}</span>
+                        result.date || "—"
                       )}
                     </td>
+
                     {allParameters.map((param) => (
-                      <td key={param} className="px-6 py-4 whitespace-nowrap">
+                      <td key={param} className="px-6 py-4">
                         {editable ? (
-                          <Input
-                            value={result.parameters?.[param] ?? ""}
-                            onChange={(e) => handleParameterChange(index, param, e.target.value)}
-                            placeholder="Value"
-                            className="w-full"
-                          />
+                          <>
+                            <Input
+                              value={result.parameters?.[param] ?? ""}
+                              onChange={(e) =>
+                                handleParameterChange(index, param, e.target.value)
+                              }
+                              className={
+                                errors[index]?.[param] ? "border-red-500" : ""
+                              }
+                              placeholder="Value"
+                            />
+                            {errors[index]?.[param] && (
+                              <p className="text-xs text-red-500 mt-1">
+                                {errors[index][param]}
+                              </p>
+                            )}
+                          </>
                         ) : (
-                          <span className="text-sm text-gray-900">{result.parameters?.[param] ?? "—"}</span>
+                          result.parameters?.[param] ?? "—"
                         )}
                       </td>
                     ))}
+
                     {editable && (
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => addParameter(index)}
-                            title="Add parameter"
-                            className="hover:bg-gray-100 hover:text-gray-700"
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => addParameter(index)}>
                             <Plus className="w-4 h-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeLabResult(index)}
-                            title="Remove result"
-                            className="hover:bg-gray-100 hover:text-gray-700"
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => removeLabResult(index)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -250,17 +310,10 @@ export function LabResultsSection({
 
       {editable && (
         <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={addLabResult}
-            className="flex items-center gap-2 hover:bg-gray-100 hover:text-gray-700 hover:border-gray-400"
-          >
-            <Plus className="w-4 h-4" /> Add Lab Result
+          <Button variant="outline" onClick={addLabResult}>
+            <Plus className="w-4 h-4 mr-2" /> Add Lab Result
           </Button>
-          <Button
-            onClick={handleSave}
-            className="flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white"
-          >
+          <Button onClick={handleSave} className="bg-gray-700 text-white">
             Save Lab Results
           </Button>
         </div>

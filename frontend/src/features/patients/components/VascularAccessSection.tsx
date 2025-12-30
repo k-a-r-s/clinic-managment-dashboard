@@ -16,6 +16,13 @@ interface Props {
   editable?: boolean;
 }
 
+/**
+ * errors[index][field] = "error message"
+ */
+type AccessErrors = Array<
+  Partial<Record<keyof VascularAccess, string>>
+>;
+
 export function VascularAccessSection({
   patientId,
   medicalFileId,
@@ -23,6 +30,7 @@ export function VascularAccessSection({
 }: Props) {
   const [data, setData] = useState<VascularAccess[]>([]);
   const [formData, setFormData] = useState<VascularAccess[]>([]);
+  const [errors, setErrors] = useState<AccessErrors>([]);
 
   useEffect(() => {
     loadData();
@@ -33,9 +41,23 @@ export function VascularAccessSection({
       const res = await getVascularAccess(patientId);
       setData(res);
       setFormData(res);
+      setErrors([]);
     } catch {
       toast.error("Failed to load vascular access");
     }
+  };
+
+  const clearError = (
+    index: number,
+    field: keyof VascularAccess
+  ) => {
+    setErrors((prev) => {
+      const copy = [...prev];
+      if (copy[index]) {
+        copy[index] = { ...copy[index], [field]: undefined };
+      }
+      return copy;
+    });
   };
 
   const handleChange = (
@@ -48,6 +70,7 @@ export function VascularAccessSection({
         i === index ? { ...item, [field]: value } : item
       )
     );
+    clearError(index, field);
   };
 
   const handleAdd = () => {
@@ -58,16 +81,66 @@ export function VascularAccessSection({
         site: "",
         operator: "",
         firstUseDate: "",
-        creationDates: [],
-      },
+        creationDate: "",
+      } as VascularAccess,
     ]);
+    setErrors((prev) => [...prev, {}]);
   };
 
   const handleRemove = (index: number) => {
     setFormData((prev) => prev.filter((_, i) => i !== index));
+    setErrors((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const validateForm = () => {
+    const newErrors: AccessErrors = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    formData.forEach((access, index) => {
+      const rowErrors: Partial<Record<keyof VascularAccess, string>> =
+        {};
+
+      if (!access.type?.trim()) {
+        rowErrors.type = "Type is required";
+      }
+
+      if (!access.site?.trim()) {
+        rowErrors.site = "Site is required";
+      }
+
+      if (!access.operator?.trim()) {
+        rowErrors.operator = "Operator is required";
+      }
+
+      if (!access.firstUseDate) {
+        rowErrors.firstUseDate = "First use date is required";
+      }
+
+      if (!access.creationDate) {
+        rowErrors.creationDate = "Creation date is required";
+      } else {
+        const creation = new Date(access.creationDate);
+        creation.setHours(0, 0, 0, 0);
+
+        if (creation >= today) {
+          rowErrors.creationDate =
+            "Creation date must be in the past";
+        }
+      }
+
+      newErrors[index] = rowErrors;
+    });
+
+    setErrors(newErrors);
+    return newErrors.every(
+      (row) => !row || Object.keys(row).length === 0
+    );
   };
 
   const handleSave = async () => {
+    if (!validateForm()) return;
+
     try {
       await updateVascularAccess(medicalFileId, formData);
       setData(formData);
@@ -80,8 +153,9 @@ export function VascularAccessSection({
   useEffect(() => {
     if (!editable) {
       setFormData(data);
+      setErrors([]);
     }
-  }, [editable]);
+  }, [editable, data]);
 
   const list = editable ? formData : data;
 
@@ -101,94 +175,93 @@ export function VascularAccessSection({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Type */}
             <div className="space-y-1">
-              <Label>Type</Label>
-              {editable ? (
-                <Input
-                  value={access.type ?? ""}
-                  onChange={(e) =>
-                    handleChange(index, "type", e.target.value)
-                  }
-                />
-              ) : (
-                <p className="bg-gray-50 h-9 px-3 flex items-center rounded-lg">
-                  {access.type || "—"}
+              <Label>Type *</Label>
+              <Input
+                value={access.type ?? ""}
+                onChange={(e) =>
+                  handleChange(index, "type", e.target.value)
+                }
+                className={errors[index]?.type ? "border-red-500" : ""}
+              />
+              {errors[index]?.type && (
+                <p className="text-sm text-red-500">
+                  {errors[index]?.type}
                 </p>
               )}
             </div>
 
             {/* Site */}
             <div className="space-y-1">
-              <Label>Site</Label>
-              {editable ? (
-                <Input
-                  value={access.site ?? ""}
-                  onChange={(e) =>
-                    handleChange(index, "site", e.target.value)
-                  }
-                />
-              ) : (
-                <p className="bg-gray-50 h-9 px-3 flex items-center rounded-lg">
-                  {access.site || "—"}
+              <Label>Site *</Label>
+              <Input
+                value={access.site ?? ""}
+                onChange={(e) =>
+                  handleChange(index, "site", e.target.value)
+                }
+                className={errors[index]?.site ? "border-red-500" : ""}
+              />
+              {errors[index]?.site && (
+                <p className="text-sm text-red-500">
+                  {errors[index]?.site}
                 </p>
               )}
             </div>
 
             {/* Operator */}
             <div className="space-y-1">
-              <Label>Operator</Label>
-              {editable ? (
-                <Input
-                  value={access.operator ?? ""}
-                  onChange={(e) =>
-                    handleChange(index, "operator", e.target.value)
-                  }
-                />
-              ) : (
-                <p className="bg-gray-50 h-9 px-3 flex items-center rounded-lg">
-                  {access.operator || "—"}
+              <Label>Operator *</Label>
+              <Input
+                value={access.operator ?? ""}
+                onChange={(e) =>
+                  handleChange(index, "operator", e.target.value)
+                }
+                className={
+                  errors[index]?.operator ? "border-red-500" : ""
+                }
+              />
+              {errors[index]?.operator && (
+                <p className="text-sm text-red-500">
+                  {errors[index]?.operator}
                 </p>
               )}
             </div>
 
-            {/* First Use */}
+            {/* First Use Date */}
             <div className="space-y-1">
-              <Label>First Use Date</Label>
-              {editable ? (
-                <Input
-                  type="date"
-                  value={access.firstUseDate ?? ""}
-                  onChange={(e) =>
-                    handleChange(index, "firstUseDate", e.target.value)
-                  }
-                />
-              ) : (
-                <p className="bg-gray-50 h-9 px-3 flex items-center rounded-lg">
-                  {access.firstUseDate || "—"}
+              <Label>First Use Date *</Label>
+              <Input
+                type="date"
+                value={access.firstUseDate ?? ""}
+                onChange={(e) =>
+                  handleChange(index, "firstUseDate", e.target.value)
+                }
+                className={
+                  errors[index]?.firstUseDate ? "border-red-500" : ""
+                }
+              />
+              {errors[index]?.firstUseDate && (
+                <p className="text-sm text-red-500">
+                  {errors[index]?.firstUseDate}
                 </p>
               )}
             </div>
 
-            {/* Creation Dates */}
-            <div className="space-y-1 col-span-full">
-              <Label>Creation Dates</Label>
-              {editable ? (
-                <Input
-                  placeholder="YYYY-MM-DD, YYYY-MM-DD"
-                  value={(access.creationDates ?? []).join(", ")}
-                  onChange={(e) =>
-                    handleChange(
-                      index,
-                      "creationDates",
-                      e.target.value
-                        .split(",")
-                        .map((d) => d.trim())
-                        .filter(Boolean)
-                    )
-                  }
-                />
-              ) : (
-                <p className="bg-gray-50 px-3 py-2 rounded-lg">
-                  {(access.creationDates ?? []).join(", ") || "—"}
+            {/* Creation Date */}
+            <div className="space-y-1">
+              <Label>Creation Date *</Label>
+              <Input
+                type="date"
+                value={access.creationDate ?? ""}
+                onChange={(e) =>
+                  handleChange(index, "creationDate", e.target.value)
+                }
+                className={
+                  errors[index]?.creationDate ? "border-red-500" : ""
+                }
+              />
+              {errors[index]?.creationDate && (
+                <p className="text-sm text-red-500">
+                  {errors[index]?.creationDate}
                 </p>
               )}
             </div>
@@ -201,7 +274,8 @@ export function VascularAccessSection({
                 size="sm"
                 onClick={() => handleRemove(index)}
               >
-                <Trash2 className="w-4 h-4" /> Remove
+                <Trash2 className="w-4 h-4 mr-1" />
+                Remove
               </Button>
             </div>
           )}
@@ -211,9 +285,12 @@ export function VascularAccessSection({
       {editable && (
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleAdd}>
-            <Plus className="w-4 h-4" /> Add Access
+            <Plus className="w-4 h-4 mr-1" />
+            Add Access
           </Button>
-          <Button onClick={handleSave}>Save Vascular Access</Button>
+          <Button onClick={handleSave}>
+            Save Vascular Access
+          </Button>
         </div>
       )}
     </div>

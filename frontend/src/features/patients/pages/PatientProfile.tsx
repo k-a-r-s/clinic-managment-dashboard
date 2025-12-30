@@ -110,6 +110,7 @@ export function PatientProfile({
 }: PatientProfileProps) {
   const [patient, setPatient] = useState<PatientFormData | null>(null);
   const [isEditMode, setIsEditMode] = useState(initialEditMode);
+  const [isEditModeMedical, setisEditModeMedical] = useState(initialEditMode);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<PatientFormData>({
     firstName: "",
@@ -154,6 +155,7 @@ export function PatientProfile({
       });
       const medicalId = await getmedicalFileId(patientId);
       setmedicalFileId(medicalId)
+      setisEditModeMedical(false)
     } catch (error) {
       console.error("Failed to load patient:", error);
       toast.error("Failed to load patient");
@@ -216,6 +218,10 @@ export function PatientProfile({
       }
     }
   };
+
+  const handleCancelMedical = async() => {
+    setisEditModeMedical(false)
+  }
 
   const handleFormChange = (
     field: keyof PatientFormData,
@@ -555,60 +561,66 @@ export function PatientProfile({
         </div>
       </div>
 
+      <div className="flex items-center justify-between">
+        <h1 className="text-[#101828] text-base font-normal">
+          Patient medical records — {patient.firstName} {patient.lastName}
+        </h1>
+
+        <div className="flex gap-3">
+          {isEditModeMedical ? (
+            <>
+              <Button
+                onClick={handleCancelMedical}
+                className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
+              >
+                <Save className="w-4 h-4" />
+                Done
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => setisEditModeMedical(true)}
+              className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
+            >
+              <Edit className="w-4 h-4" />
+              Edit Patient
+            </Button>
+          )}
+        </div>
+      </div>
+        
+
+              
       {/* Medical File Section */}
-      <CollapsibleSection title="Medical File (Read Only)" defaultOpen={true}>
-        <div className="space-y-6">
-          {/* Basic Medical Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-600">
-                Initial Nephropathy
-              </label>
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">Diabetic Nephropathy</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-600">
-                First Dialysis Date
-              </label>
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">2022-03-15</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-600">
-                Care Start Date
-              </label>
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">2024-01-10</p>
-              </div>
-            </div>
-          </div>
+          <CollapsibleSection
+            title={isEditModeMedical ? "Medical File " : "Medical File (Read Only)"}
+            defaultOpen
+          >
+          <div className="space-y-6">
 
           {/* Vascular Access */}
           <CollapsibleSubsection title="Vascular Access" defaultOpen={true}>
-            <VascularAccessSection patientId={patientId}/>
+            <VascularAccessSection patientId={patientId} medicalFileId={medicalFileId} editable={isEditModeMedical}/>
           </CollapsibleSubsection>
 
           {/* Vaccinations */}
           <CollapsibleSubsection title="Vaccinations" defaultOpen={true}>
-            <VaccinationSection patientId={patientId} medicalFileId={medicalFileId}/>
+            <VaccinationSection patientId={patientId} medicalFileId={medicalFileId} editable={isEditModeMedical}/>
           </CollapsibleSubsection>
 
           {/* Dialysis Protocol */}
           <CollapsibleSubsection title="Dialysis Protocol" defaultOpen={true}>
-            <DialysisProtocolSection  patientId={patientId}/>
+            <DialysisProtocolSection  patientId={patientId} medicalFileId={medicalFileId} editable={isEditModeMedical}/>
           </CollapsibleSubsection>
-{/*  */}
+        
           {/* Current Medications */}
           <CollapsibleSubsection title="Current Medications" defaultOpen={true}>
-            <MedicationsSection patientId={patientId} />
+            <MedicationsSection patientId={patientId} medicalFileId={medicalFileId} editable={isEditModeMedical}/>
           </CollapsibleSubsection>
-{/*  */}
+        
           {/* Lab Results */}
-          <CollapsibleSubsection title="Recent Lab Results" defaultOpen={true}>
-            <LabResultsSection />
+          <CollapsibleSubsection title="Recent Lab Results" defaultOpen={true} >
+            <LabResultsSection patientId={patientId} medicalFileId={medicalFileId} editable={isEditModeMedical}/>
           </CollapsibleSubsection>
 
         </div>

@@ -81,8 +81,8 @@ export interface VascularAccess {
   type: string;
   site: string;
   operator: string;
-  firstUseDate: string;
-  creationDates: string[];
+  firstUseDate: string;   // YYYY-MM-DD
+  creationDate: string;  // YYYY-MM-DD (must be in the past)
 }
 
 export interface Vaccination {

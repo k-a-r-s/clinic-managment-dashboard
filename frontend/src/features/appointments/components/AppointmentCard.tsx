@@ -82,6 +82,11 @@ export function AppointmentCard({
   patients = [],
   rooms = []
 }: AppointmentCardProps) {
+
+  const getRoomNameById = (roomId?: string) => {
+    return rooms.find((r) => r.id === roomId)?.name ?? "—";
+  };
+
   return (
     <>
       <PageHeader
@@ -244,7 +249,7 @@ export function AppointmentCard({
             <Label>Room</Label>
             {isEditMode ? (
               <Select
-                value={formData.patientId}
+                value={formData.roomId}
                 onValueChange={(v) => onFormChange("roomId", v)}
               >
                 <SelectTrigger>
@@ -261,7 +266,7 @@ export function AppointmentCard({
             ) : (
               <div className="bg-gray-50 h-9 px-3 flex items-center rounded">
                 <User className="w-4 h-4 mr-2 text-gray-400" />
-                {appointment.roomId}
+                {getRoomNameById(appointment.roomId)}
               </div>
             )}
           </div>

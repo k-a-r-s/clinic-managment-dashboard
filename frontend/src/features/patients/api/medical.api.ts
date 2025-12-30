@@ -1,21 +1,21 @@
 import axiosInstance from "../../../lib/axios";
-import type { Vaccination , DialysisProtocol , Medication, VascularAccess} from "../../../types";
+import type { Vaccination , DialysisProtocol , Medication, VascularAccess , LabResult} from "../../../types";
 
 export const getmedicalFileId = async (patientId: string) => {
   const { data } = await axiosInstance.get(`/medical-files/patient/${patientId}`);
   return data.id;
 };
 
-export const getVascularAccess = async (patientId: string): Promise<VascularAccess> => {
+export const getVascularAccess = async (patientId: string): Promise<VascularAccess[]> => {
 
   const response = await axiosInstance.get(`/medical-files/patient/${patientId}`);
   const body = response.data
-  return body.data?.VascularAccess ?? [];
+  return body.data?.vascularAccess ?? [];
 };
 
 export const updateVascularAccess = async (
   patientId: string,
-  vascularAccess: VascularAccess
+  vascularAccess: VascularAccess[]
 ) => {
   return axiosInstance.put(`/medical-files/${patientId}`, {
     "data": { vascularAccess },
@@ -42,7 +42,7 @@ export const getMedications = async (patientId: string): Promise<Medication[]> =
 
   const response = await axiosInstance.get(`/medical-files/patient/${patientId}`);
   const body = response.data
-  return body.data?.Medications ?? [];
+  return body.data?.medications ?? [];
 
 };
 
@@ -55,11 +55,11 @@ export const updateMedications = async (
   });
 };
 
-export const getDialysisProtocol = async (patientId: string): Promise<DialysisProtocol[]> => {
+export const getDialysisProtocol = async (patientId: string): Promise<DialysisProtocol> => {
 
   const response = await axiosInstance.get(`/medical-files/patient/${patientId}`);
   const body = response.data
-  return body.data?.DialysisProtocol ?? [];
+  return body.data?.protocol ?? [];
 
 };
 
@@ -71,3 +71,22 @@ export const updateDialysisProtocol = async (
     "data": { protocol },
   });
 };
+
+export const getLabResults = async (patientId: string): Promise<LabResult[]> => {
+
+  const response = await axiosInstance.get(`/medical-files/patient/${patientId}`);
+  const body = response.data
+  return body.data?.lab ?? [];
+
+};
+
+export const updateLabResults = async (
+  patientId: string,
+  lab: LabResult[]
+) => {
+  return axiosInstance.put(`/medical-files/${patientId}`, {
+    "data": { lab },
+  });
+};
+
+

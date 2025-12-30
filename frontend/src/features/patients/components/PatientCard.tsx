@@ -86,12 +86,12 @@ export function PatientCard({
             {isEditMode ? (
               <Input
                 id="name"
-                value={formData.}
-                onChange={(e) => onFormChange("name", e.target.value)}
+                value={formData.lastName}
+                onChange={(e) => onFormChange("lastName", e.target.value)}
               />
             ) : (
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">{formData.id}</p>
+                <p className="text-sm text-gray-900">{formData.lastName}</p>
               </div>
             )}
           </div>

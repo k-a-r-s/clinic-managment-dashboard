@@ -1,0 +1,80 @@
+{
+  "medicalFile": {
+    "nephropathyInfo": {
+      "initialNephropathy": "string - Original kidney disease diagnosis (e.g., 'Diabetic Nephropathy', 'Hypertensive Nephrosclerosis')",
+      "diagnosisDate": "string - ISO 8601 date format (YYYY-MM-DD)",
+      "firstDialysisDate": "string - ISO 8601 date format (YYYY-MM-DD)",
+      "careStartDate": "string - ISO 8601 date format (YYYY-MM-DD)"
+    },
+    "vascularAccess": [
+      {
+        "type": "string - Access type (e.g., 'AVF', 'AVG', 'Catheter')",
+        "site": "string - Anatomical location (e.g., 'Left Radiocephalic', 'Right Brachiocephalic')",
+        "operator": "string - Surgeon/operator name",
+        "creationDate": "string - ISO 8601 date format (YYYY-MM-DD)",
+        "firstUseDate": "string - ISO 8601 date format (YYYY-MM-DD)",
+        "status": "string - ENUM: 'active' | 'inactive' | 'abandoned' - ONLY ONE can be 'active' at a time"
+      }
+    ],
+    "dialysisProtocol": {
+      "dialysisDays": [
+        "string - Array of days, e.g., ['Monday', 'Wednesday', 'Friday']"
+      ],
+      "sessionsPerWeek": "number - Integer (typically 2-3)",
+      "generator": "string - Dialysis machine model (e.g., 'Fresenius 5008S')",
+      "sessionDuration": "string - Duration in minutes (e.g., '240')",
+      "dialyser": "string - Dialyzer model (e.g., 'FX80', 'Polyflux 210H')",
+      "needle": "string - Needle gauge (e.g., '15G', '16G')",
+      "bloodFlow": "string - Blood flow rate (e.g., '300 mL/min')",
+      "anticoagulation": "string - Anticoagulation protocol (e.g., 'Heparin 5000 IU')",
+      "dryWeight": "string - Target dry weight in kg (e.g., '75.5')",
+      "interDialyticWeightGain": "string - IDWG in kg (e.g., '2.5')",
+      "incidents": ["string - Array of incident notes"]
+    },
+    "medications": [
+      {
+        "name": "string - Medication name (e.g., 'Erythropoietin (EPO)')",
+        "category": "string - Drug category (e.g., 'Anemia Management', 'Phosphate Binder')",
+        "history": [
+          {
+            "startDate": "string - ISO 8601 date format (YYYY-MM-DD)",
+            "dosage": "string - Dosage with frequency (e.g., '4000 IU - 3x/week IV', '800mg - 3 times daily')"
+          }
+        ]
+      }
+    ],
+    "vaccinations": [
+      {
+        "vaccineName": "string - Vaccine name (e.g., 'Hepatitis B', 'Influenza', 'COVID-19')",
+        "status": "string - Vaccination status (e.g., 'Complete', 'In Progress', 'Overdue')",
+        "doses": [
+          {
+            "date": "string - ISO 8601 date format (YYYY-MM-DD)",
+            "reminderDate": "string - ISO 8601 date format (YYYY-MM-DD) - Optional, can be null"
+          }
+        ]
+      }
+    ],
+    "labResults": [
+      {
+        "date": "string - ISO 8601 date format (YYYY-MM-DD)",
+        "parameters": {
+          "creatinine": "string - Value with unit (e.g., '8.5', stored as mg/dL)",
+          "urea": "string - Blood Urea Nitrogen (e.g., '65', stored as mg/dL)",
+          "ktv": "string - Dialysis adequacy ratio (e.g., '1.4')",
+          "hemoglobin": "string - (e.g., '11.2', stored as g/dL)",
+          "ferritin": "string - (e.g., '250', stored as ng/mL)",
+          "tsat": "string - Transferrin saturation (e.g., '30', stored as %)",
+          "potassium": "string - (e.g., '5.1', stored as mmol/L)",
+          "sodium": "string - (e.g., '138', stored as mmol/L)",
+          "calcium": "string - (e.g., '9.2', stored as mg/dL)",
+          "phosphorus": "string - (e.g., '5.5', stored as mg/dL)",
+          "pth": "string - Parathyroid hormone (e.g., '250', stored as pg/mL)",
+          "albumin": "string - (e.g., '4.0', stored as g/dL)",
+          "bicarbonate": "string - (e.g., '22', stored as mmol/L)"
+        }
+      }
+    ],
+    "clinicalSummary": "string - Free-text clinical summary written by doctor"
+  }
+}

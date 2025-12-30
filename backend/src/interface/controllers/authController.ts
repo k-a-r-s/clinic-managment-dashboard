@@ -14,7 +14,7 @@ export class AuthController {
     res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 6 * 24 * 60 * 60 * 1000, // 6 days
       path: "/",
     });
@@ -23,7 +23,7 @@ export class AuthController {
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/auth/refresh-token",
     });
@@ -33,7 +33,11 @@ export class AuthController {
     const { refreshToken, accessToken, ...dataWithoutTokens } =
       responseJson.data;
 
-    return ResponseFormatter.success(res, dataWithoutTokens, "Login successful");
+    return ResponseFormatter.success(
+      res,
+      dataWithoutTokens,
+      "Login successful"
+    );
   }
 
   async logout(req: AuthRequest, res: Response) {
@@ -52,7 +56,7 @@ export class AuthController {
     res.clearCookie("accessToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
     });
 
@@ -60,8 +64,8 @@ export class AuthController {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/auth/refresh-token",
+      sameSite: "lax",
+      path: "/api/auth/refresh-token",
     });
 
     return ResponseFormatter.success(res, null, "Logged out successfully");
@@ -86,7 +90,7 @@ export class AuthController {
     res.cookie("accessToken", result["access_token"], {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 60 * 60 * 1000, // 1 hour
       path: "/",
     });
@@ -102,17 +106,25 @@ export class AuthController {
     res.cookie("refreshToken", result["refresh_token"], {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/auth/refresh-token",
     });
 
     // Return minimal response (no tokens in body)
-    return ResponseFormatter.success(res, null, "Tokens refreshed successfully");
+    return ResponseFormatter.success(
+      res,
+      null,
+      "Tokens refreshed successfully"
+    );
   }
 
   async getMe(req: AuthRequest, res: Response) {
     const { token, ...userWithoutToken } = req.user || {};
-    return ResponseFormatter.success(res, userWithoutToken, "User retrieved successfully");
+    return ResponseFormatter.success(
+      res,
+      userWithoutToken,
+      "User retrieved successfully"
+    );
   }
 }

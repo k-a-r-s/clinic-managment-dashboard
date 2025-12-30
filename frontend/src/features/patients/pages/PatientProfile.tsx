@@ -20,18 +20,13 @@ import {
   BreadcrumbSeparator,
 } from "../../../components/ui/breadcrumb";
 import { Loader } from "../../../components/shared/Loader";
-import { VascularAccessSection } from "../components/VascularAccessSection";
-import { VaccinationSection } from "../components/VaccinationSection";
-import { DialysisProtocolSection } from "../components/DialysisProtocolSection";
-import { MedicationsSection } from "../components/MedicationsSection";
-import { LabResultsSection } from "../components/LabResultsSection";
+import { MedicalFileForm } from "../components/MedicalFileForm";
 import {
   getPatientById,
   updatePatient,
   deletePatient,
 } from "../api/patients.api";
-import type { PatientFormData } from "../../../types";
-import { getmedicalFileId } from "../api/medical.api";
+import type { Patient, PatientFormData, MedicalFile } from "../../../types";
 
 interface CollapsibleSectionProps {
   title: string;
@@ -128,6 +123,33 @@ export function PatientProfile({
   });
   const [medicalFileId ,setmedicalFileId] = useState<string>("")
 
+  const [medicalFile, setMedicalFile] = useState<MedicalFile>({
+    nephropathyInfo: {
+      initialNephropathy: "",
+      diagnosisDate: "",
+      firstDialysisDate: "",
+      careStartDate: "",
+    },
+    vascularAccess: [],
+    dialysisProtocol: {
+      dialysisDays: [],
+      sessionsPerWeek: 3,
+      generator: "",
+      sessionDuration: "",
+      dialyser: "",
+      needle: "",
+      bloodFlow: "",
+      anticoagulation: "",
+      dryWeight: "",
+      interDialyticWeightGain: "",
+      incidents: [],
+    },
+    medications: [],
+    vaccinations: [],
+    labResults: [],
+    clinicalSummary: "",
+  });
+
   useEffect(() => {
     loadPatient();
   }, [patientId]);
@@ -152,8 +174,11 @@ export function PatientProfile({
         emergencyContactName: data.emergencyContactName,
         emergencyContactPhone: data.emergencyContactPhone,
       });
-      const medicalId = await getmedicalFileId(patientId);
-      setmedicalFileId(medicalId)
+
+      // Load medical file if it exists
+      if (data.medicalFile) {
+        setMedicalFile(data.medicalFile);
+      }
     } catch (error) {
       console.error("Failed to load patient:", error);
       toast.error("Failed to load patient");
@@ -192,6 +217,39 @@ export function PatientProfile({
         emergencyContactName: patient.emergencyContactName,
         emergencyContactPhone: patient.emergencyContactPhone,
       });
+
+      // Reset medical file to original values
+      if (patient.medicalFile) {
+        setMedicalFile(patient.medicalFile);
+      } else {
+        // Reset to empty state if no medical file exists
+        setMedicalFile({
+          nephropathyInfo: {
+            initialNephropathy: "",
+            diagnosisDate: "",
+            firstDialysisDate: "",
+            careStartDate: "",
+          },
+          vascularAccess: [],
+          dialysisProtocol: {
+            dialysisDays: [],
+            sessionsPerWeek: 3,
+            generator: "",
+            sessionDuration: "",
+            dialyser: "",
+            needle: "",
+            bloodFlow: "",
+            anticoagulation: "",
+            dryWeight: "",
+            interDialyticWeightGain: "",
+            incidents: [],
+          },
+          medications: [],
+          vaccinations: [],
+          labResults: [],
+          clinicalSummary: "",
+        });
+      }
     }
     setIsEditMode(false);
   };
@@ -330,9 +388,7 @@ export function PatientProfile({
                 <Input
                   id="lastName"
                   value={formData.lastName}
-                  onChange={(e) =>
-                    handleFormChange("lastName", e.target.value)
-                  }
+                  onChange={(e) => handleFormChange("lastName", e.target.value)}
                 />
               ) : (
                 <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
@@ -556,62 +612,12 @@ export function PatientProfile({
       </div>
 
       {/* Medical File Section */}
-      <CollapsibleSection title="Medical File (Read Only)" defaultOpen={true}>
-        <div className="space-y-6">
-          {/* Basic Medical Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-600">
-                Initial Nephropathy
-              </label>
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">Diabetic Nephropathy</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-600">
-                First Dialysis Date
-              </label>
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">2022-03-15</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-600">
-                Care Start Date
-              </label>
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">2024-01-10</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Vascular Access */}
-          <CollapsibleSubsection title="Vascular Access" defaultOpen={true}>
-            <VascularAccessSection patientId={patientId}/>
-          </CollapsibleSubsection>
-
-          {/* Vaccinations */}
-          <CollapsibleSubsection title="Vaccinations" defaultOpen={true}>
-            <VaccinationSection patientId={patientId} medicalFileId={medicalFileId}/>
-          </CollapsibleSubsection>
-
-          {/* Dialysis Protocol */}
-          <CollapsibleSubsection title="Dialysis Protocol" defaultOpen={true}>
-            <DialysisProtocolSection  patientId={patientId}/>
-          </CollapsibleSubsection>
-{/*  */}
-          {/* Current Medications */}
-          <CollapsibleSubsection title="Current Medications" defaultOpen={true}>
-            <MedicationsSection patientId={patientId} />
-          </CollapsibleSubsection>
-{/*  */}
-          {/* Lab Results */}
-          <CollapsibleSubsection title="Recent Lab Results" defaultOpen={true}>
-            <LabResultsSection />
-          </CollapsibleSubsection>
-
-        </div>
+      <CollapsibleSection title="Medical File" defaultOpen={true}>
+        <MedicalFileForm
+          medicalFile={medicalFile}
+          onChange={setMedicalFile}
+          readOnly={!isEditMode}
+        />
       </CollapsibleSection>
     </div>
   );

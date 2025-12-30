@@ -1,10 +1,8 @@
 //absolute zina istg
 
 export * from "./doctors";
-export * from "./patient";
-export * from "./dashboard";
-export * from "./appointment";
-export * from "./medicalfield";
+export * from "./users";
+export * from "./prescriptions";
 // Admin Type
 
 export interface UserProfile {
@@ -18,55 +16,64 @@ export interface UserProfile {
 }
 
 // Patient Types
-// export interface Patient {
-//   name: any;
-//   id: string;
-//   email: string;
-//   firstName: string;
-//   lastName: string;
-//   address: string;
-//   phoneNumber: string;
-//   profession: string;
-//   childrenNumber: number;
-//   familySituation: string;
-//   birthDate: string;
-//   gender: string;
-//   insuranceNumber?: string;
-//   emergencyContactName?: string;
-//   emergencyContactPhone?: string;
-//   allergies?: string[];
-//   currentMedications?: string[];
-//   createdAt?: string;
-//   updatedAt?: string;
-//   // Medical file data (if included in response)
-//   medicalInfo?: {
-//     initialNephropathy?: string;
-//     firstDialysisDate?: string;
-//     careStartDate?: string;
-//     vascularAccess?: VascularAccess[];
-//     vaccinations?: Vaccination[];
-//     dialysisProtocol?: DialysisProtocol;
-//     medications?: Medication[];
-//     labResults?: LabResult[];
-//     clinicalSummary?: string;
-//   };
-// }
+export interface Patient {
+  name: any;
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  phoneNumber: string;
+  profession: string;
+  childrenNumber: number;
+  familySituation: string;
+  birthDate: string;
+  gender: string;
+  insuranceNumber?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  allergies?: string[];
+  currentMedications?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+  // Medical file data (if included in response)
+  medicalFile?: MedicalFile;
+}
 
-// export interface PatientFormData {
-//   firstName: string;
-//   lastName: string;
-//   email: string;
-//   address: string;
-//   phoneNumber: string;
-//   profession: string;
-//   childrenNumber: number;
-//   familySituation: string;
-//   birthDate: string;
-//   gender: string;
-//   insuranceNumber?: string;
-//   emergencyContactName?: string;
-//   emergencyContactPhone?: string;
-// }
+export interface MedicalFile {
+  id?: string;
+  patientId?: string;
+  nephropathyInfo: {
+    initialNephropathy: string;
+    diagnosisDate: string;
+    firstDialysisDate: string;
+    careStartDate: string;
+  };
+  vascularAccess: VascularAccess[];
+  dialysisProtocol: DialysisProtocol;
+  medications: Medication[];
+  vaccinations: Vaccination[];
+  labResults: LabResult[];
+  clinicalSummary: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PatientFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  address: string;
+  phoneNumber: string;
+  profession: string;
+  childrenNumber: number;
+  familySituation: string;
+  birthDate: string;
+  gender: string;
+  insuranceNumber?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+}
 
 // User Types
 export interface UserFormData {
@@ -81,8 +88,9 @@ export interface VascularAccess {
   type: string;
   site: string;
   operator: string;
+  creationDate: string;
   firstUseDate: string;
-  creationDates: string[];
+  status: "active" | "inactive" | "abandoned";
 }
 
 export interface Vaccination {
@@ -110,9 +118,23 @@ export interface DialysisProtocol {
 
 export interface Medication {
   name: string;
-  history: {
-    startDate: string;
+  category: string;
+  currentTreatment: {
     dosage: string;
+    frequency: string;
+    startDate: string;
+    status: "active" | "discontinued" | "completed";
+    prescriptionId?: string;
+  };
+  history: {
+    prescriptionMedicationId?: string;
+    prescriptionId?: string;
+    startDate: string;
+    endDate: string | null;
+    dosage: string;
+    frequency: string;
+    status: "active" | "discontinued" | "completed";
+    notes: string | null;
   }[];
 }
 
@@ -126,7 +148,7 @@ export interface LabResult {
 // Doctor Types
 export interface Doctor {
   name: any;
-  id:  string;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -141,46 +163,79 @@ export interface Doctor {
 // Machine Types
 export interface Machine {
   id: string;
-  machineId?: string;
+  machineId: string;
   manufacturer?: string | null;
   model?: string | null;
-  status: 'available' | 'in-use' | 'maintenance' | 'out-of-service';
+  status: "available" | "in-use" | "maintenance" | "out-of-service";
   lastMaintenanceDate: string;
   nextMaintenanceDate: string;
-  // notes removed per design
-  // notes removed
-  // notes removed
+  roomId?: string | null;
   isActive?: boolean;
-  room?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  // Populated field
+  room?: string | null;
 }
 
 export interface MachineFormData {
-  machineId?: string;
+  machineId: string;
   manufacturer?: string;
   model?: string;
-  status: 'available' | 'in-use' | 'maintenance' | 'out-of-service';
+  status: "available" | "in-use" | "maintenance" | "out-of-service";
   lastMaintenanceDate: string;
   nextMaintenanceDate: string;
-  // notes removed
-  // notes removed
-  // notes removed
+  roomId?: string;
+  isActive?: boolean;
+}
   // store room by UUID (room id)
   room?: string;
 }
 
 // Room Types
 export interface Room {
-  status: any;
   id: string;
   roomNumber: string;
+  capacity?: number;
   type?: string;
   isAvailable?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
 
+// Appointment Types
+export interface Appointment {
+  id: number;
+  patientId: number;
+  doctorId: number;
+  roomId?: number;
+  createdByReceptionistId?: string;
+  createdByDoctorId?: string;
+  appointmentDate: string;
+  estimatedDuration: number; // in minutes
+  actualDuration?: number;
+  status: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
+  notes?: string;
+  reasonForVisit?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AppointmentFormData {
+  patientId: string;
+  doctorId: string;
+  roomId?: string;
+  appointmentDate: string;
+  estimatedDuration: number;
+  status?: "SCHEDULED" | "in-progress" | "COMPLETED" | "CANCELED" | "no-show";
+  notes?: string;
+  reasonForVisit?: string;
+}
+
+export interface AppointmentWithDetails extends Appointment {
+  doctorName: string;
+  patientName: string;
+  roomNumber?: string;
+}
 
 // API Response Types
 export interface ApiSuccessResponse<T = any> {

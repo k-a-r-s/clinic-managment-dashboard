@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
+import { Combobox } from "../../../components/ui/combobox";
 import { Textarea } from "../../../components/ui/textarea";
 import { FormCard } from "../../../components/shared/FormCard";
 import type { AppointmentFormData , AppointmentStatus} from "../../../types";
@@ -33,7 +34,7 @@ export function AppointmentForm({
   submitLabel = "Create Appointment",
   doctors = [],
   patients = [],
-  rooms = []
+  rooms = [],
 }: AppointmentFormProps) {
 
   const [formData, setFormData] = useState<AppointmentFormData>({
@@ -122,7 +123,9 @@ export function AppointmentForm({
                 onChange={(e) =>
                   handleInputChange("appointmentDate", e.target.value)
                 }
-                className="pl-10"
+                className={`pl-10 ${
+                  errors.appointmentDate ? "border-red-500" : ""
+                }`}
               />
             </div>
             {errors.appointmentDate && (
@@ -150,10 +153,8 @@ export function AppointmentForm({
                 }`}
               />
             </div>
-            {errors.estimatedDurationInMinutes && (
-              <p className="text-sm text-red-500">
-                {errors.estimatedDurationInMinutes}
-              </p>
+            {errors.estimatedDuration && (
+              <p className="text-sm text-red-500">{errors.estimatedDuration}</p>
             )}
           </div>
 
@@ -161,24 +162,18 @@ export function AppointmentForm({
             <Label htmlFor="doctor">
               Doctor <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={doctors.map((doctor) => ({
+                value: doctor.id,
+                label: doctor.name,
+              }))}
               value={formData.doctorId}
               onValueChange={(value) => handleInputChange("doctorId", value)}
-            >
-              <SelectTrigger
-                id="doctor"
-                className={errors.doctorId ? "border-red-500" : ""}
-              >
-                <SelectValue placeholder="Select doctor" />
-              </SelectTrigger>
-              <SelectContent>
-                {doctors.map((doctor) => (
-                  <SelectItem key={doctor.id} value={doctor.id}>
-                    {doctor.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="Select doctor"
+              searchPlaceholder="Search doctors..."
+              emptyMessage="No doctors found."
+              className={errors.doctorId ? "border-red-500" : ""}
+            />
             {errors.doctorId && (
               <p className="text-sm text-red-500">{errors.doctorId}</p>
             )}
@@ -188,30 +183,24 @@ export function AppointmentForm({
             <Label htmlFor="patient">
               Patient <span className="text-red-500">*</span>
             </Label>
-            <Select
+            <Combobox
+              options={patients.map((patient) => ({
+                value: patient.id,
+                label: patient.name,
+              }))}
               value={formData.patientId}
               onValueChange={(value) => handleInputChange("patientId", value)}
-            >
-              <SelectTrigger
-                id="patient"
-                className={errors.patientId ? "border-red-500" : ""}
-              >
-                <SelectValue placeholder="Select patient" />
-              </SelectTrigger>
-              <SelectContent>
-                {patients.map((patient) => (
-                  <SelectItem key={patient.id} value={patient.id}>
-                    {patient.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="Select patient"
+              searchPlaceholder="Search patients..."
+              emptyMessage="No patients found."
+              className={errors.patientId ? "border-red-500" : ""}
+            />
             {errors.patientId && (
               <p className="text-sm text-red-500">{errors.patientId}</p>
             )}
           </div>
 
-<div className="space-y-2">
+          <div className="space-y-2">
             <Label htmlFor="room">
               Room <span className="text-red-500">*</span>
             </Label>
@@ -265,8 +254,10 @@ export function AppointmentForm({
               <Textarea
                 id="reason"
                 placeholder="Enter reason for appointment..."
-                value={formData.reason}
-                onChange={(e) => handleInputChange("reason", e.target.value)}
+                value={formData.reasonForVisit}
+                onChange={(e) =>
+                  handleInputChange("reasonForVisit", e.target.value)
+                }
                 className={`pl-10 min-h-[100px] ${
                   errors.reason ? "border-red-500" : ""
                 }`}

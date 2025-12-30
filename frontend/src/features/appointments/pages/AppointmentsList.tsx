@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "../../../components/ui/select";
 import { PageHeader } from "../../../components/shared/PageHeader";
+import { toast } from "react-hot-toast";
 import { SearchBar } from "../../../components/shared/SearchBar";
 import { Loader } from "../../../components/shared/Loader";
 import { DataTable } from "../../../components/shared/DataTable";
@@ -51,7 +52,7 @@ export function AppointmentsList({
       setAppointments(data);
     } catch (error) {
       console.error("Failed to load appointments:", error);
-      // TODO: Show error toast
+      toast.error("Failed to load appointments");
     } finally {
       setIsLoading(false);
     }

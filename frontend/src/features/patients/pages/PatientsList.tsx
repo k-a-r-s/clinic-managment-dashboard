@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Eye, Edit, Phone, Droplet } from "lucide-react";
+import { Plus, Eye, Edit, Phone } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import { PageHeader } from "../../../components/shared/PageHeader";
@@ -8,6 +8,7 @@ import { Loader } from "../../../components/shared/Loader";
 import { DataTable } from "../../../components/shared/DataTable";
 import type { Column } from "../../../components/shared/DataTable";
 import { getPatients } from "../api/patients.api";
+import { toast } from "react-hot-toast";
 import type { Patient } from "../../../types";
 
 // Utility function to calculate age from birth date
@@ -48,10 +49,14 @@ export function PatientsList({
     try {
       setIsLoading(true);
       const data = await getPatients();
+      console.log("Loaded patients:", data);
+      if (data.length > 0) {
+        console.log("First patient sample:", data[0]);
+      }
       setPatients(data);
     } catch (error) {
       console.error("Failed to load patients:", error);
-      // TODO: Show error toast
+      toast.error("Failed to load patients");
     } finally {
       setIsLoading(false);
     }
@@ -110,18 +115,27 @@ export function PatientsList({
     {
       key: "gender",
       header: "Gender",
-      render: (patient) => (
-        <span className="text-sm text-gray-600">{patient.gender}</span>
-      ),
+      render: (patient) => {
+        // Handle both camelCase and snake_case from API
+        const gender = patient.gender || (patient as any).gender;
+        return (
+          <span className="text-sm text-gray-600 capitalize">
+            {gender || "N/A"}
+          </span>
+        );
+      },
     },
     {
       key: "age",
       header: "Age",
-      render: (patient) => (
-        <span className="text-sm text-gray-600">
-          {calculateAge(patient.birthDate)}
-        </span>
-      ),
+      render: (patient) => {
+        // Handle both camelCase and snake_case from API
+        const birthDate = patient.birthDate || (patient as any).birth_date;
+        if (!birthDate)
+          return <span className="text-sm text-gray-400">N/A</span>;
+        const age = calculateAge(birthDate);
+        return <span className="text-sm text-gray-600">{age} years</span>;
+      },
     },
     {
       key: "contact",
@@ -134,21 +148,11 @@ export function PatientsList({
       ),
     },
     {
-      key: "dialysis_type",
-      header: "Dialysis Type",
-      render: () => (
-        <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-          <Droplet className="w-3 h-3 mr-1" />
-          HD
-        </Badge>
-      ),
-    },
-    {
       key: "actions",
       header: "Actions",
-      className: "text-center",
+      className: "text-left",
       render: (patient) => (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-start gap-1">
           <Button
             size="sm"
             variant="ghost"

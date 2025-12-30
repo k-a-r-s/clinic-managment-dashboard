@@ -1,5 +1,21 @@
-import PrescriptionsLayout from "../components/PrescriptionsLayout";
+import { PrescriptionsList } from "./PrescriptionsList";
 
-export function PrescriptionsPage() {
-  return <PrescriptionsLayout />;
+interface PrescriptionsPageProps {
+  onViewPrescription?: (prescriptionId: string) => void;
+  onEditPrescription?: (prescriptionId: string) => void;
+  onCreateNew?: () => void;
+}
+
+export function PrescriptionsPage({
+  onViewPrescription,
+  onEditPrescription,
+  onCreateNew,
+}: PrescriptionsPageProps) {
+  return (
+    <PrescriptionsList
+      onViewPrescription={onViewPrescription}
+      onEditPrescription={onEditPrescription}
+      onCreateNew={onCreateNew}
+    />
+  );
 }

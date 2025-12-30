@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,48 +8,11 @@ import {
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import type { AppointmentWithDetails } from "../../../types";
+import { getAppointments } from "../api/appointments.api";
+import { toast } from "react-hot-toast";
 
-const mockAppointments: AppointmentWithDetails[] = [
-  {
-    id: 1,
-    createdAt: "2025-12-05T10:00:00",
-    date: "2025-12-05",
-    estimatedDuration: "30",
-    doctorId: "1",
-    doctorName: "Dr. Sarah Anderson",
-    patientId: "HD-2024-1234",
-    patientName: "John Doe",
-    roomNumber: 101,
-    status: "scheduled",
-    reason: "Regular checkup",
-  },
-  {
-    id: 2,
-    createdAt: "2025-12-05T14:00:00",
-    date: "2025-12-05",
-    estimatedDuration: "45",
-    doctorId: "2",
-    doctorName: "Dr. Michael Chen",
-    patientId: "HD-2024-1235",
-    patientName: "Sarah Johnson",
-    roomNumber: 102,
-    status: "scheduled",
-    reason: "Follow-up",
-  },
-  {
-    id: 3,
-    createdAt: "2025-12-10T09:00:00",
-    date: "2025-12-10",
-    estimatedDuration: "30",
-    doctorId: "3",
-    doctorName: "Dr. Emily Rodriguez",
-    patientId: "HD-2024-1236",
-    patientName: "Robert Martinez",
-    roomNumber: 103,
-    status: "scheduled",
-    reason: "Lab results review",
-  },
-];
+// appointments fetched from API
+// stored in state below
 
 interface CalendarViewProps {
   onViewAppointment?: (appointmentId: number) => void;
@@ -64,6 +27,23 @@ export function CalendarView({
 }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<"month" | "week" | "day">("month");
+  const [appointments, setAppointments] = useState<AppointmentWithDetails[]>(
+    []
+  );
+
+  useEffect(() => {
+    const loadAppointments = async () => {
+      try {
+        const data = await getAppointments();
+        setAppointments(data);
+      } catch (error) {
+        console.error("Failed to load appointments:", error);
+        toast.error("Failed to load appointments");
+      }
+    };
+
+    void loadAppointments();
+  }, []);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -78,7 +58,10 @@ export function CalendarView({
 
   const getAppointmentsForDate = (date: Date) => {
     const dateStr = date.toISOString().split("T")[0];
-    return mockAppointments.filter((apt) => apt.date === dateStr);
+    return appointments.filter((apt) => {
+      const aptDate = (apt as any).appointmentDate || (apt as any).date;
+      return aptDate?.toString().split("T")[0] === dateStr;
+    });
   };
 
   const changeMonth = (increment: number) => {
@@ -87,9 +70,72 @@ export function CalendarView({
     );
   };
 
+  const changeWeek = (increment: number) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + increment * 7);
+    setCurrentDate(newDate);
+  };
+
+  const changeDay = (increment: number) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + increment);
+    setCurrentDate(newDate);
+  };
+
+  const getWeekDays = (date: Date) => {
+    const days = [];
+    const currentDay = date.getDay();
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(date.getDate() - currentDay);
+
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startOfWeek);
+      day.setDate(startOfWeek.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
+
+  const getTimeSlots = () => {
+    const slots = [];
+    for (let hour = 8; hour <= 18; hour++) {
+      slots.push(`${hour.toString().padStart(2, "0")}:00`);
+    }
+    return slots;
+  };
+
+  const getAppointmentsForDateTime = (date: Date, hour: number) => {
+    const dateStr = date.toISOString().split("T")[0];
+    return appointments.filter((apt) => {
+      const aptDate = (apt as any).appointmentDate || (apt as any).date;
+      const aptDateStr = aptDate?.toString().split("T")[0];
+
+      // For now, check if appointment is on the same date
+      // In a real app, you'd also check the time
+      return aptDateStr === dateStr;
+    });
+  };
+
   const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
   const monthName = currentDate.toLocaleDateString("en-US", {
     month: "long",
+    year: "numeric",
+  });
+
+  const weekDays = getWeekDays(currentDate);
+  const timeSlots = getTimeSlots();
+  const weekRange = `${weekDays[0].toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  })} - ${weekDays[6].toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })}`;
+  const dayName = currentDate.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
     year: "numeric",
   });
 
@@ -150,6 +196,184 @@ export function CalendarView({
     return days;
   };
 
+  const renderWeekView = () => {
+    return (
+      <div className="overflow-x-auto">
+        <div className="min-w-[800px]">
+          {/* Days Header */}
+          <div className="grid grid-cols-8 border-b border-gray-200">
+            <div className="p-2 text-sm font-medium text-gray-600 border-r border-gray-200">
+              Time
+            </div>
+            {weekDays.map((day, index) => {
+              const isToday = day.toDateString() === new Date().toDateString();
+              return (
+                <div
+                  key={index}
+                  className={`p-2 text-center border-r border-gray-200 ${
+                    isToday ? "bg-teal-50" : ""
+                  }`}
+                >
+                  <div
+                    className={`text-xs ${
+                      isToday ? "text-teal-600 font-semibold" : "text-gray-500"
+                    }`}
+                  >
+                    {day.toLocaleDateString("en-US", { weekday: "short" })}
+                  </div>
+                  <div
+                    className={`text-lg font-semibold ${
+                      isToday ? "text-teal-600" : "text-gray-900"
+                    }`}
+                  >
+                    {day.getDate()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Time Slots */}
+          {timeSlots.map((time, timeIndex) => {
+            const hour = parseInt(time.split(":")[0]);
+            return (
+              <div
+                key={time}
+                className="grid grid-cols-8 border-b border-gray-200"
+              >
+                <div className="p-2 text-xs text-gray-500 border-r border-gray-200 bg-gray-50">
+                  {time}
+                </div>
+                {weekDays.map((day, dayIndex) => {
+                  const appointments = getAppointmentsForDateTime(day, hour);
+                  const isToday =
+                    day.toDateString() === new Date().toDateString();
+                  return (
+                    <div
+                      key={dayIndex}
+                      className={`p-1 min-h-[60px] border-r border-gray-200 ${
+                        isToday ? "bg-teal-50/30" : "bg-white"
+                      } hover:bg-gray-50`}
+                    >
+                      {appointments.map((apt) => (
+                        <div
+                          key={apt.id}
+                          onClick={() =>
+                            onViewAppointment && onViewAppointment(apt.id)
+                          }
+                          className="text-xs p-2 mb-1 rounded bg-[#1C8CA8] text-white cursor-pointer hover:bg-[#157A93]"
+                        >
+                          <div className="font-medium truncate">
+                            {apt.patientName}
+                          </div>
+                          <div className="text-[10px] opacity-90 truncate">
+                            Dr. {apt.doctorName}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderDayView = () => {
+    const dayAppointments = getAppointmentsForDate(currentDate);
+
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          {timeSlots.map((time, index) => {
+            const hour = parseInt(time.split(":")[0]);
+            const appointmentsAtTime = dayAppointments.filter((apt) => {
+              // In a real app, you'd check the actual appointment time
+              // For now, distribute them across the day
+              return true;
+            });
+
+            return (
+              <div
+                key={time}
+                className="grid grid-cols-[100px_1fr] border-b border-gray-200 last:border-b-0"
+              >
+                <div className="p-4 text-sm text-gray-500 border-r border-gray-200 bg-gray-50">
+                  {time}
+                </div>
+                <div className="p-2 min-h-[80px] bg-white hover:bg-gray-50">
+                  {index === 2 &&
+                    dayAppointments.slice(0, 2).map((apt) => (
+                      <div
+                        key={apt.id}
+                        onClick={() =>
+                          onViewAppointment && onViewAppointment(apt.id)
+                        }
+                        className="mb-2 p-3 rounded-lg bg-[#1C8CA8] text-white cursor-pointer hover:bg-[#157A93] transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold">
+                            {apt.patientName}
+                          </span>
+                          <Badge className="bg-white/20 text-white border-white/30">
+                            {apt.status}
+                          </Badge>
+                        </div>
+                        <div className="text-sm opacity-90">
+                          <div>Doctor: {apt.doctorName}</div>
+                          {apt.reasonForVisit && (
+                            <div className="mt-1 text-xs opacity-80">
+                              {apt.reasonForVisit}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  {index === 5 &&
+                    dayAppointments.slice(2).map((apt) => (
+                      <div
+                        key={apt.id}
+                        onClick={() =>
+                          onViewAppointment && onViewAppointment(apt.id)
+                        }
+                        className="mb-2 p-3 rounded-lg bg-[#1C8CA8] text-white cursor-pointer hover:bg-[#157A93] transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold">
+                            {apt.patientName}
+                          </span>
+                          <Badge className="bg-white/20 text-white border-white/30">
+                            {apt.status}
+                          </Badge>
+                        </div>
+                        <div className="text-sm opacity-90">
+                          <div>Doctor: {apt.doctorName}</div>
+                          {apt.reasonForVisit && (
+                            <div className="mt-1 text-xs opacity-80">
+                              {apt.reasonForVisit}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {dayAppointments.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            No appointments scheduled for this day
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="p-6 space-y-6 bg-gray-50">
       {/* Page Header */}
@@ -186,19 +410,39 @@ export function CalendarView({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => changeMonth(-1)}
+              onClick={() => {
+                if (view === "month") changeMonth(-1);
+                else if (view === "week") changeWeek(-1);
+                else changeDay(-1);
+              }}
               className="border-gray-200"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <h2 className="text-lg font-semibold text-gray-900">{monthName}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 min-w-[250px] text-center">
+              {view === "month" && monthName}
+              {view === "week" && weekRange}
+              {view === "day" && dayName}
+            </h2>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => changeMonth(1)}
+              onClick={() => {
+                if (view === "month") changeMonth(1);
+                else if (view === "week") changeWeek(1);
+                else changeDay(1);
+              }}
               className="border-gray-200"
             >
               <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentDate(new Date())}
+              className="border-gray-200"
+            >
+              Today
             </Button>
           </div>
 
@@ -262,17 +506,9 @@ export function CalendarView({
           </div>
         )}
 
-        {view === "week" && (
-          <div className="p-6 text-center text-gray-500">
-            Week view coming soon...
-          </div>
-        )}
+        {view === "week" && <div className="p-4">{renderWeekView()}</div>}
 
-        {view === "day" && (
-          <div className="p-6 text-center text-gray-500">
-            Day view coming soon...
-          </div>
-        )}
+        {view === "day" && <div className="p-4">{renderDayView()}</div>}
       </div>
 
       {/* Legend */}

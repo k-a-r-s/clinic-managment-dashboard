@@ -1,0 +1,136 @@
+{
+  "medicalFile": {
+    "nephropathyInfo": {
+      "initialNephropathy": "Diabetic Nephropathy",
+      "diagnosisDate": "2018-03-15",
+      "firstDialysisDate": "2020-06-20",
+      "careStartDate": "2020-06-15"
+    },
+    "vascularAccess": [
+      {
+        "type": "AVF",
+        "site": "Left Radiocephalic",
+        "operator": "Dr. Smith",
+        "creationDate": "2020-05-10",
+        "firstUseDate": "2020-06-20",
+        "status": "active"
+      },
+      {
+        "type": "Catheter",
+        "site": "Right Jugular",
+        "operator": "Dr. Johnson",
+        "creationDate": "2020-05-01",
+        "firstUseDate": "2020-05-02",
+        "status": "abandoned"
+      }
+    ],
+    "dialysisProtocol": {
+      "dialysisDays": ["Monday", "Wednesday", "Friday"],
+      "sessionsPerWeek": 3,
+      "generator": "Fresenius 5008S",
+      "sessionDuration": "240",
+      "dialyser": "FX80",
+      "needle": "15G",
+      "bloodFlow": "300 mL/min",
+      "anticoagulation": "Heparin 5000 IU",
+      "dryWeight": "75.5",
+      "interDialyticWeightGain": "2.5",
+      "incidents": []
+    },
+    "medications": [
+      {
+        "name": "Erythropoietin (EPO)",
+        "category": "Anemia Management",
+        "history": [
+          {
+            "startDate": "2024-01-15",
+            "dosage": "6000 IU - 3x/week IV"
+          },
+          {
+            "startDate": "2023-06-10",
+            "dosage": "4000 IU - 3x/week IV"
+          }
+        ]
+      },
+      {
+        "name": "Calcium Carbonate",
+        "category": "Phosphate Binder",
+        "history": [
+          {
+            "startDate": "2023-08-20",
+            "dosage": "500mg - 3 times daily with meals"
+          }
+        ]
+      }
+    ],
+    "vaccinations": [
+      {
+        "vaccineName": "Hepatitis B",
+        "status": "Complete",
+        "doses": [
+          {
+            "date": "2020-06-15",
+            "reminderDate": null
+          },
+          {
+            "date": "2020-07-15",
+            "reminderDate": null
+          },
+          {
+            "date": "2020-12-15",
+            "reminderDate": null
+          }
+        ]
+      },
+      {
+        "vaccineName": "Influenza",
+        "status": "Current",
+        "doses": [
+          {
+            "date": "2024-10-15",
+            "reminderDate": "2025-10-15"
+          }
+        ]
+      }
+    ],
+    "labResults": [
+      {
+        "date": "2024-12-20",
+        "parameters": {
+          "creatinine": "8.5",
+          "urea": "65",
+          "ktv": "1.4",
+          "hemoglobin": "11.2",
+          "ferritin": "250",
+          "tsat": "30",
+          "potassium": "5.1",
+          "sodium": "138",
+          "calcium": "9.2",
+          "phosphorus": "5.5",
+          "pth": "250",
+          "albumin": "4.0",
+          "bicarbonate": "22"
+        }
+      },
+      {
+        "date": "2024-11-20",
+        "parameters": {
+          "creatinine": "8.2",
+          "urea": "62",
+          "ktv": "1.5",
+          "hemoglobin": "10.8",
+          "ferritin": "240",
+          "tsat": "28",
+          "potassium": "4.9",
+          "sodium": "140",
+          "calcium": "9.0",
+          "phosphorus": "5.3",
+          "pth": "245",
+          "albumin": "3.9",
+          "bicarbonate": "21"
+        }
+      }
+    ],
+    "clinicalSummary": "58-year-old male with ESRD secondary to diabetic nephropathy. Currently on maintenance hemodialysis 3x/week. Vascular access via left radiocephalic AVF functioning well. Recent labs show adequate dialysis (Kt/V 1.4), mild anemia under EPO treatment, and controlled mineral bone disease. Patient compliant with medications and diet restrictions."
+  }
+}

@@ -9,7 +9,6 @@ import {
   Monitor,
   MapPin,
   UserPlus,
-  Shield,
   LogOut,
   UserCheck,
 } from "lucide-react";
@@ -18,18 +17,17 @@ import { Button } from "../ui/button";
 interface SidebarProps {
   currentPage:
     | "dashboard"
-    | "lab-request"
     | "prescription"
     | "machines-management"
+    | "dialysis-management"
     | "settings"
     | "add-user"
-    | "roles-permissions"
     | "patients-list"
     | "register-patient"
     | "patient-details"
-    | "doctors-list"
-    | "add-doctor"
-    | "doctor-details"
+    | "users-list"
+    | "add-user-page"
+    | "user-details"
     | "appointments-list"
     | "create-appointment"
     | "appointment-details"
@@ -39,24 +37,23 @@ interface SidebarProps {
   onNavigate: (
     page:
       | "dashboard"
-      | "lab-request"
       | "prescription"
       | "machines-management"
+      | "dialysis-management"
       | "settings"
       | "add-user"
-      | "roles-permissions"
       | "patients-list"
       | "register-patient"
       | "patient-details"
-      | "doctors-list"
-      | "add-doctor"
-      | "doctor-details"
+      | "users-list"
+      | "add-user-page"
+      | "user-details"
       | "appointments-list"
       | "create-appointment"
       | "appointment-details"
       | "calendar-view"
-        | "doctor-availability"
-        | "rooms"
+      | "doctor-availability"
+      | "rooms"
   ) => void;
   collapsed?: boolean;
   onLogout?: () => void;
@@ -73,18 +70,17 @@ export function Sidebar({
     {
       icon: Droplets,
       label: "Dialysis Management",
-      page: "dashboard" as const,
+      page: "dialysis-management" as const,
     },
     {
       icon: Monitor,
-      label: "Machines Management",
+      label: "Machines",
       page: "machines-management" as const,
     },
     { icon: MapPin, label: "Rooms", page: "rooms" as const },
-    { icon: FileBarChart, label: "Lab Request", page: "lab-request" as const },
     { icon: Pill, label: "Prescriptions", page: "prescription" as const },
     { icon: Users, label: "Patients", page: "patients-list" as const },
-    { icon: UserCheck, label: "Doctors", page: "doctors-list" as const },
+    { icon: UserCheck, label: "Users", page: "users-list" as const },
     {
       icon: Calendar,
       label: "Appointments",
@@ -93,12 +89,6 @@ export function Sidebar({
   ];
 
   const adminMenuItems = [
-    { icon: UserPlus, label: "Add User", page: "add-user" as const },
-    {
-      icon: Shield,
-      label: "Roles & Permissions",
-      page: "roles-permissions" as const,
-    },
     { icon: Settings, label: "Settings", page: "settings" as const },
   ];
 

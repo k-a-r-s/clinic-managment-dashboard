@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "./context/AuthContext";
 import { AuthModule } from "./features/auth";
 import { Sidebar } from "./components/layout/Sidebar";
@@ -6,41 +6,56 @@ import { TopBar } from "./components/layout/TopBar";
 import { PatientsList } from "./features/patients/pages/PatientsList";
 import { RegisterPatient } from "./features/patients/pages/RegisterPatient";
 import { PatientProfile } from "./features/patients/pages/PatientProfile";
-import { DoctorsList } from "./features/doctors/pages/DoctorsList";
-import { AddDoctor } from "./features/doctors/pages/AddDoctor";
-import { DoctorProfile } from "./features/doctors/pages/DoctorProfile";
+import { UsersList } from "./features/users/pages/UsersList";
+import { AddUser } from "./features/users/pages/AddUser";
+import { UserProfile } from "./features/users/pages/UserProfile";
 import { AppointmentsList } from "./features/appointments/pages/AppointmentsList";
 import { CreateAppointment } from "./features/appointments/pages/CreateAppointment";
 import { AppointmentDetails } from "./features/appointments/pages/AppointmentDetails";
 import { CalendarView } from "./features/appointments/pages/CalendarView";
 import { DoctorAvailability } from "./features/appointments/pages/DoctorAvailability";
 import { DashboardPage } from "./features/dashboard/pages/DashboardPage";
-import { LabRequestPage } from "./features/lab-requests/pages/LabRequestPage";
 import { PrescriptionsPage } from "./features/prescriptions/pages/PrescriptionsPage";
+import { CreatePrescription } from "./features/prescriptions/pages/CreatePrescription";
+import { PrescriptionDetails } from "./features/prescriptions/pages/PrescriptionDetails";
 import { MachinesPage } from "./features/machines/pages/MachinesPage";
+import { CreateMachine } from "./features/machines/pages/CreateMachine";
 import { RoomsPage } from "./features/rooms/pages/RoomsPage";
-import { RolesPermissionsPage } from "./features/roles-permissions/pages/RolesPermissionsPage";
-import { AddUser } from "./features/users/pages/AddUser";
+import { CreateRoom } from "./features/rooms/pages/CreateRoom";
+import { DialysisManagement } from "./features/dialysis/pages/DialysisManagement";
+import { ViewProtocolPage } from "./features/dialysis/pages/ViewProtocolPage";
+import { AddSessionPage } from "./features/dialysis/pages/AddSessionPage";
+import { AddPatientToDialysis } from "./features/dialysis/pages/AddPatientToDialysis";
+import { SessionsManagementPage } from "./features/dialysis/pages/SessionsManagementPage";
+import { SettingsPage } from "./features/settings/pages/SettingsPage";
 
 type PageType =
   | "dashboard"
-  | "lab-request"
   | "prescription"
+  | "create-prescription"
+  | "prescription-details"
   | "machines-management"
   | "settings"
   | "add-user"
-  | "roles-permissions"
   | "patients-list"
   | "register-patient"
   | "patient-details"
-  | "doctors-list"
-  | "add-doctor"
-  | "doctor-details"
+  | "users-list"
+  | "add-user-page"
+  | "user-details"
   | "appointments-list"
   | "create-appointment"
   | "appointment-details"
   | "calendar-view"
-  | "doctor-availability"  | "rooms";
+  | "doctor-availability"
+  | "rooms"
+  | "create-room"
+  | "create-machine"
+  | "dialysis-management"
+  | "view-protocol"
+  | "sessions-management"
+  | "add-session"
+  | "add-patient-dialysis";
 
 function App() {
   const { user, logout } = useAuth(); // use context instead of local isAuthenticated
@@ -52,17 +67,29 @@ function App() {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<
     number | null
   >(null);
+  const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<
+    string | null
+  >(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [selectedMachineId, setSelectedMachineId] = useState<string | null>(
+    null
+  );
+  const [selectedDialysisPatientId, setSelectedDialysisPatientId] = useState<
+    string | null
+  >(null);
+  const [selectedDialysisPatientName, setSelectedDialysisPatientName] =
+    useState<string>("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  const handleViewPatient = (patientId: string) => {
-    setSelectedPatientId(patientId);
+  const handleViewPatient = (patientId: number) => {
+    setSelectedPatientId(patientId.toString());
     setIsEditMode(false);
     setCurrentPage("patient-details");
   };
 
-  const handleEditPatient = (patientId: string) => {
-    setSelectedPatientId(patientId);
+  const handleEditPatient = (patientId: number) => {
+    setSelectedPatientId(patientId.toString());
     setIsEditMode(true);
     setCurrentPage("patient-details");
   };
@@ -88,35 +115,36 @@ function App() {
     setIsEditMode(false);
   };
 
-  const handleViewDoctor = (doctorId: string) => {
-    setSelectedDoctorId(doctorId);
+  // User handlers
+  const handleViewUser = (userId: string) => {
+    setSelectedDoctorId(userId);
     setIsEditMode(false);
-    setCurrentPage("doctor-details");
+    setCurrentPage("user-details");
   };
 
-  const handleEditDoctor = (doctorId: string) => {
-    setSelectedDoctorId(doctorId);
+  const handleEditUser = (userId: string) => {
+    setSelectedDoctorId(userId);
     setIsEditMode(true);
-    setCurrentPage("doctor-details");
+    setCurrentPage("user-details");
   };
 
-  const handleAddDoctor = () => {
-    setCurrentPage("add-doctor");
+  const handleAddUser = () => {
+    setCurrentPage("add-user-page");
   };
 
-  const handleBackToDoctorsList = () => {
-    setCurrentPage("doctors-list");
+  const handleBackToUsersList = () => {
+    setCurrentPage("users-list");
     setSelectedDoctorId(null);
     setIsEditMode(false);
   };
 
-  const handleSaveDoctor = () => {
-    setCurrentPage("doctors-list");
+  const handleSaveUser = () => {
+    setCurrentPage("users-list");
   };
 
-  const handleDeleteDoctor = () => {
-    console.log("Deleting doctor:", selectedDoctorId);
-    setCurrentPage("doctors-list");
+  const handleDeleteUser = () => {
+    console.log("Deleting user:", selectedDoctorId);
+    setCurrentPage("users-list");
     setSelectedDoctorId(null);
     setIsEditMode(false);
   };
@@ -158,9 +186,116 @@ function App() {
     setIsEditMode(false);
   };
 
+  // Prescription handlers
+  const handleViewPrescription = (prescriptionId: string) => {
+    setSelectedPrescriptionId(prescriptionId);
+    setCurrentPage("prescription-details");
+  };
+
+  const handleEditPrescription = (prescriptionId: string) => {
+    setSelectedPrescriptionId(prescriptionId);
+    setCurrentPage("create-prescription");
+  };
+
+  const handleCreatePrescription = () => {
+    setCurrentPage("create-prescription");
+  };
+
+  const handleBackToPrescriptionsList = () => {
+    setCurrentPage("prescription");
+    setSelectedPrescriptionId(null);
+  };
+
+  const handleSavePrescription = (prescriptionId: string) => {
+    // Navigate to prescription details after creation
+    setSelectedPrescriptionId(prescriptionId);
+    setCurrentPage("prescription-details");
+  };
+
+  const handleDeletePrescription = () => {
+    console.log("Deleting prescription:", selectedPrescriptionId);
+    setCurrentPage("prescription");
+    setSelectedPrescriptionId(null);
+  };
+
   if (!user) {
     return <AuthModule />;
   }
+
+  // Room handlers
+  const handleCreateRoom = () => {
+    setSelectedRoomId(null);
+    setCurrentPage("create-room");
+  };
+
+  const handleEditRoom = (roomId: string) => {
+    setSelectedRoomId(roomId);
+    setCurrentPage("create-room");
+  };
+
+  const handleBackToRooms = () => {
+    setSelectedRoomId(null);
+    setCurrentPage("rooms");
+  };
+
+  const handleSaveRoom = () => {
+    setSelectedRoomId(null);
+    setCurrentPage("rooms");
+  };
+
+  // Machine handlers
+  const handleCreateMachine = () => {
+    setSelectedMachineId(null);
+    setCurrentPage("create-machine");
+  };
+
+  const handleEditMachine = (machineId: string) => {
+    setSelectedMachineId(machineId);
+    setCurrentPage("create-machine");
+  };
+
+  const handleBackToMachines = () => {
+    setSelectedMachineId(null);
+    setCurrentPage("machines-management");
+  };
+
+  const handleSaveMachine = () => {
+    setSelectedMachineId(null);
+    setCurrentPage("machines-management");
+  };
+
+  // Dialysis handlers
+  const handleViewProtocol = (
+    dialysisPatientId: string,
+    patientName: string
+  ) => {
+    setSelectedDialysisPatientId(dialysisPatientId);
+    setSelectedDialysisPatientName(patientName);
+    setCurrentPage("view-protocol");
+  };
+
+  const handleViewSessions = (
+    dialysisPatientId: string,
+    patientName: string
+  ) => {
+    setSelectedDialysisPatientId(dialysisPatientId);
+    setSelectedDialysisPatientName(patientName);
+    setCurrentPage("sessions-management");
+  };
+
+  const handleAddSessionFromSessions = () => {
+    setCurrentPage("add-session");
+  };
+
+  const handleAddPatientToDialysis = () => {
+    setCurrentPage("add-patient-dialysis");
+  };
+
+  const handleBackToDialysis = () => {
+    setSelectedDialysisPatientId(null);
+    setSelectedDialysisPatientName("");
+    setCurrentPage("dialysis-management");
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -179,6 +314,7 @@ function App() {
           user={user}
           onLogout={() => logout()}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onNavigate={setCurrentPage}
         />
 
         {/* Page Content */}
@@ -207,27 +343,27 @@ function App() {
             />
           )}
 
-          {currentPage === "doctors-list" && (
-            <DoctorsList
-              onViewDoctor={handleViewDoctor}
-              onEditDoctor={handleEditDoctor}
-              onAddNew={handleAddDoctor}
+          {currentPage === "users-list" && (
+            <UsersList
+              onViewUser={handleViewUser}
+              onEditUser={handleEditUser}
+              onAddNew={handleAddUser}
             />
           )}
 
-          {currentPage === "add-doctor" && (
-            <AddDoctor
-              onCancel={handleBackToDoctorsList}
-              onSuccess={handleSaveDoctor}
+          {currentPage === "add-user-page" && (
+            <AddUser
+              onCancel={handleBackToUsersList}
+              onSuccess={handleSaveUser}
             />
           )}
 
-          {currentPage === "doctor-details" && selectedDoctorId && (
-            <DoctorProfile
-              doctorId={selectedDoctorId}
+          {currentPage === "user-details" && selectedDoctorId && (
+            <UserProfile
+              userId={selectedDoctorId}
               initialEditMode={isEditMode}
-              onBack={handleBackToDoctorsList}
-              onDeleted={handleDeleteDoctor}
+              onBack={handleBackToUsersList}
+              onDeleted={handleDeleteUser}
             />
           )}
 
@@ -270,46 +406,146 @@ function App() {
           {/* Dashboard */}
           {currentPage === "dashboard" && <DashboardPage />}
 
-          {/* Lab Requests */}
-          {currentPage === "lab-request" && <LabRequestPage />}
-
           {/* Prescriptions */}
-          {currentPage === "prescription" && <PrescriptionsPage />}
-
-          {/* Machines Management */}
-          {currentPage === "machines-management" && <MachinesPage />}
-
-          {/* Rooms Management */}
-          {currentPage === "rooms" && <RoomsPage />}
-
-          {/* Roles & Permissions */}
-          {currentPage === "roles-permissions" && <RolesPermissionsPage />}
-
-          {/* Add User */}
-          {currentPage === "add-user" && (
-            <AddUser
+          {currentPage === "prescription" && (
+            <PrescriptionsPage
+              onViewPrescription={handleViewPrescription}
+              onEditPrescription={handleEditPrescription}
+              onCreateNew={handleCreatePrescription}
             />
           )}
+
+          {currentPage === "create-prescription" && (
+            <CreatePrescription
+              prescriptionId={selectedPrescriptionId || undefined}
+              onCancel={handleBackToPrescriptionsList}
+              onSuccess={handleSavePrescription}
+            />
+          )}
+
+          {currentPage === "prescription-details" && selectedPrescriptionId && (
+            <PrescriptionDetails
+              prescriptionId={selectedPrescriptionId}
+              onBack={handleBackToPrescriptionsList}
+              onEdit={handleEditPrescription}
+              onDeleted={handleDeletePrescription}
+            />
+          )}
+
+          {/* Machines Management */}
+          {currentPage === "machines-management" && (
+            <MachinesPage
+              onCreateNew={handleCreateMachine}
+              onEditMachine={handleEditMachine}
+            />
+          )}
+
+          {/* Create/Edit Machine */}
+          {currentPage === "create-machine" && (
+            <CreateMachine
+              machineId={selectedMachineId || undefined}
+              onCancel={handleBackToMachines}
+              onSuccess={handleSaveMachine}
+            />
+          )}
+
+          {/* Dialysis Management */}
+          {currentPage === "dialysis-management" && (
+            <DialysisManagement
+              onViewProtocol={handleViewProtocol}
+              onAddSession={handleViewSessions}
+              onAddPatient={handleAddPatientToDialysis}
+            />
+          )}
+
+          {/* View Protocol */}
+          {currentPage === "view-protocol" && selectedDialysisPatientId && (
+            <ViewProtocolPage
+              dialysisPatientId={selectedDialysisPatientId}
+              patientName={selectedDialysisPatientName}
+              onBack={handleBackToDialysis}
+            />
+          )}
+
+          {/* Add Patient to Dialysis */}
+          {currentPage === "add-patient-dialysis" && (
+            <AddPatientToDialysis
+              onBack={handleBackToDialysis}
+              onSuccess={handleBackToDialysis}
+            />
+          )}
+
+          {/* Sessions Management */}
+          {currentPage === "sessions-management" &&
+            selectedDialysisPatientId && (
+              <SessionsManagementPage
+                dialysisPatientId={selectedDialysisPatientId}
+                patientName={selectedDialysisPatientName}
+                onBack={handleBackToDialysis}
+                onAddSession={handleAddSessionFromSessions}
+              />
+            )}
+
+          {/* Add Session */}
+          {currentPage === "add-session" && selectedDialysisPatientId && (
+            <AddSessionPage
+              dialysisPatientId={selectedDialysisPatientId}
+              patientName={selectedDialysisPatientName}
+              onBack={() => setCurrentPage("sessions-management")}
+              onSuccess={() => setCurrentPage("sessions-management")}
+            />
+          )}
+
+          {/* Rooms Management */}
+          {currentPage === "rooms" && (
+            <RoomsPage
+              onCreateNew={handleCreateRoom}
+              onEditRoom={handleEditRoom}
+            />
+          )}
+
+          {currentPage === "create-room" && (
+            <CreateRoom
+              roomId={selectedRoomId || undefined}
+              onCancel={handleBackToRooms}
+              onSuccess={handleSaveRoom}
+            />
+          )}
+
+          {/* Add User */}
+          {currentPage === "add-user" && <AddUser />}
+
+          {/* Settings */}
+          {currentPage === "settings" && <SettingsPage />}
 
           {/* Placeholder for other pages */}
           {![
             "dashboard",
-            "lab-request",
             "prescription",
+            "create-prescription",
+            "prescription-details",
             "machines-management",
-            "roles-permissions",
+            "dialysis-management",
+            "view-protocol",
+            "add-patient-dialysis",
+            "sessions-management",
+            "add-session",
             "patients-list",
             "register-patient",
             "patient-details",
-            "doctors-list",
-            "add-doctor",
-            "doctor-details",
+            "users-list",
+            "add-user-page",
+            "user-details",
             "appointments-list",
             "create-appointment",
             "appointment-details",
             "calendar-view",
             "doctor-availability",
-            "add-user",   
+            "add-user",
+            "rooms",
+            "create-room",
+            "create-machine",
+            "settings",
           ].includes(currentPage) && (
             <div className="p-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">

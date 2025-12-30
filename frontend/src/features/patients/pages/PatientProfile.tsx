@@ -20,18 +20,13 @@ import {
   BreadcrumbSeparator,
 } from "../../../components/ui/breadcrumb";
 import { Loader } from "../../../components/shared/Loader";
-import { VascularAccessSection } from "../components/VascularAccessSection";
-import { VaccinationSection } from "../components/VaccinationSection";
-import { DialysisProtocolSection } from "../components/DialysisProtocolSection";
-import { MedicationsSection } from "../components/MedicationsSection";
-import { LabResultsSection } from "../components/LabResultsSection";
+import { MedicalFileForm } from "../components/MedicalFileForm";
 import {
   getPatientById,
   updatePatient,
   deletePatient,
 } from "../api/patients.api";
-import type { PatientFormData } from "../../../types";
-import { getmedicalFileId } from "../api/medical.api";
+import type { Patient, PatientFormData, MedicalFile } from "../../../types";
 
 interface CollapsibleSectionProps {
   title: string;
@@ -129,6 +124,33 @@ export function PatientProfile({
   });
   const [medicalFileId ,setmedicalFileId] = useState<string>("")
 
+  const [medicalFile, setMedicalFile] = useState<MedicalFile>({
+    nephropathyInfo: {
+      initialNephropathy: "",
+      diagnosisDate: "",
+      firstDialysisDate: "",
+      careStartDate: "",
+    },
+    vascularAccess: [],
+    dialysisProtocol: {
+      dialysisDays: [],
+      sessionsPerWeek: 3,
+      generator: "",
+      sessionDuration: "",
+      dialyser: "",
+      needle: "",
+      bloodFlow: "",
+      anticoagulation: "",
+      dryWeight: "",
+      interDialyticWeightGain: "",
+      incidents: [],
+    },
+    medications: [],
+    vaccinations: [],
+    labResults: [],
+    clinicalSummary: "",
+  });
+
   useEffect(() => {
     loadPatient();
   }, [patientId]);
@@ -194,6 +216,39 @@ export function PatientProfile({
         emergencyContactName: patient.emergencyContactName,
         emergencyContactPhone: patient.emergencyContactPhone,
       });
+
+      // Reset medical file to original values
+      if (patient.medicalFile) {
+        setMedicalFile(patient.medicalFile);
+      } else {
+        // Reset to empty state if no medical file exists
+        setMedicalFile({
+          nephropathyInfo: {
+            initialNephropathy: "",
+            diagnosisDate: "",
+            firstDialysisDate: "",
+            careStartDate: "",
+          },
+          vascularAccess: [],
+          dialysisProtocol: {
+            dialysisDays: [],
+            sessionsPerWeek: 3,
+            generator: "",
+            sessionDuration: "",
+            dialyser: "",
+            needle: "",
+            bloodFlow: "",
+            anticoagulation: "",
+            dryWeight: "",
+            interDialyticWeightGain: "",
+            incidents: [],
+          },
+          medications: [],
+          vaccinations: [],
+          labResults: [],
+          clinicalSummary: "",
+        });
+      }
     }
     setIsEditMode(false);
   };
@@ -336,9 +391,7 @@ export function PatientProfile({
                 <Input
                   id="lastName"
                   value={formData.lastName}
-                  onChange={(e) =>
-                    handleFormChange("lastName", e.target.value)
-                  }
+                  onChange={(e) => handleFormChange("lastName", e.target.value)}
                 />
               ) : (
                 <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">

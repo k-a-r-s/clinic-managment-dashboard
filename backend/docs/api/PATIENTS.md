@@ -99,19 +99,11 @@
 
 **Endpoint:** `GET /patients`
 
-**Description:** Retrieve a paginated list of all patients
+**Description:** Retrieve a list of all patients with basic information
 
 **Authentication:** Required
 
 **Required Role:** `admin`, `doctor`, `receptionist`
-
-### Query Parameters
-```typescript
-{
-  page?: number;    // Default: 1
-  limit?: number;   // Default: 10
-}
-```
 
 ### Response
 
@@ -120,36 +112,36 @@
 {
   success: boolean;
   message: string;
-  data: {
-    patients: Array<{
-      id: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-      phoneNumber: string;
-      birthDate: string;
-      gender: string;
-      address: string;
-      profession: string;
-      childrenNumber: number;
-      familySituation: string;
-      insuranceNumber: string;
-      emergencyContactName: string;
-      emergencyContactPhone: string;
-        medicalFileId: string | null;
-      allergies: string[] | null;
-      currentMedications: string[] | null;
-      createdAt: string;
-      updatedAt: string;
-    }>;
-    pagination: {
-      currentPage: number;
-      totalPages: number;
-      totalItems: number;
-      itemsPerPage: number;
-    }
-  };
+  data: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    age: number;
+    gender: string;
+  }>;
   error: null;
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "message": "Patients retrieved successfully",
+  "data": [
+    {
+      "id": "c0b837f3-5a95-44b6-bb60-7aeccc4afe9f",
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john.smith@example.com",
+      "phoneNumber": "+1234567890",
+      "age": 34,
+      "gender": "Male"
+    }
+  ],
+  "error": null
 }
 ```
 
@@ -222,7 +214,7 @@
 
 ## 4. Update Patient
 
-**Endpoint:** `PATCH /patients/:id`
+**Endpoint:** `PUT /patients/:id`
 
 **Description:** Update patient information
 
@@ -372,7 +364,7 @@
 | POST /patients | admin, receptionist |
 | GET /patients | admin, doctor, receptionist |
 | GET /patients/:id | admin, doctor, receptionist |
-| PATCH /patients/:id | admin, receptionist |
+| PUT /patients/:id | admin, receptionist |
 | DELETE /patients/:id | admin |
 
 ---

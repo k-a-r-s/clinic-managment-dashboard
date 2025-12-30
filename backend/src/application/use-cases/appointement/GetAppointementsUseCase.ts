@@ -3,7 +3,10 @@ import { IAppointementsRepository } from "../../../domain/repositories/IAppointe
 export class GetAppointementsUseCase {
     constructor(private appointementRepository: IAppointementsRepository) { }
 
-    async execute(view: "year" | "month" | "week" | "day") {
-        return this.appointementRepository.getAppointements(view);
+    async execute(
+        view: "year" | "month" | "week" | "day",
+        filters?: { patientName?: string; doctorName?: string }
+    ) {
+        return this.appointementRepository.getAppointements(view, filters);
     }
 }

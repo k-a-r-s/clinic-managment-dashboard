@@ -12,7 +12,7 @@ enum AuthErrorType {
     ACCOUNT_LOCKED = "ACCOUNT_LOCKED",
 }
 export class AuthError extends AppError {
-    public subErrorType: AuthErrorType;
+    public subErrorType?: AuthErrorType;
     
     private constructor(message: string, context?: any, subErrorType?: AuthErrorType) {
         super(message, context);

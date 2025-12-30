@@ -4,5 +4,9 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "verbatimModuleSyntax": false
+    ,"rootDir": "src"
+    ,"outDir": "dist"
+    ,"target": "ES2020"
+    ,"strict": true
   }
 }

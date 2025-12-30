@@ -1,5 +1,6 @@
 import { Menu } from "lucide-react";
 import { Button } from "../ui/button";
+import type { UserProfile } from "../../types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 
 interface TopBarProps {
+  user: UserProfile | null;
   onLogout: () => void;
   onToggleSidebar: () => void;
   onNavigate?: (page: string) => void;

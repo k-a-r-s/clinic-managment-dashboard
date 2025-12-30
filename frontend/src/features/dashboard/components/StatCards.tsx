@@ -27,6 +27,55 @@ const stats = [
 ];
 
 export default function StatCards() {
+  const [stats, setStats] = useState<Stat[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const data = await getStats()
+
+        setStats([
+          {
+            icon: Users,
+            label: "Total Patients",
+            value: data.totalPatients,
+            bgColor: "bg-blue-50",
+            iconColor: "text-blue-400",
+          },
+          {
+            icon: Activity,
+            label: "Active Sessions Today",
+            value: data.activeSessions,
+            bgColor: "bg-green-50",
+            iconColor: "text-green-400",
+          },
+          {
+            icon: Zap,
+            label: "Available Machines",
+            value: data.activemachines,
+            bgColor: "bg-amber-50",
+            iconColor: "text-amber-400",
+          },
+          {
+            icon: Users2,
+            label: "Staff on Duty",
+            value: data.staffCount,
+            sublabel: data.staffSublabel,
+            bgColor: "bg-purple-50",
+            iconColor: "text-purple-400",
+          },
+        ])
+      } catch (error) {
+        console.error("Failed to fetch stats:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {stats.map((stat, index) => {

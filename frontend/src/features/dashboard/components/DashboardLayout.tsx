@@ -24,7 +24,7 @@ export default function DashboardLayout() {
       <StatCards />
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         <MachineStatusChart />
         <PatientVisitsChart />
       </div>

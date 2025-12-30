@@ -4,7 +4,7 @@ import { AuthRequest } from "../middlewares/authMiddleware";
 import { ResponseFormatter } from "../utils/ResponseFormatter";
 
 export class AuthController {
-  constructor(private userAuthService: UserAuthService) {}
+  constructor(private userAuthService: UserAuthService) { }
 
   async login(req: Request, res: Response) {
     const { email, password } = req.body;
@@ -42,6 +42,14 @@ export class AuthController {
 
   async logout(req: AuthRequest, res: Response) {
     const userId = req.user?.id;
+    if (!userId) {
+      return ResponseFormatter.error(
+        res,
+        { type: "AuthenticationError", message: "User not authenticated" },
+        401,
+        "User not authenticated"
+      );
+    }
     await this.userAuthService.logoutUser(userId);
 
     // Clear access token cookie
@@ -87,13 +95,20 @@ export class AuthController {
       path: "/",
     });
 
-    // Set new refresh token in cookie (7 days expiration)
+    // Clear any existing refresh token cookies and set new refresh token in cookie (7 days expiration)
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/auth/refresh-token",
+    });
+
     res.cookie("refreshToken", result["refresh_token"], {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: "/api/auth/refresh-token",
+      path: "/auth/refresh-token",
     });
 
     // Return minimal response (no tokens in body)

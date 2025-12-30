@@ -91,7 +91,7 @@ function CollapsibleSubsection({
 }
 
 interface PatientProfileProps {
-  patientId: number;
+  patientId: string;
   initialEditMode?: boolean;
   onBack?: () => void;
   onDeleted?: () => void;
@@ -103,7 +103,7 @@ export function PatientProfile({
   onBack,
   onDeleted,
 }: PatientProfileProps) {
-  const [patient, setPatient] = useState<Patient | null>(null);
+  const [patient, setPatient] = useState<PatientFormData | null>(null);
   const [isEditMode, setIsEditMode] = useState(initialEditMode);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<PatientFormData>({
@@ -121,6 +121,7 @@ export function PatientProfile({
     emergencyContactName: "",
     emergencyContactPhone: "",
   });
+  const [medicalFileId ,setmedicalFileId] = useState<string>("")
 
   const [medicalFile, setMedicalFile] = useState<MedicalFile>({
     nephropathyInfo: {
@@ -421,9 +422,9 @@ export function PatientProfile({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (

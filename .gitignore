@@ -14,3 +14,8 @@ Thumbs.db
 
 *.env
 node_modules
+
+.gemini/
+gha-creds-*.json
+GEMINI.md
+GEMINI

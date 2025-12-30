@@ -11,21 +11,9 @@ import { getPatients } from "../api/patients.api";
 import { toast } from "react-hot-toast";
 import type { Patient } from "../../../types";
 
-// Utility function to calculate age from birth date
-const calculateAge = (birthDate: string): number => {
-  const today = new Date();
-  const birth = new Date(birthDate);
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-  return age;
-};
-
 interface PatientsListPageProps {
-  onViewPatient?: (patientId: number) => void;
-  onEditPatient?: (patientId: number) => void;
+  onViewPatient?: (patientId: string) => void;
+  onEditPatient?: (patientId: string) => void;
   onRegisterNew?: () => void;
 }
 
@@ -37,7 +25,7 @@ export function PatientsList({
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
     null
   );
 
@@ -74,13 +62,13 @@ export function PatientsList({
     return matchesSearch;
   });
 
-  const handleViewPatient = (patientId: number) => {
+  const handleViewPatient = (patientId: string) => {
     if (onViewPatient) {
       onViewPatient(patientId);
     }
   };
 
-  const handleEditPatient = (patientId: number) => {
+  const handleEditPatient = (patientId: string) => {
     if (onEditPatient) {
       onEditPatient(patientId);
     }
@@ -170,7 +158,7 @@ export function PatientsList({
             variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
-              handleEditPatient(patient.id);
+              handleEditPatient(String(patient.id));
             }}
             className="gap-1 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
           >

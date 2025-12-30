@@ -6,7 +6,7 @@ export * from "./prescriptions";
 // Admin Type
 
 export interface UserProfile {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;

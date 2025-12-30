@@ -33,7 +33,7 @@ export class AuthRepository implements IAuthRepository {
 
     const access_token = data.session?.access_token;
     const refresh_token = data.session?.refresh_token;
-    const expires_in = data.session?.expires_in;
+    const expires_in = data.session?.expires_in ?? 0;
     const token_type = data.session?.token_type || "Bearer";
 
     if (!access_token || !refresh_token) {
@@ -107,7 +107,7 @@ export class AuthRepository implements IAuthRepository {
     return {
       access_token,
       refresh_token,
-      expires_in,
+      expires_in : expires_in || 0,
       token_type,
       user,
     };

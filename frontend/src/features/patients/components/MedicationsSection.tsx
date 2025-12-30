@@ -8,13 +8,23 @@ import {
   getMedications,
   updateMedications,
 } from "../api/medical.api";
-import type { Medication , MedicationHistory } from "../../../types";
+import type { Medication, MedicationHistory } from "../../../types";
 
 interface Props {
   patientId: string;
   medicalFileId: string;
   editable?: boolean;
 }
+
+type HistoryError = {
+  startDate?: string;
+  dosage?: string;
+};
+
+type MedicationError = {
+  name?: string;
+  history?: HistoryError[];
+};
 
 export function MedicationsSection({
   patientId,
@@ -23,6 +33,7 @@ export function MedicationsSection({
 }: Props) {
   const [data, setData] = useState<Medication[]>([]);
   const [formData, setFormData] = useState<Medication[]>([]);
+  const [errors, setErrors] = useState<MedicationError[]>([]);
 
   useEffect(() => {
     loadData();
@@ -33,6 +44,7 @@ export function MedicationsSection({
       const res = await getMedications(patientId);
       setData(res);
       setFormData(res);
+      setErrors([]);
     } catch {
       toast.error("Failed to load medications");
     }
@@ -40,7 +52,9 @@ export function MedicationsSection({
 
   useEffect(() => {
     if (!editable) setFormData(data);
-  }, [editable]);
+  }, [editable, data]);
+
+  /* ----------------- handlers ----------------- */
 
   const handleMedicationChange = (
     index: number,
@@ -49,6 +63,12 @@ export function MedicationsSection({
   ) => {
     setFormData((prev) =>
       prev.map((m, i) => (i === index ? { ...m, [field]: value } : m))
+    );
+
+    setErrors((prev) =>
+      prev.map((e, i) =>
+        i === index ? { ...e, [field]: undefined } : e
+      )
     );
   };
 
@@ -70,6 +90,19 @@ export function MedicationsSection({
           : m
       )
     );
+
+    setErrors((prev) =>
+      prev.map((e, i) =>
+        i === mIndex
+          ? {
+              ...e,
+              history: e.history?.map((h, j) =>
+                j === hIndex ? { ...h, [field]: undefined } : h
+              ),
+            }
+          : e
+      )
+    );
   };
 
   const addMedication = () => {
@@ -80,10 +113,12 @@ export function MedicationsSection({
         history: [{ startDate: "", dosage: "" }],
       },
     ]);
+    setErrors((prev) => [...prev, {}]);
   };
 
   const removeMedication = (index: number) => {
     setFormData((prev) => prev.filter((_, i) => i !== index));
+    setErrors((prev) => prev.filter((_, i) => i !== index));
   };
 
   const addHistory = (mIndex: number) => {
@@ -92,12 +127,17 @@ export function MedicationsSection({
         i === mIndex
           ? {
               ...m,
-              history: [
-                ...(m.history ?? []),
-                { startDate: "", dosage: "" },
-              ],
+              history: [...(m.history ?? []), { startDate: "", dosage: "" }],
             }
           : m
+      )
+    );
+
+    setErrors((prev) =>
+      prev.map((e, i) =>
+        i === mIndex
+          ? { ...e, history: [...(e.history ?? []), {}] }
+          : e
       )
     );
   };
@@ -113,9 +153,65 @@ export function MedicationsSection({
           : m
       )
     );
+
+    setErrors((prev) =>
+      prev.map((e, i) =>
+        i === mIndex
+          ? {
+              ...e,
+              history: e.history?.filter((_, j) => j !== hIndex),
+            }
+          : e
+      )
+    );
   };
 
+  /* ----------------- validation ----------------- */
+
+  const validateForm = () => {
+    const newErrors: MedicationError[] = [];
+
+    formData.forEach((med, mIndex) => {
+      const medError: MedicationError = {};
+
+      if (!med.name?.trim()) {
+        medError.name = "Medication name is required";
+      }
+
+      medError.history = [];
+
+      (med.history ?? []).forEach((h, hIndex) => {
+        const histError: HistoryError = {};
+
+        if (!h.startDate) {
+          histError.startDate = "Start date is required";
+        }
+
+        if (!h.dosage || isNaN(Number(h.dosage))) {
+          histError.dosage = "Dosage must be a valid number";
+        }
+
+        medError.history![hIndex] = histError;
+      });
+
+      newErrors[mIndex] = medError;
+    });
+
+    setErrors(newErrors);
+
+    return newErrors.every(
+      (e) =>
+        !e.name &&
+        (!e.history ||
+          e.history.every((h) => !h.startDate && !h.dosage))
+    );
+  };
+
+  /* ----------------- save ----------------- */
+
   const handleSave = async () => {
+    if (!validateForm()) return;
+
     try {
       await updateMedications(medicalFileId, formData);
       setData(formData);
@@ -127,7 +223,9 @@ export function MedicationsSection({
 
   const list = editable ? formData : data;
 
-  return (
+  /* ----------------- UI ----------------- */
+
+   return (
     <div className="overflow-x-auto space-y-4">
       {list.length === 0 && (
         <p className="text-sm text-gray-500 italic">
@@ -150,66 +248,113 @@ export function MedicationsSection({
             {editable && <th className="px-4 py-3"></th>}
           </tr>
         </thead>
+
         <tbody>
           {list.map((med, mIndex) =>
             (med.history ?? []).map((hist, hIndex) => (
               <tr key={`${mIndex}-${hIndex}`} className="border-b">
+                {/* Medication name */}
                 {hIndex === 0 && (
                   <td
                     rowSpan={(med.history ?? []).length}
                     className="px-4 py-3 align-top"
                   >
                     {editable ? (
-                      <Input
-                        value={med.name ?? ""}
-                        onChange={(e) =>
-                          handleMedicationChange(
-                            mIndex,
-                            "name",
-                            e.target.value
-                          )
-                        }
-                      />
+                      <div className="min-h-[60px]">
+                        <Input
+                          value={med.name ?? ""}
+                          onChange={(e) =>
+                            handleMedicationChange(
+                              mIndex,
+                              "name",
+                              e.target.value
+                            )
+                          }
+                          className={
+                            errors[mIndex]?.name ? "border-red-500" : ""
+                          }
+                        />
+                        <div className="h-5 mt-1">
+                          {errors[mIndex]?.name && (
+                            <p className="text-sm text-red-500">
+                              {errors[mIndex].name}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     ) : (
                       med.name || "—"
                     )}
                   </td>
                 )}
 
+                {/* Start date */}
                 <td className="px-4 py-3">
                   {editable ? (
-                    <Input
-                      type="date"
-                      value={hist.startDate ?? ""}
-                      onChange={(e) =>
-                        handleHistoryChange(
-                          mIndex,
-                          hIndex,
-                          "startDate",
-                          e.target.value
-                        )
-                      }
-                    />
+                    <div className="min-h-[60px]">
+                      <Input
+                        type="date"
+                        value={hist.startDate ?? ""}
+                        onChange={(e) =>
+                          handleHistoryChange(
+                            mIndex,
+                            hIndex,
+                            "startDate",
+                            e.target.value
+                          )
+                        }
+                        className={
+                          errors[mIndex]?.history?.[hIndex]?.startDate
+                            ? "border-red-500"
+                            : ""
+                        }
+                      />
+                      <div className="h-5 mt-1">
+                        {errors[mIndex]?.history?.[hIndex]?.startDate && (
+                          <p className="text-sm text-red-500">
+                            {errors[mIndex].history![hIndex].startDate}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   ) : (
                     hist.startDate || "—"
                   )}
                 </td>
 
+                {/* Dosage */}
                 <td className="px-4 py-3">
                   {editable ? (
-                    <Input
-                      value={hist.dosage ?? ""}
-                      onChange={(e) =>
-                        handleHistoryChange(
-                          mIndex,
-                          hIndex,
-                          "dosage",
-                          e.target.value
-                        )
-                      }
-                    />
+                    <div className="min-h-[60px]">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={hist.dosage ?? ""}
+                          onChange={(e) =>
+                            handleHistoryChange(
+                              mIndex,
+                              hIndex,
+                              "dosage",
+                              e.target.value
+                            )
+                          }
+                          className={
+                            errors[mIndex]?.history?.[hIndex]?.dosage
+                              ? "border-red-500"
+                              : ""
+                          }
+                        />
+                        <span className="text-sm text-gray-500">mg</span>
+                      </div>
+                      <div className="h-5 mt-1">
+                        {errors[mIndex]?.history?.[hIndex]?.dosage && (
+                          <p className="text-sm text-red-500">
+                            {errors[mIndex].history![hIndex].dosage}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   ) : (
-                    hist.dosage || "—"
+                    hist.dosage ? `${hist.dosage} mg` : "—"
                   )}
                 </td>
 

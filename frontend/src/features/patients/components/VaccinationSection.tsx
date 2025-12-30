@@ -16,13 +16,14 @@ interface Props {
   editable?: boolean;
 }
 
-export function VaccinationSection({
+export  function VaccinationSection({
   patientId,
   medicalFileId,
   editable = true,
 }: Props) {
   const [data, setData] = useState<Vaccination[]>([]);
   const [formData, setFormData] = useState<Vaccination[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadData();
@@ -34,7 +35,7 @@ export function VaccinationSection({
       setData(res);
       setFormData(res);
     } catch {
-      toast.error("Failed to load vaccinations");
+      console.error("Failed to load vaccinations");
     }
   };
 
@@ -50,6 +51,16 @@ export function VaccinationSection({
     setFormData((prev) =>
       prev.map((v, i) => (i === index ? { ...v, [field]: value } : v))
     );
+    
+    // Clear error for this field
+    const errorKey = `vaccine-${index}-${field}`;
+    if (errors[errorKey]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[errorKey];
+        return newErrors;
+      });
+    }
   };
 
   const handleDoseChange = (
@@ -70,6 +81,16 @@ export function VaccinationSection({
           : v
       )
     );
+
+    // Clear error for this field
+    const errorKey = `dose-${vIndex}-${dIndex}-${field}`;
+    if (errors[errorKey]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[errorKey];
+        return newErrors;
+      });
+    }
   };
 
   const addVaccine = () => {
@@ -81,7 +102,6 @@ export function VaccinationSection({
           {
             doseNumber: 1,
             date: "",
-            reminderDate: "",
           },
         ],
       },
@@ -90,6 +110,17 @@ export function VaccinationSection({
 
   const removeVaccine = (index: number) => {
     setFormData((prev) => prev.filter((_, i) => i !== index));
+    
+    // Clear errors for this vaccine
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      Object.keys(newErrors).forEach(key => {
+        if (key.startsWith(`vaccine-${index}-`) || key.startsWith(`dose-${index}-`)) {
+          delete newErrors[key];
+        }
+      });
+      return newErrors;
+    });
   };
 
   const addDose = (vIndex: number) => {
@@ -103,7 +134,6 @@ export function VaccinationSection({
                 {
                   doseNumber: (v.doses?.length ?? 0) + 1,
                   date: "",
-                  reminderDate: "",
                 },
               ],
             }
@@ -123,15 +153,52 @@ export function VaccinationSection({
           : v
       )
     );
+
+    // Clear errors for this dose
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      Object.keys(newErrors).forEach(key => {
+        if (key.startsWith(`dose-${vIndex}-${dIndex}-`)) {
+          delete newErrors[key];
+        }
+      });
+      return newErrors;
+    });
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    formData.forEach((vaccination, vIndex) => {
+      // Validate vaccine name
+      if (!vaccination.vaccineName?.trim()) {
+        newErrors[`vaccine-${vIndex}-vaccineName`] = "Vaccine name is required";
+      }
+
+      // Validate doses
+      (vaccination.doses ?? []).forEach((dose, dIndex) => {
+        if (!dose.date) {
+          newErrors[`dose-${vIndex}-${dIndex}-date`] = "Date is required";
+        }
+      });
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
+    if (!validateForm()) {
+      console.error("Validation failed");
+      return;
+    }
+
     try {
       await updateVaccinations(medicalFileId, formData);
       setData(formData);
-      toast.success("Vaccinations updated");
+      console.log("Vaccinations updated successfully");
     } catch {
-      toast.error("Failed to update vaccinations");
+      console.error("Failed to update vaccinations");
     }
   };
 
@@ -148,68 +215,74 @@ export function VaccinationSection({
       {list.map((vaccination, vIndex) => (
         <div key={vIndex} className="border rounded-lg p-4 space-y-4">
           {/* Vaccine header */}
-          <div className="flex items-center gap-4">
-            {editable ? (
-              <Input
-                placeholder="Vaccine name"
-                value={vaccination.vaccineName ?? ""}
-                onChange={(e) =>
-                  handleVaccineChange(
-                    vIndex,
-                    "vaccineName",
-                    e.target.value
-                  )
-                }
-              />
-            ) : (
-              <h4 className="text-sm font-semibold">
-                {vaccination.vaccineName || "—"}
-              </h4>
-            )}
+          <div className="space-y-2">
+            <div className="flex items-center gap-4">
+              {editable ? (
+                <div className="flex-1 space-y-1">
+                  <Input
+                    placeholder="Vaccine name"
+                    value={vaccination.vaccineName ?? ""}
+                    onChange={(e) =>
+                      handleVaccineChange(
+                        vIndex,
+                        "vaccineName",
+                        e.target.value
+                      )
+                    }
+                    className={errors[`vaccine-${vIndex}-vaccineName`] ? "border-red-500" : ""}
+                  />
+                  {errors[`vaccine-${vIndex}-vaccineName`] && (
+                    <p className="text-sm text-red-500">
+                      {errors[`vaccine-${vIndex}-vaccineName`]}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <h4 className="text-sm font-semibold flex-1">
+                  {vaccination.vaccineName || "—"}
+                </h4>
+              )}
 
-            {editable && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => removeVaccine(vIndex)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
+              {editable && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removeVaccine(vIndex)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Doses */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(vaccination.doses ?? []).map((dose, dIndex) => (
-              <div key={dIndex} className="space-y-1">
+              <div key={dIndex} className="space-y-2">
                 <Label>Dose {dose.doseNumber}</Label>
 
                 {editable ? (
                   <>
-                    <Input
-                      type="date"
-                      value={dose.date ?? ""}
-                      onChange={(e) =>
-                        handleDoseChange(
-                          vIndex,
-                          dIndex,
-                          "date",
-                          e.target.value
-                        )
-                      }
-                    />
-                    <Input
-                      type="date"
-                      value={dose.reminderDate ?? ""}
-                      onChange={(e) =>
-                        handleDoseChange(
-                          vIndex,
-                          dIndex,
-                          "reminderDate",
-                          e.target.value
-                        )
-                      }
-                    />
+                    <div className="space-y-1">
+                      <Input
+                        type="date"
+                        value={dose.date ?? ""}
+                        onChange={(e) =>
+                          handleDoseChange(
+                            vIndex,
+                            dIndex,
+                            "date",
+                            e.target.value
+                          )
+                        }
+                        className={errors[`dose-${vIndex}-${dIndex}-date`] ? "border-red-500" : ""}
+                      />
+                      {errors[`dose-${vIndex}-${dIndex}-date`] && (
+                        <p className="text-sm text-red-500">
+                          {errors[`dose-${vIndex}-${dIndex}-date`]}
+                        </p>
+                      )}
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -219,16 +292,9 @@ export function VaccinationSection({
                     </Button>
                   </>
                 ) : (
-                  <>
-                    <p className="bg-gray-50 h-9 px-3 flex items-center rounded-lg">
-                      {dose.date || "—"}
-                    </p>
-                    {dose.reminderDate && (
-                      <p className="text-xs text-gray-500">
-                        Reminder: {dose.reminderDate}
-                      </p>
-                    )}
-                  </>
+                  <p className="bg-gray-50 h-9 px-3 flex items-center rounded-lg">
+                    {dose.date || "—"}
+                  </p>
                 )}
               </div>
             ))}

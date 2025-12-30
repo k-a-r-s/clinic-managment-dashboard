@@ -9,4 +9,5 @@ export interface IUserRepository {
     password: string,
     role: "doctor" | "receptionist"
   ): Promise<User>;
+  countStaff(): Promise<{ doctors: number; receptionists: number; total: number }>;
 }

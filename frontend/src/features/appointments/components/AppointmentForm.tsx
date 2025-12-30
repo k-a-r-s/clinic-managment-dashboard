@@ -12,7 +12,7 @@ import {
 } from "../../../components/ui/select";
 import { Textarea } from "../../../components/ui/textarea";
 import { FormCard } from "../../../components/shared/FormCard";
-import type { AppointmentFormData } from "../../../types";
+import type { AppointmentFormData , AppointmentStatus} from "../../../types";
 
 interface AppointmentFormProps {
   initialData?: Partial<AppointmentFormData>;
@@ -22,6 +22,7 @@ interface AppointmentFormProps {
   submitLabel?: string;
   doctors?: Array<{ id: string; name: string }>;
   patients?: Array<{ id: string; name: string }>;
+  rooms?: Array<{ id: string; name: string }>;
 }
 
 export function AppointmentForm({
@@ -32,40 +33,48 @@ export function AppointmentForm({
   submitLabel = "Create Appointment",
   doctors = [],
   patients = [],
+  rooms = []
 }: AppointmentFormProps) {
+
   const [formData, setFormData] = useState<AppointmentFormData>({
-    date: initialData.date || "",
-    estimatedDuration: initialData.estimatedDuration || "",
+    appointmentDate: initialData.appointmentDate || "",
+    estimatedDurationInMinutes: initialData.estimatedDurationInMinutes || 0,
     doctorId: initialData.doctorId || "",
     patientId: initialData.patientId || "",
-    roomNumber: initialData.roomNumber || 0,
-    status: initialData.status || "scheduled",
+    status: initialData.status || "SCHEDULED",
     reason: initialData.reason || "",
+    roomId: initialData.roomId || "",
   });
 
+  console.log("qsddqsd",formData)
   const [errors, setErrors] = useState<
     Partial<Record<keyof AppointmentFormData, string>>
   >({});
 
-  const handleInputChange = (
-    field: keyof AppointmentFormData,
-    value: string | number
+  const handleInputChange = <K extends keyof AppointmentFormData>(
+    field: K,
+    value: AppointmentFormData[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
+  const handleStatusChange = (value: AppointmentStatus) => {
+    handleInputChange("status", value);
+  };
+
   const validateForm = () => {
     const newErrors: Partial<Record<keyof AppointmentFormData, string>> = {};
 
-    if (!formData.date) {
-      newErrors.date = "Date is required";
+    if (!formData.appointmentDate) {
+      newErrors.appointmentDate = "Date is required";
     }
 
-    if (!formData.estimatedDuration) {
-      newErrors.estimatedDuration = "Duration is required";
+    if (!formData.estimatedDurationInMinutes) {
+      newErrors.estimatedDurationInMinutes = "Duration is required";
     }
 
     if (!formData.doctorId) {
@@ -76,8 +85,12 @@ export function AppointmentForm({
       newErrors.patientId = "Patient is required";
     }
 
-    if (!formData.reason.trim()) {
+    if (!formData.reason?.trim()) {
       newErrors.reason = "Reason is required";
+    }
+
+    if (!formData.roomId?.trim()) {
+      newErrors.roomId = "roomid is required";
     }
 
     setErrors(newErrors);
@@ -105,13 +118,15 @@ export function AppointmentForm({
               <Input
                 id="date"
                 type="date"
-                value={formData.date}
-                onChange={(e) => handleInputChange("date", e.target.value)}
-                className={`pl-10 ${errors.date ? "border-red-500" : ""}`}
+                value={formData.appointmentDate}
+                onChange={(e) =>
+                  handleInputChange("appointmentDate", e.target.value)
+                }
+                className="pl-10"
               />
             </div>
-            {errors.date && (
-              <p className="text-sm text-red-500">{errors.date}</p>
+            {errors.appointmentDate && (
+              <p className="text-sm text-red-500">{errors.appointmentDate}</p>
             )}
           </div>
 
@@ -126,18 +141,18 @@ export function AppointmentForm({
                 id="estimatedDuration"
                 type="text"
                 placeholder="30"
-                value={formData.estimatedDuration}
+                value={formData.estimatedDurationInMinutes}
                 onChange={(e) =>
-                  handleInputChange("estimatedDuration", e.target.value)
+                  handleInputChange("estimatedDurationInMinutes", Number(e.target.value))
                 }
                 className={`pl-10 ${
-                  errors.estimatedDuration ? "border-red-500" : ""
+                  errors.estimatedDurationInMinutes ? "border-red-500" : ""
                 }`}
               />
             </div>
-            {errors.estimatedDuration && (
+            {errors.estimatedDurationInMinutes && (
               <p className="text-sm text-red-500">
-                {errors.estimatedDuration}
+                {errors.estimatedDurationInMinutes}
               </p>
             )}
           </div>
@@ -196,32 +211,47 @@ export function AppointmentForm({
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="roomNumber">Room Number</Label>
-            <Input
-              id="roomNumber"
-              type="number"
-              placeholder="101"
-              value={formData.roomNumber}
-              onChange={(e) =>
-                handleInputChange("roomNumber", parseInt(e.target.value) || 0)
-              }
-            />
+<div className="space-y-2">
+            <Label htmlFor="room">
+              Room <span className="text-red-500">*</span>
+            </Label>
+            <Select
+              value={formData.roomId}
+              onValueChange={(value) => handleInputChange("roomId", value)}
+            >
+              <SelectTrigger
+                id="room"
+                className={errors.roomId ? "border-red-500" : ""}
+              >
+                <SelectValue placeholder="Select room" />
+              </SelectTrigger>
+              <SelectContent>
+                {rooms.map((room) => (
+                  <SelectItem key={room.id} value={room.id}>
+                    {room.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {errors.roomId && (
+              <p className="text-sm text-red-500">{errors.roomId}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
             <Select
               value={formData.status}
-              onValueChange={(value) => handleInputChange("status", value)}
+              onValueChange={handleStatusChange}
             >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="canceled">Canceled</SelectItem>
+                <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="CANCELED">Canceled</SelectItem>
               </SelectContent>
             </Select>
           </div>

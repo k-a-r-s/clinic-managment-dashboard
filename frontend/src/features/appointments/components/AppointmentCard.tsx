@@ -41,34 +41,31 @@ interface AppointmentCardProps {
   ) => void;
   doctors?: Array<{ id: string; name: string }>;
   patients?: Array<{ id: string; name: string }>;
+  rooms?: Array<{ id: string; name: string }>;
 }
 
 const getStatusBadge = (status?: string) => {
-  switch (status?.toLowerCase()) {
-    case "scheduled":
+  switch (status) {
+    case "SCHEDULED":
       return (
         <Badge className="bg-blue-50 text-blue-700 border-blue-200">
           Scheduled
         </Badge>
       );
-    case "completed":
+    case "COMPLETED":
       return (
         <Badge className="bg-green-50 text-green-700 border-green-200">
           Completed
         </Badge>
       );
-    case "canceled":
+    case "CANCELED":
       return (
         <Badge className="bg-red-50 text-red-700 border-red-200">
           Canceled
         </Badge>
       );
     default:
-      return (
-        <Badge variant="outline" className="bg-gray-50 text-gray-600">
-          Unknown
-        </Badge>
-      );
+      return <Badge variant="outline">Unknown</Badge>;
   }
 };
 
@@ -83,7 +80,13 @@ export function AppointmentCard({
   onFormChange,
   doctors = [],
   patients = [],
+  rooms = []
 }: AppointmentCardProps) {
+
+  const getRoomNameById = (roomId?: string) => {
+    return rooms.find((r) => r.id === roomId)?.name ?? "—";
+  };
+
   return (
     <>
       <PageHeader
@@ -91,20 +94,13 @@ export function AppointmentCard({
         actions={
           isEditMode ? (
             <>
-              <Button
-                variant="outline"
-                onClick={onCancel}
-                className="gap-2 bg-white border-gray-200"
-              >
-                <X className="w-4 h-4" />
+              <Button variant="outline" onClick={onCancel}>
+                <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
-              <Button
-                onClick={onSave}
-                className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
-              >
-                <Save className="w-4 h-4" />
-                Save Changes
+              <Button onClick={onSave} className="bg-[#1C8CA8]">
+                <Save className="w-4 h-4 mr-2" />
+                Save
               </Button>
             </>
           ) : (
@@ -112,17 +108,14 @@ export function AppointmentCard({
               <Button
                 variant="outline"
                 onClick={onDelete}
-                className="gap-2 bg-white border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+                className="text-red-600 border-red-200"
               >
-                <Trash2 className="w-4 h-4" />
-                Delete Appointment
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
               </Button>
-              <Button
-                onClick={onEdit}
-                className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
-              >
-                <Edit className="w-4 h-4" />
-                Edit Appointment
+              <Button onClick={onEdit} className="bg-[#1C8CA8]">
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
               </Button>
             </>
           )
@@ -131,152 +124,165 @@ export function AppointmentCard({
 
       <FormCard title="Appointment Information">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="date">Date</Label>
-            {isEditMode ? (
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => onFormChange("date", e.target.value)}
-              />
-            ) : (
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                <p className="text-sm text-gray-900">{formData.date}</p>
-              </div>
-            )}
-          </div>
 
+          {/* DATE */}
           <div className="space-y-2">
-            <Label htmlFor="duration">Duration (minutes)</Label>
+            <Label>Date</Label>
             {isEditMode ? (
               <Input
-                id="duration"
-                value={formData.estimatedDuration}
+                type="date"
+                value={formData.appointmentDate}
                 onChange={(e) =>
-                  onFormChange("estimatedDuration", e.target.value)
+                  onFormChange("appointmentDate", e.target.value)
                 }
               />
             ) : (
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                <p className="text-sm text-gray-900">
-                  {formData.estimatedDuration} min
-                </p>
+              <div className="bg-gray-50 h-9 px-3 flex items-center rounded">
+                <Calendar className="w-4 h-4 mr-2 text-gray-400" />
+                {appointment.appointmentDate?.split("T")[0]}
               </div>
             )}
           </div>
 
+          {/* DURATION */}
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
+            <Label>Duration (minutes)</Label>
+            {isEditMode ? (
+              <Input
+                type="number"
+                value={formData.estimatedDurationInMinutes}
+                onChange={(e) =>
+                  onFormChange(
+                    "estimatedDurationInMinutes",
+                    Number(e.target.value)
+                  )
+                }
+              />
+            ) : (
+              <div className="bg-gray-50 h-9 px-3 flex items-center rounded">
+                <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                {appointment.estimatedDurationInMinutes} min
+              </div>
+            )}
+          </div>
+
+          {/* STATUS */}
+          <div className="space-y-2">
+            <Label>Status</Label>
             {isEditMode ? (
               <Select
                 value={formData.status}
-                onValueChange={(value) => onFormChange("status", value)}
+                onValueChange={(v) => onFormChange("status", v)}
               >
-                <SelectTrigger id="status">
-                  <SelectValue placeholder="Select status" />
+                <SelectTrigger>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="canceled">Canceled</SelectItem>
+                  <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="CANCELED">Canceled</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                {getStatusBadge(formData.status)}
+              <div className="bg-gray-50 h-9 px-3 flex items-center rounded">
+                {getStatusBadge(appointment.status)}
               </div>
             )}
           </div>
 
+          {/* DOCTOR */}
           <div className="space-y-2">
-            <Label htmlFor="doctor">Doctor</Label>
+            <Label>Doctor</Label>
             {isEditMode ? (
               <Select
                 value={formData.doctorId}
-                onValueChange={(value) => onFormChange("doctorId", value)}
+                onValueChange={(v) => onFormChange("doctorId", v)}
               >
-                <SelectTrigger id="doctor">
+                <SelectTrigger>
                   <SelectValue placeholder="Select doctor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {doctors.map((doctor) => (
-                    <SelectItem key={doctor.id} value={doctor.id}>
-                      {doctor.name}
+                  {doctors.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             ) : (
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
+              <div className="bg-gray-50 h-9 px-3 flex items-center rounded">
                 <UserCheck className="w-4 h-4 mr-2 text-gray-400" />
-                <p className="text-sm text-gray-900">
-                  {appointment.doctorName}
-                </p>
+                {appointment.doctor.firstName + " " + appointment.doctor.lastName}
               </div>
             )}
           </div>
 
+          {/* PATIENT */}
           <div className="space-y-2">
-            <Label htmlFor="patient">Patient</Label>
+            <Label>Patient</Label>
             {isEditMode ? (
               <Select
                 value={formData.patientId}
-                onValueChange={(value) => onFormChange("patientId", value)}
+                onValueChange={(v) => onFormChange("patientId", v)}
               >
-                <SelectTrigger id="patient">
+                <SelectTrigger>
                   <SelectValue placeholder="Select patient" />
                 </SelectTrigger>
                 <SelectContent>
-                  {patients.map((patient) => (
-                    <SelectItem key={patient.id} value={patient.id}>
-                      {patient.name}
+                  {patients.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             ) : (
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
+              <div className="bg-gray-50 h-9 px-3 flex items-center rounded">
                 <User className="w-4 h-4 mr-2 text-gray-400" />
-                <p className="text-sm text-gray-900">
-                  {appointment.patientName}
-                </p>
+                {appointment.patient.firstName + " " + appointment.patient.lastName}
               </div>
             )}
           </div>
 
+          {/* ROOM */}
           <div className="space-y-2">
-            <Label htmlFor="room">Room Number</Label>
+            <Label>Room</Label>
             {isEditMode ? (
-              <Input
-                id="room"
-                type="number"
-                value={formData.roomNumber}
-                onChange={(e) =>
-                  onFormChange("roomNumber", parseInt(e.target.value) || 0)
-                }
-              />
+              <Select
+                value={formData.roomId}
+                onValueChange={(v) => onFormChange("roomId", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select patient" />
+                </SelectTrigger>
+                <SelectContent>
+                  {rooms.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : (
-              <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">{formData.roomNumber}</p>
+              <div className="bg-gray-50 h-9 px-3 flex items-center rounded">
+                <User className="w-4 h-4 mr-2 text-gray-400" />
+                {getRoomNameById(appointment.roomId)}
               </div>
             )}
           </div>
 
+          {/* REASON */}
           <div className="space-y-2 md:col-span-2 lg:col-span-3">
-            <Label htmlFor="reason">Reason</Label>
+            <Label>Reason</Label>
             {isEditMode ? (
               <Textarea
-                id="reason"
                 value={formData.reason}
                 onChange={(e) => onFormChange("reason", e.target.value)}
                 className="min-h-[100px]"
               />
             ) : (
-              <div className="bg-gray-50 rounded-lg px-3 py-2">
-                <p className="text-sm text-gray-900">{formData.reason}</p>
+              <div className="bg-gray-50 rounded p-3">
+                {appointment.reason}
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,48 +8,11 @@ import {
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
 import type { AppointmentWithDetails } from "../../../types";
+import { getAppointments } from "../api/appointments.api";
+import { toast } from "react-hot-toast";
 
-const mockAppointments: AppointmentWithDetails[] = [
-  {
-    id: 1,
-    createdAt: "2025-12-05T10:00:00",
-    date: "2025-12-05",
-    estimatedDuration: "30",
-    doctorId: "1",
-    doctorName: "Dr. Sarah Anderson",
-    patientId: "HD-2024-1234",
-    patientName: "John Doe",
-    roomNumber: 101,
-    status: "scheduled",
-    reason: "Regular checkup",
-  },
-  {
-    id: 2,
-    createdAt: "2025-12-05T14:00:00",
-    date: "2025-12-05",
-    estimatedDuration: "45",
-    doctorId: "2",
-    doctorName: "Dr. Michael Chen",
-    patientId: "HD-2024-1235",
-    patientName: "Sarah Johnson",
-    roomNumber: 102,
-    status: "scheduled",
-    reason: "Follow-up",
-  },
-  {
-    id: 3,
-    createdAt: "2025-12-10T09:00:00",
-    date: "2025-12-10",
-    estimatedDuration: "30",
-    doctorId: "3",
-    doctorName: "Dr. Emily Rodriguez",
-    patientId: "HD-2024-1236",
-    patientName: "Robert Martinez",
-    roomNumber: 103,
-    status: "scheduled",
-    reason: "Lab results review",
-  },
-];
+// appointments fetched from API
+// stored in state below
 
 interface CalendarViewProps {
   onViewAppointment?: (appointmentId: number) => void;
@@ -64,6 +27,23 @@ export function CalendarView({
 }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<"month" | "week" | "day">("month");
+  const [appointments, setAppointments] = useState<AppointmentWithDetails[]>(
+    []
+  );
+
+  useEffect(() => {
+    const loadAppointments = async () => {
+      try {
+        const data = await getAppointments();
+        setAppointments(data);
+      } catch (error) {
+        console.error("Failed to load appointments:", error);
+        toast.error("Failed to load appointments");
+      }
+    };
+
+    void loadAppointments();
+  }, []);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -78,7 +58,10 @@ export function CalendarView({
 
   const getAppointmentsForDate = (date: Date) => {
     const dateStr = date.toISOString().split("T")[0];
-    return mockAppointments.filter((apt) => apt.date === dateStr);
+    return appointments.filter((apt) => {
+      const aptDate = (apt as any).appointmentDate || (apt as any).date;
+      return aptDate?.toString().split("T")[0] === dateStr;
+    });
   };
 
   const changeMonth = (increment: number) => {

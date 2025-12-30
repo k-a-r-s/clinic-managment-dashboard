@@ -37,7 +37,7 @@
 {
   "patientId": "123e4567-e89b-12d3-a456-426614174000",
   "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
-  "date": "2024-12-15T14:30:00.000Z",
+  "appointmentDate": "2024-12-15T14:30:00.000Z",
   "reason": "Regular checkup",
   "status": "scheduled",
   "notes": "Patient requested afternoon slot",
@@ -53,17 +53,16 @@
   success: boolean;
   message: string;
   data: {
-    id: string;                  // UUID
-    patientId: string;           // UUID
-    doctorId: string;            // UUID
-    date: string;                // ISO 8601 date-time
-    reason: string;
+    id: string;
+    patient: { id: string; firstName?: string; lastName?: string } | null;
+    doctor: { id: string; firstName?: string; lastName?: string } | null;
+    roomId: string | null;
+    createdByReceptionistId: string | null;
+    createdByDoctorId: string | null;
+    appointmentDate: string; // ISO 8601 date-time
+    estimatedDurationInMinutes: number | null;
     status: string;
-    notes: string | null;
-    roomId: string | null;       // UUID
-    createdAt: string;           // ISO 8601 date-time
-    updatedAt: string;           // ISO 8601 date-time
-  };
+  } | null;
   error: null;
 }
 ```
@@ -75,15 +74,14 @@
   "message": "Appointment created successfully",
   "data": {
     "id": "456def78-90ab-cdef-1234-567890abcdef",
-    "patientId": "123e4567-e89b-12d3-a456-426614174000",
-    "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
-    "date": "2024-12-15T14:30:00.000Z",
-    "reason": "Regular checkup",
-    "status": "scheduled",
-    "notes": "Patient requested afternoon slot",
+    "patient": { "id": "123e4567-e89b-12d3-a456-426614174000", "firstName": "John", "lastName": "Doe" },
+    "doctor": { "id": "987fcdeb-51a2-43f1-b9c8-123456789abc", "firstName": "Alice", "lastName": "Smith" },
     "roomId": "abc12345-6789-def0-1234-567890abcdef",
-    "createdAt": "2024-12-11T10:00:00.000Z",
-    "updatedAt": "2024-12-11T10:00:00.000Z"
+    "createdByReceptionistId": null,
+    "createdByDoctorId": null,
+    "appointmentDate": "2024-12-15T14:30:00.000Z",
+    "estimatedDurationInMinutes": 30,
+    "status": "SCHEDULED"
   },
   "error": null
 }
@@ -91,11 +89,20 @@
 
 ---
 
+**Errors:**
+
+- **400**: Validation error (bad request)
+- **404**: Room not found
+- **409**: Conflict — room already booked or unavailable for requested time
+
+
+---
+
 ## 2. Get All Appointments
 
 **Endpoint:** `GET /appointments`
 
-**Description:** Retrieve all appointments with optional time-based filtering
+**Description:** Retrieve all appointments with optional time-based and name-based filtering
 
 **Authentication:** Required
 
@@ -106,6 +113,8 @@
 {
   view?: "year" | "month" | "week" | "day" | "all";  // Optional, default: "month"
   date?: string;                                       // Optional, ISO 8601 date
+  patientName?: string;                                // Optional, filter by patient name
+  doctorName?: string;                                 // Optional, filter by doctor name
 }
 ```
 
@@ -113,7 +122,7 @@
 ```
 GET /appointments?view=week&date=2024-12-11
 GET /appointments?view=day&date=2024-12-15
-GET /appointments?view=all
+GET /appointments?view=all&patientName=John
 GET /appointments
 ```
 
@@ -126,15 +135,14 @@ GET /appointments
   message: string;
   data: Array<{
     id: string;
-    patientId: string;
-    doctorId: string;
-    date: string;
-    reason: string;
-    status: string;
-    notes: string | null;
+    patient: { id: string; firstName?: string; lastName?: string } | null;
+    doctor: { id: string; firstName?: string; lastName?: string } | null;
     roomId: string | null;
-    createdAt: string;
-    updatedAt: string;
+    createdByReceptionistId: string | null;
+    createdByDoctorId: string | null;
+    appointmentDate: string; // ISO 8601 date-time
+    estimatedDurationInMinutes: number | null;
+    status: string;
   }>;
   error: null;
 }
@@ -148,15 +156,14 @@ GET /appointments
   "data": [
     {
       "id": "456def78-90ab-cdef-1234-567890abcdef",
-      "patientId": "123e4567-e89b-12d3-a456-426614174000",
-      "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
-      "date": "2024-12-15T14:30:00.000Z",
-      "reason": "Regular checkup",
-      "status": "scheduled",
-      "notes": "Patient requested afternoon slot",
+      "patient": { "id": "123e4567-e89b-12d3-a456-426614174000", "firstName": "John", "lastName": "Doe" },
+      "doctor": { "id": "987fcdeb-51a2-43f1-b9c8-123456789abc", "firstName": "Alice", "lastName": "Smith" },
       "roomId": "abc12345-6789-def0-1234-567890abcdef",
-      "createdAt": "2024-12-11T10:00:00.000Z",
-      "updatedAt": "2024-12-11T10:00:00.000Z"
+      "createdByReceptionistId": null,
+      "createdByDoctorId": null,
+      "appointmentDate": "2024-12-15T14:30:00.000Z",
+      "estimatedDurationInMinutes": 30,
+      "status": "SCHEDULED"
     }
   ],
   "error": null
@@ -165,7 +172,87 @@ GET /appointments
 
 ---
 
-## 3. Get Appointments by Doctor
+## 3. Get Appointment by ID
+
+**Endpoint:** `GET /appointments/:appointmentId`
+
+**Description:** Retrieve a specific appointment by its ID
+
+**Authentication:** Required
+
+**Required Role:** `admin`, `doctor`, `receptionist`
+
+### URL Parameters
+```typescript
+{
+  appointmentId: string;  // UUID - Required
+}
+```
+
+### Response
+
+**Success (200):**
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    patientId: string;
+    doctorId: string;
+    date: string;
+    reason: string;
+    status: string;
+    notes: string | null;
+    roomId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    createdByReceptionId: string | null;
+    createdByDoctorId: string | null;
+    estimatedDurationInMinutes: number;
+  };
+  error: null;
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "message": "Appointment retrieved successfully",
+  "data": {
+    "id": "456def78-90ab-cdef-1234-567890abcdef",
+    "patientId": "123e4567-e89b-12d3-a456-426614174000",
+    "doctorId": "987fcdeb-51a2-43f1-b9c8-123456789abc",
+    "appointmentDate": "2024-12-15T14:30:00.000Z",
+    "reason": "Regular checkup",
+    "status": "SCHEDULED",
+    "notes": "Patient requested afternoon slot",
+    "roomId": "abc12345-6789-def0-1234-567890abcdef",
+    "createdAt": "2024-12-11T10:00:00.000Z",
+    "updatedAt": "2024-12-11T10:00:00.000Z"
+  },
+  "error": null
+}
+```
+
+**Error (404):**
+```json
+{
+  "success": false,
+  "message": "Appointment not found",
+  "data": null,
+  "error": {
+    "name": "AppError",
+    "message": "Appointment not found",
+    "statusCode": 404
+  }
+}
+```
+
+---
+
+## 4. Get Appointments by Doctor
 
 **Endpoint:** `GET /appointments/doctor/:doctorId`
 
@@ -202,25 +289,34 @@ GET /appointments/doctor/987fcdeb-51a2-43f1-b9c8-123456789abc?view=week
 {
   success: boolean;
   message: string;
-  data: Array<{
+  data: {
     id: string;
-    patientId: string;
-    doctorId: string;
-    date: string;
-    reason: string;
-    status: string;
-    notes: string | null;
+    patient: {
+      id: string;
+      firstName?: string;
+      lastName?: string;
+      [key: string]: any;
+    } | null;
+    doctor: {
+      id: string;
+      firstName?: string;
+      lastName?: string;
+      [key: string]: any;
+    } | null;
     roomId: string | null;
-    createdAt: string;
-    updatedAt: string;
-  }>;
+    createdByReceptionistId: string | null;
+    createdByDoctorId: string | null;
+    appointmentDate: string; // ISO 8601 date-time
+    estimatedDurationInMinutes: number | null;
+    status: string;
+  };
   error: null;
 }
 ```
 
 ---
 
-## 4. Get Appointments by Patient
+## 5. Get Appointments by Patient
 
 **Endpoint:** `GET /appointments/patient/:patientId`
 
@@ -275,7 +371,7 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
 
 ---
 
-## 5. Delete Appointment
+## 6. Delete Appointment
 
 **Endpoint:** `DELETE /appointments/:appointmentId`
 
@@ -330,7 +426,7 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
 
 ---
 
-## 6. Complete Appointment
+## 7. Complete Appointment
 
 **Endpoint:** `POST /appointments/:appointmentId/complete`
 
@@ -388,18 +484,25 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
 {
   "success": true,
   "message": "Appointment completed successfully",
-  "data": null,
-  "error": null
-}
-```
-
-**Error (400):**
-```json
-{
-  "success": false,
-  "message": "Patient ID and Doctor ID are required",
-  "data": null,
-  "error": {
+  "data": {
+    "id": "456def78-90ab-cdef-1234-567890abcdef",
+    "patient": {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "doctor": {
+      "id": "987fcdeb-51a2-43f1-b9c8-123456789abc",
+      "firstName": "Alice",
+      "lastName": "Smith"
+    },
+    "roomId": "abc12345-6789-def0-1234-567890abcdef",
+    "createdByReceptionistId": "11111111-2222-3333-4444-555555555555",
+    "createdByDoctorId": null,
+    "appointmentDate": "2024-12-15T14:30:00.000Z",
+    "estimatedDurationInMinutes": 30,
+    "status": "SCHEDULED"
+  },
     "name": "ValidationError",
     "message": "Patient ID and Doctor ID are required",
     "statusCode": 400
@@ -409,7 +512,7 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
 
 ---
 
-## 7. Get Appointment History by Appointment ID
+## 8. Get Appointment History by Appointment ID
 
 **Endpoint:** `GET /appointments/history/:appointmentId`
 
@@ -481,7 +584,7 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
 
 ---
 
-## 8. Get Appointment Histories by Patient ID
+## 9. Get Appointment Histories by Patient ID
 
 **Endpoint:** `GET /appointments/history/patient/:patientId`
 
@@ -539,7 +642,7 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
 
 ---
 
-## 9. Update Appointment History
+## 10. Update Appointment History
 
 **Endpoint:** `PATCH /appointments/history/:appointmentId`
 
@@ -616,7 +719,7 @@ GET /appointments/patient/123e4567-e89b-12d3-a456-426614174000?view=all
 
 ---
 
-## 10. Delete Appointment History
+## 11. Delete Appointment History
 
 **Endpoint:** `DELETE /appointments/history/:appointmentId`
 

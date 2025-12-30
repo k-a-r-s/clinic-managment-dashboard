@@ -26,24 +26,24 @@ const router = Router();
  *         patientId:
  *           type: string
  *           format: uuid
- *           description: The patient ID
- *         doctorId:
- *           type: string
- *           format: uuid
- *           description: The doctor ID
- *         date:
- *           type: string
+                            id:
+                                type: string
+                                format: uuid
+                            firstName:
+                                type: string
+                            lastName:
+                                type: string
  *           format: date-time
  *           description: Appointment date and time
  *         reason:
  *           type: string
- *           description: Reason for appointment
- *         status:
- *           type: string
- *           example: scheduled
- *           description: Appointment status
- *         notes:
- *           type: string
+                            id:
+                                type: string
+                                format: uuid
+                            firstName:
+                                type: string
+                            lastName:
+                                type: string
  *           nullable: true
  *           description: Additional notes
  *         roomId:
@@ -62,7 +62,7 @@ const router = Router();
  *       required:
  *         - patientId
  *         - doctorId
- *         - date
+ *         - appointmentDate
  *         - reason
  *       properties:
  *         patientId:
@@ -73,7 +73,7 @@ const router = Router();
  *           type: string
  *           format: uuid
  *           example: 987fcdeb-51a2-43f1-b9c8-123456789abc
- *         date:
+ *         appointmentDate:
  *           type: string
  *           format: date-time
  *           example: 2024-12-15T14:30:00.000Z
@@ -82,7 +82,7 @@ const router = Router();
  *           example: Regular checkup
  *         status:
  *           type: string
- *           example: scheduled
+ *           example: SCHEDULED
  *         notes:
  *           type: string
  *           nullable: true
@@ -119,6 +119,53 @@ const router = Router();
  *         appointmentData:
  *           type: object
  *           description: Updated appointment data
+ *     AppointmentDetail:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         patient:
+ *           type: object
+ *           nullable: true
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             first_name:
+ *               type: string
+ *             last_name:
+ *               type: string
+ *         doctor:
+ *           type: object
+ *           nullable: true
+ *           properties:
+ *             id:
+ *               type: string
+ *               format: uuid
+ *             first_name:
+ *               type: string
+ *             last_name:
+ *               type: string
+ *         roomId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         createdByReceptionistId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         createdByDoctorId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         appointmentDate:
+ *           type: string
+ *           format: date-time
+ *         estimatedDurationInMinutes:
+ *           type: number
+ *         status:
+ *           type: string
  *     CreateAppointmentRequest:
  *       type: object
  *       required:
@@ -166,7 +213,7 @@ const router = Router();
  * @swagger
  * /appointments:
  *   post:
- *     summary: Create a new appointment
+ *     summary: Create an appointment
  *     tags: [Appointments]
  *     security:
  *       - bearerAuth: []
@@ -191,7 +238,7 @@ const router = Router();
  *                   type: string
  *                   example: Appointment created successfully
  *                 data:
- *                   $ref: '#/components/schemas/Appointment'
+ *                   $ref: '#/components/schemas/AppointmentDetail'
  *                 error:
  *                   type: null
  *       400:
@@ -200,6 +247,10 @@ const router = Router();
  *         description: Unauthorized
  *       403:
  *         description: Forbidden - Receptionist, Doctor or Admin role required
+ *       404:
+ *         description: Room not found
+ *       409:
+ *         description: Conflict - room is already booked or not available for the requested time
  */
 router.post(
     '/',
@@ -214,7 +265,7 @@ router.post(
  * @swagger
  * /appointments:
  *   get:
- *     summary: Get all appointments with optional time-based filtering
+ *     summary: Get all appointments with optional time-based and name-based filtering
  *     tags: [Appointments]
  *     security:
  *       - bearerAuth: []
@@ -232,6 +283,16 @@ router.post(
  *           type: string
  *           format: date
  *         description: Reference date for filtering (ISO 8601 format)
+ *       - in: query
+ *         name: patientName
+ *         schema:
+ *           type: string
+ *         description: Filter by patient name (partial match)
+ *       - in: query
+ *         name: doctorName
+ *         schema:
+ *           type: string
+ *         description: Filter by doctor name (partial match)
  *     responses:
  *       200:
  *         description: List of appointments
@@ -257,13 +318,63 @@ router.post(
  *       403:
  *         description: Forbidden
  */
-// Get all appointments with optional view filter (year/month/week/day)
+// Get all appointments with optional view filter (year/month/week/day) and optional name filters
 router.get(
     '/',
     authMiddleware,
     requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
     asyncWrapper(appointementController.getAllAppointments.bind(appointementController))
 );
+
+/**
+ * @swagger
+ * /appointments/{appointmentId}:
+ *   get:
+ *     summary: Get an appointment by ID
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: appointmentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The appointment ID
+ *     responses:
+ *       200:
+ *         description: Appointment retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Appointment retrieved successfully
+ *                 data:
+ *                   $ref: '#/components/schemas/Appointment'
+ *                 error:
+ *                   type: null
+ *       404:
+ *         description: Appointment not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+// Get appointment by ID
+router.get(
+    '/:appointmentId',
+    authMiddleware,
+    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
+    asyncWrapper(appointementController.getAppointmentById.bind(appointementController))
+);
+
 
 /**
  * @swagger

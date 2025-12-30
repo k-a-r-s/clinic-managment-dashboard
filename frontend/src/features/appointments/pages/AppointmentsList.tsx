@@ -19,8 +19,8 @@ import { getAppointments } from "../api/appointments.api";
 import type { AppointmentWithDetails } from "../../../types";
 
 interface AppointmentsListPageProps {
-  onViewAppointment?: (appointmentId: number) => void;
-  onEditAppointment?: (appointmentId: number) => void;
+  onViewAppointment?: (appointmentId: string) => void;
+  onEditAppointment?: (appointmentId: string) => void;
   onCreate?: () => void;
   onViewCalendar?: () => void;
 }
@@ -38,7 +38,7 @@ export function AppointmentsList({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<
-    number | null
+    string | null
   >(null);
 
   useEffect(() => {
@@ -61,10 +61,10 @@ export function AppointmentsList({
   // Filter appointments
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
-      appointment.patientName
+      (appointment.patient.firstName + ' ' + appointment.patient.lastName)
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      appointment.doctorName
+      (appointment.patient.firstName + ' ' + appointment.patient.lastName)
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       appointment.reason?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -76,13 +76,13 @@ export function AppointmentsList({
     return matchesSearch && matchesStatus;
   });
 
-  const handleViewAppointment = (appointmentId: number) => {
+  const handleViewAppointment = (appointmentId: string) => {
     if (onViewAppointment) {
       onViewAppointment(appointmentId);
     }
   };
 
-  const handleEditAppointment = (appointmentId: number) => {
+  const handleEditAppointment = (appointmentId: string) => {
     if (onEditAppointment) {
       onEditAppointment(appointmentId);
     }
@@ -130,6 +130,7 @@ export function AppointmentsList({
   };
 
   const formatDate = (dateString: string) => {
+    console.log(dateString)
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -152,7 +153,7 @@ export function AppointmentsList({
       header: "Date",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm">{formatDate(appointment.date)}</span>
+        <span className="text-sm text-gray-600">{formatDate(appointment.appointmentDate)}</span>
       ),
     },
     {
@@ -160,7 +161,7 @@ export function AppointmentsList({
       header: "Patient",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm font-medium">{appointment.patientName}</span>
+        <span className="text-sm font-medium">{appointment.patient.firstName + ' ' + appointment.patient.lastName}</span>
       ),
     },
     {
@@ -168,7 +169,7 @@ export function AppointmentsList({
       header: "Doctor",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm">{appointment.doctorName}</span>
+        <span className="text-sm">{appointment.doctor.firstName + ' ' + appointment.doctor.lastName}</span>
       ),
     },
     {
@@ -178,7 +179,7 @@ export function AppointmentsList({
       render: (appointment) => (
         <div className="flex items-center gap-1 text-sm text-gray-600">
           <Clock className="w-3 h-3" />
-          {appointment.estimatedDuration} min
+          {appointment.estimatedDurationInMinutes} min
         </div>
       ),
     },
@@ -187,16 +188,6 @@ export function AppointmentsList({
       header: "Status",
       className: "text-xs",
       render: (appointment) => getStatusBadge(appointment.status),
-    },
-    {
-      key: "reason",
-      header: "Reason",
-      className: "text-xs",
-      render: (appointment) => (
-        <span className="text-sm text-gray-600 line-clamp-1">
-          {appointment.reason || "N/A"}
-        </span>
-      ),
     },
     {
       key: "actions",

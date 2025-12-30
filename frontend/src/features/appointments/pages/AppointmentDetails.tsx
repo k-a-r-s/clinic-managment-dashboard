@@ -21,9 +21,10 @@ import type {
   AppointmentWithDetails,
   AppointmentFormData,
 } from "../../../types";
+import { getRooms } from "../../rooms/api/rooms.api";
 
 interface AppointmentDetailsProps {
-  appointmentId: number;
+  appointmentId: string;
   initialEditMode?: boolean;
   onBack?: () => void;
   onDeleted?: () => void;
@@ -46,13 +47,16 @@ export function AppointmentDetails({
   const [patients, setPatients] = useState<Array<{ id: string; name: string }>>(
     []
   );
+  const [rooms, setRooms] = useState<Array<{ id: string; name: string }>>(
+    []
+  );
   const [formData, setFormData] = useState<AppointmentFormData>({
-    date: "",
-    estimatedDuration: "",
+    appointmentDate: "",
+    estimatedDurationInMinutes: 0,
     doctorId: "",
     patientId: "",
-    roomNumber: 0,
-    status: "scheduled",
+    roomId: "",
+    status: "SCHEDULED",
     reason: "",
   });
 
@@ -63,24 +67,26 @@ export function AppointmentDetails({
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const [appointmentData, doctorsData, patientsData] = await Promise.all([
+      const [appointmentData, doctorsData, patientsData , roomsData] = await Promise.all([
         getAppointmentById(appointmentId),
         getDoctors(),
         getPatients(),
+        getRooms()
       ]);
-
       setAppointment(appointmentData);
-      setDoctors(doctorsData.map((d) => ({ id: d.id, name: d.name })));
-      setPatients(patientsData.map((p) => ({ id: p.id, name: p.name })));
+      setDoctors(doctorsData.map((d) => ({ id: d.id, name: d.firstName + " "  +d.lastName })));
+      setPatients(patientsData.map((p) => ({ id: p.id, name: p.firstName + " "  +p.lastName  })));
+      setRooms(roomsData.map((r) => ({ id: r.id, name: r.roomNumber  })));
       setFormData({
-        date: appointmentData.date,
-        estimatedDuration: appointmentData.estimatedDuration || "",
-        doctorId: appointmentData.doctorId,
-        patientId: appointmentData.patientId,
-        roomNumber: appointmentData.roomNumber || 0,
-        status: appointmentData.status || "scheduled",
+        appointmentDate: appointmentData.appointmentDate,
+        estimatedDurationInMinutes: appointmentData.estimatedDurationInMinutes || 0,
+        doctorId: appointmentData.doctor.id,
+        patientId: appointmentData.patient.id,
+        roomId: appointmentData.roomId || "",
+        status: appointmentData.status || "SCHEDULED",
         reason: appointmentData.reason || "",
       });
+      console.log("appointmentData aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaqsdqsdqsdqsdsqdsqdqsdqsdqsa" , rooms)
     } catch (error) {
       console.error("Failed to load appointment:", error);
       toast.error("Failed to load appointment");
@@ -105,12 +111,12 @@ export function AppointmentDetails({
     if (appointment) {
       // Reset form data to original values
       setFormData({
-        date: appointment.date,
-        estimatedDuration: appointment.estimatedDuration || "",
-        doctorId: appointment.doctorId,
-        patientId: appointment.patientId,
-        roomNumber: appointment.roomNumber || 0,
-        status: appointment.status || "scheduled",
+        appointmentDate: appointment.appointmentDate,
+        estimatedDurationInMinutes: appointment.estimatedDurationInMinutes || 0,
+        doctorId: appointment.doctor.id,
+        patientId: appointment.patient.id,
+        roomId: appointment.roomId || "",
+        status: appointment.status || "SCHEDULED",
         reason: appointment.reason || "",
       });
     }
@@ -183,6 +189,7 @@ export function AppointmentDetails({
         onFormChange={handleFormChange}
         doctors={doctors}
         patients={patients}
+        rooms={rooms}
       />
     </div>
   );

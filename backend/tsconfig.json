@@ -1,12 +1,18 @@
 {
   "compilerOptions": {
+    "target": "ES2020",
     "module": "CommonJS",
     "moduleResolution": "Node",
+
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    "strict": true,
     "esModuleInterop": true,
-    "verbatimModuleSyntax": false
-    ,"rootDir": "src"
-    ,"outDir": "dist"
-    ,"target": "ES2020"
-    ,"strict": true
-  }
+    "skipLibCheck": true,// you better delete it later cuz it hides type errors in dependecies
+
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

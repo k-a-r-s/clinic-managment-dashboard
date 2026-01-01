@@ -33,8 +33,8 @@ export class AppointmentCompletedUseCase {
         // update the medical file with new data
         await this.medicalFileRepository.updateMedicalFile(
             medicalFile.id,
+            data.data,
             data.doctorId,
-            data.data
         );
     }
 }

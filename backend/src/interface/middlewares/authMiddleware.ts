@@ -5,6 +5,9 @@ import { UserRepository } from "../../infrastructure/repositories/UserRepository
 import { Logger } from "../../shared/utils/logger";
 
 export interface AuthRequest extends Request {
+  body: any;
+  cookies: any;
+  headers: any;
   user?: {
     id: string;
     email: string;

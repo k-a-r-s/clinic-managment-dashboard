@@ -15,18 +15,12 @@ import medicalFileRouter from "./interface/routes/medicalFile.route";
 import roomRouter from "./interface/routes/room.route";
 import machineRouter from "./interface/routes/machine.route";
 import statsRouter from "./interface/routes/stats.route";
-import { authMiddleware } from "./interface/middlewares/authMiddleware";
-import { requireRole } from "./interface/middlewares/requireRole";
-import { Role } from "./shared/lib/roles";
-import { asyncWrapper } from "./shared/utils/asyncWrapper";
-import { MachineRepository } from "./infrastructure/repositories/MachineRepository";
-import { ResponseFormatter } from "./interface/utils/ResponseFormatter";
 import receptionistRouter from "./interface/routes/receptionist.route";
 const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"], // Allow both frontend ports
+    origin: "http://localhost:5173", // Replace with your frontend URL
     credentials: true, // Allow cookies to be sent with requests
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],

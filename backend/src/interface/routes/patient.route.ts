@@ -53,6 +53,9 @@ const router = Router();
  *           type: string
  *           format: date
  *           description: The birth date of the patient (YYYY-MM-DD)
+ *         age:
+ *           type: integer
+ *           description: The age of the patient
  *         gender:
  *           type: string
  *           description: The gender of the patient
@@ -108,6 +111,7 @@ const router = Router();
  *         email: "john.doe@example.com"
  *         phoneNumber: "+1-555-123-4567"
  *         birthDate: "1985-03-15"
+ *         age: 40
  *         gender: "Male"
  *         address: "123 Main St"
  *         profession: "Engineer"

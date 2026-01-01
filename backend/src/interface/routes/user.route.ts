@@ -97,7 +97,7 @@ router.post(
   authMiddleware,
   requireRole(["admin"]),
   validate(CreateUserDtoSchema),
-  asyncWrapper((req, res) => userController.addUser(req, res))
+  asyncWrapper(userController.addUser.bind(userController))
 );
 
 export default router;

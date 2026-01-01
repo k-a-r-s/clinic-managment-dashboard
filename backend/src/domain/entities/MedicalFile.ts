@@ -5,20 +5,21 @@ export interface MedicalData {
 }
 export class MedicalFile {
     public id: UUID;
-    public doctorId: UUID;
+    // doctorId may be null when the medical file is created without an associated doctor
+    public doctorId: UUID | null;
     public data: MedicalData;
 
-    public constructor(doctorId: UUID, data: MedicalData, id?: UUID) {
+    public constructor(doctorId: UUID | null, data: MedicalData, id?: UUID) {
         if (id) {
             this.id = id;
         } else {
             this.id = crypto.randomUUID() as UUID;
-        }   
+        }
         this.doctorId = doctorId;
         this.data = data;
     }
 
-    public getDoctorId(): UUID {
+    public getDoctorId(): UUID | null {
         return this.doctorId;
     }
 

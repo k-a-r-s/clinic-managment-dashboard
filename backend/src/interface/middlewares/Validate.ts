@@ -29,7 +29,7 @@ export function validate(schema: ZodSchema) {
           field: issue.path.join(".") || "body",
           type: issue.code,
           message: issue.message,
-          received: JSON.stringify(issue.input),
+          received: "received" in issue ? JSON.stringify((issue as any).received) : "N/A",
         }));
 
         const errorMessage = result.error.issues

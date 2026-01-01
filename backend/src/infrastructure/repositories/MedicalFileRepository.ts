@@ -3,7 +3,7 @@ import { IMedicalFileRepository } from "../../domain/repositories/IMedicalFileRe
 import { supabaseAdmin } from "../database/supabase";
 export class MedicalFileRepository implements IMedicalFileRepository {
     async getMedicalFileByPatientId(patientId: string): Promise<any> {
-        const { data: Patient, error:errorPatient } = await supabaseAdmin.from("patients").select().eq("id", patientId).single();
+        const { data: Patient, error: errorPatient } = await supabaseAdmin.from("patients").select().eq("id", patientId).single();
         if (errorPatient) {
             throw new Error(errorPatient.message);
         }
@@ -23,7 +23,7 @@ export class MedicalFileRepository implements IMedicalFileRepository {
             throw new Error(error.message);
         }
     }
-    async updateMedicalFile(id: string, doctorId: string | null, data: MedicalData | null): Promise<void> {
+    async updateMedicalFile(id: string,data: MedicalData | null, doctorId?: string | null, ): Promise<void> {
         // Fetch existing medical file
         const { data: existingFile, error: fetchError } = await supabaseAdmin
             .from('patient_medical_files')
@@ -47,7 +47,7 @@ export class MedicalFileRepository implements IMedicalFileRepository {
             updated_at: new Date().toISOString(),
         };
 
-        if (doctorId !== null) {
+        if (doctorId !== null && doctorId !== undefined) {
             updateData.doctor_id = doctorId;
         }
 

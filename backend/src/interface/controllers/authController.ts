@@ -4,7 +4,7 @@ import { AuthRequest } from "../middlewares/authMiddleware";
 import { ResponseFormatter } from "../utils/ResponseFormatter";
 
 export class AuthController {
-  constructor(private userAuthService: UserAuthService) {}
+  constructor(private userAuthService: UserAuthService) { }
 
   async login(req: Request, res: Response) {
     const { email, password } = req.body;
@@ -14,7 +14,7 @@ export class AuthController {
     res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 6 * 24 * 60 * 60 * 1000, // 6 days
       path: "/",
     });
@@ -23,7 +23,7 @@ export class AuthController {
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: "/auth/refresh-token",
     });
@@ -33,22 +33,26 @@ export class AuthController {
     const { refreshToken, accessToken, ...dataWithoutTokens } =
       responseJson.data;
 
-    return ResponseFormatter.success(
-      res,
-      dataWithoutTokens,
-      "Login successful"
-    );
+    return ResponseFormatter.success(res, dataWithoutTokens, "Login successful");
   }
 
   async logout(req: AuthRequest, res: Response) {
     const userId = req.user?.id;
+    if (!userId) {
+      return ResponseFormatter.error(
+        res,
+        { type: "AuthenticationError", message: "User not authenticated" },
+        401,
+        "User not authenticated"
+      );
+    }
     await this.userAuthService.logoutUser(userId);
 
     // Clear access token cookie
     res.clearCookie("accessToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       path: "/",
     });
 
@@ -56,8 +60,8 @@ export class AuthController {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/api/auth/refresh-token",
+      sameSite: "strict",
+      path: "/auth/refresh-token",
     });
 
     return ResponseFormatter.success(res, null, "Logged out successfully");
@@ -82,34 +86,33 @@ export class AuthController {
     res.cookie("accessToken", result["access_token"], {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 60 * 60 * 1000, // 1 hour
       path: "/",
     });
 
-    // Set new refresh token in cookie (7 days expiration)
+    // Clear any existing refresh token cookies and set new refresh token in cookie (7 days expiration)
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/auth/refresh-token",
+    });
+
     res.cookie("refreshToken", result["refresh_token"], {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: "/api/auth/refresh-token",
+      path: "/auth/refresh-token",
     });
 
     // Return minimal response (no tokens in body)
-    return ResponseFormatter.success(
-      res,
-      null,
-      "Tokens refreshed successfully"
-    );
+    return ResponseFormatter.success(res, null, "Tokens refreshed successfully");
   }
 
   async getMe(req: AuthRequest, res: Response) {
     const { token, ...userWithoutToken } = req.user || {};
-    return ResponseFormatter.success(
-      res,
-      userWithoutToken,
-      "User retrieved successfully"
-    );
+    return ResponseFormatter.success(res, userWithoutToken, "User retrieved successfully");
   }
 }

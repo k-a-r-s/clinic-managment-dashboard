@@ -6,6 +6,7 @@ import { createRoomDto } from "../../application/dto/requests/rooms/createRoomDt
 import { updateRoomDto } from "../../application/dto/requests/rooms/updateRoomDto";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { requireRole } from "../middlewares/requireRole";
+import { asyncWrapper } from "../../shared/utils/asyncWrapper";
 import { z } from "zod";
 
 const router = Router();
@@ -122,7 +123,7 @@ router.post(
   authMiddleware,
   requireRole(["admin", "receptionist"]),
   validate(createRoomDto),
-  roomController.createRoom.bind(roomController)
+  asyncWrapper(roomController.createRoom.bind(roomController))
 );
 
 /**
@@ -157,7 +158,7 @@ router.post(
 router.get(
   "/",
   authMiddleware,
-  roomController.getAllRooms.bind(roomController)
+  asyncWrapper(roomController.getAllRooms.bind(roomController))
 );
 
 /**
@@ -192,7 +193,7 @@ router.get(
 router.get(
   "/available",
   authMiddleware,
-  roomController.getAvailableRooms.bind(roomController)
+  asyncWrapper(roomController.getAvailableRooms.bind(roomController))
 );
 
 /**
@@ -234,7 +235,7 @@ router.get(
 router.get(
   "/:id",
   authMiddleware,
-  roomController.getRoomById.bind(roomController)
+  asyncWrapper(roomController.getRoomById.bind(roomController))
 );
 
 /**
@@ -284,7 +285,7 @@ router.patch(
   authMiddleware,
   requireRole(["admin", "receptionist"]),
   validate(updateRoomDto),
-  roomController.updateRoom.bind(roomController)
+  asyncWrapper(roomController.updateRoom.bind(roomController))
 );
 
 /**
@@ -327,7 +328,7 @@ router.delete(
   "/:id",
   authMiddleware,
   requireRole(["admin"]),
-  roomController.deleteRoom.bind(roomController)
+  asyncWrapper(roomController.deleteRoom.bind(roomController))
 );
 
 /**
@@ -377,7 +378,7 @@ router.patch(
   authMiddleware,
   requireRole(["admin", "receptionist", "doctor"]),
   validate(z.object({ isAvailable: z.boolean() })),
-  roomController.updateRoomAvailability.bind(roomController)
+  asyncWrapper(roomController.updateRoomAvailability.bind(roomController))
 );
 
 export default router;

@@ -31,10 +31,10 @@ export class AppointmentCompletedUseCase {
             medicalFile.data
         );
         // update the medical file with new data
-            await this.medicalFileRepository.updateMedicalFile(
-                medicalFile.id,
-                data.doctorId ?? null,
-                data.data
-            );
+        await this.medicalFileRepository.updateMedicalFile(
+            medicalFile.id,
+            data.data,
+            data.doctorId,
+        );
     }
 }

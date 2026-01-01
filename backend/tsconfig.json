@@ -9,7 +9,7 @@
 
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
+    "skipLibCheck": true,// you better delete it later cuz it hides type errors in dependecies
 
     "forceConsistentCasingInFileNames": true
   },

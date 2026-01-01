@@ -23,7 +23,7 @@ export class MedicalFileRepository implements IMedicalFileRepository {
             throw new Error(error.message);
         }
     }
-    async updateMedicalFile(id: string, doctorId: string | null | undefined, data: MedicalData | null): Promise<void> {
+    async updateMedicalFile(id: string,data: MedicalData | null, doctorId?: string | null, ): Promise<void> {
         // Fetch existing medical file
         const { data: existingFile, error: fetchError } = await supabaseAdmin
             .from('patient_medical_files')

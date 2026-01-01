@@ -180,7 +180,7 @@ export default router;
  *                   nullable: true
  *                   type: object
  */
-router.get('/', authMiddleware, (req, res) => controller.getStats(req as any, res));
-router.get('/patients-per-day', authMiddleware, (req, res) => controller.getPatientsPerDay(req as any, res));
-router.get('/appointments-per-day', authMiddleware, (req, res) => controller.getAppointmentsPerDay(req as any, res));
-router.get('/summary', authMiddleware, (req, res) => controller.getSummary(req as any, res));
+router.get('/', authMiddleware, asyncWrapper(controller.getStats.bind(controller)));
+router.get('/patients-per-day', authMiddleware, asyncWrapper(controller.getPatientsPerDay.bind(controller)));
+router.get('/appointments-per-day', authMiddleware, asyncWrapper(controller.getAppointmentsPerDay.bind(controller)));
+router.get('/summary', authMiddleware, asyncWrapper(controller.getSummary.bind(controller)));

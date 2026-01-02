@@ -59,37 +59,6 @@ function CollapsibleSection({
   );
 }
 
-interface CollapsibleSubsectionProps {
-  title: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}
-
-function CollapsibleSubsection({
-  title,
-  children,
-  defaultOpen = true,
-}: CollapsibleSubsectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  return (
-    <div className="space-y-4">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-2 text-base font-semibold text-gray-900 hover:text-[#1c8ca8] transition-colors bg-gray-100 hover:bg-gray-200 rounded-lg px-4 py-3"
-      >
-        {isOpen ? (
-          <ChevronDown className="w-5 h-5" />
-        ) : (
-          <ChevronUp className="w-5 h-5 rotate-180" />
-        )}
-        <h3>{title}</h3>
-      </button>
-      {isOpen && <div className="px-1">{children}</div>}
-    </div>
-  );
-}
-
 interface PatientProfileProps {
   patientId: number;
   initialEditMode?: boolean;
@@ -105,6 +74,7 @@ export function PatientProfile({
 }: PatientProfileProps) {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [isEditMode, setIsEditMode] = useState(initialEditMode);
+  const [isEditModeMedical, setIsEditModeMedical] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<PatientFormData>({
     firstName: "",
@@ -251,6 +221,10 @@ export function PatientProfile({
       }
     }
     setIsEditMode(false);
+  };
+
+  const handleCancelMedical = () => {
+    setIsEditModeMedical(false);
   };
 
   const handleDelete = async () => {
@@ -610,13 +584,44 @@ export function PatientProfile({
         </div>
       </div>
 
+      {/* Medical Records Section Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-[#101828] text-base font-normal">
+          Patient medical records — {patient.firstName} {patient.lastName}
+        </h1>
+
+        <div className="flex gap-3">
+          {isEditModeMedical ? (
+            <>
+              <Button
+                onClick={handleCancelMedical}
+                className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
+              >
+                <Save className="w-4 h-4" />
+                Done
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => setIsEditModeMedical(true)}
+              className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
+            >
+              <Edit className="w-4 h-4" />
+              Edit Medical Records
+            </Button>
+          )}
+        </div>
+      </div>
+
       {/* Medical File Section */}
       <CollapsibleSection title="Medical File" defaultOpen={true}>
-        <MedicalFileForm
-          medicalFile={medicalFile}
-          onChange={setMedicalFile}
-          readOnly={!isEditMode}
-        />
+        <div className="space-y-6">
+          <MedicalFileForm
+            medicalFile={medicalFile}
+            onChange={setMedicalFile}
+            readOnly={!isEditModeMedical}
+          />
+        </div>
       </CollapsibleSection>
     </div>
   );

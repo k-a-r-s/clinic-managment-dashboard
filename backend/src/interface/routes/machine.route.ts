@@ -259,6 +259,7 @@ const router = Router();
 router.post(
   "/",
   authMiddleware,
+  validate(createMachineSchemaDto),
   asyncWrapper(machineController.createMachine.bind(machineController))
 );
 
@@ -334,11 +335,19 @@ router.put(
 );
 
 /** Deactivate machine */
-router.patch(
+router.post(
   "/:id/deactivate",
   authMiddleware,
   requireRole([Role.ADMIN]),
   asyncWrapper(machineController.deactivateMachine.bind(machineController))
+);
+
+/** Delete machine */
+router.delete(
+  "/:id",
+  authMiddleware,
+  requireRole([Role.ADMIN]),
+  asyncWrapper(machineController.deleteMachine.bind(machineController))
 );
 
 export default router;

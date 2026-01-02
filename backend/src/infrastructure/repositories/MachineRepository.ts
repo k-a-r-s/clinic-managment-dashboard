@@ -76,8 +76,11 @@ export class MachineRepository implements IMachineRepository {
       updatedAt: data.updated_at,
     });
   }
-  async getAllMachines(filters?: { status?: string; roomId?: string }): Promise<Machine[]> {
-    let query = supabaseAdmin.from("machines").select();
+  async getAllMachines(filters?: {
+    status?: string;
+    roomId?: string;
+  }): Promise<Machine[]> {
+    let query = supabaseAdmin.from("machines").select("*, rooms(room_number)");
     if (filters?.status) {
       query = query.eq("status", filters.status);
     }
@@ -92,8 +95,8 @@ export class MachineRepository implements IMachineRepository {
       return [];
     }
 
-    return data.map((m: any) =>
-      new Machine({
+    return data.map((m: any) => {
+      const machine = new Machine({
         id: m.id,
         machineId: m.machine_id,
         manufacturer: m.manufacturer,
@@ -105,8 +108,13 @@ export class MachineRepository implements IMachineRepository {
         roomId: m.room_id,
         createdAt: m.created_at,
         updatedAt: m.updated_at,
-      })
-    );
+      });
+      // Add room number if available
+      if (m.rooms) {
+        (machine as any).props.room = m.rooms.room_number;
+      }
+      return machine;
+    });
   }
 
   async updateMachine(machine: Machine): Promise<Machine> {
@@ -114,7 +122,7 @@ export class MachineRepository implements IMachineRepository {
       .from("machines")
       .update({
         machine_id: machine.getMachineId(),
-      
+
         manufacturer: machine.getManufacturer(),
         model: machine.getModel(),
         status: machine.getStatus(),
@@ -149,20 +157,34 @@ export class MachineRepository implements IMachineRepository {
     });
   }
 
-  async getMachineStats(): Promise<{ total: number; available: number; inUse: number; maintenance: number; outOfService: number }> {
-    const { data, error } = await supabaseAdmin.from('machines').select('status');
+  async getMachineStats(): Promise<{
+    total: number;
+    available: number;
+    inUse: number;
+    maintenance: number;
+    outOfService: number;
+  }> {
+    const { data, error } = await supabaseAdmin
+      .from("machines")
+      .select("status");
     if (error) {
       throw new DatabaseError(error);
     }
-    const counts = { total: 0, available: 0, inUse: 0, maintenance: 0, outOfService: 0 };
+    const counts = {
+      total: 0,
+      available: 0,
+      inUse: 0,
+      maintenance: 0,
+      outOfService: 0,
+    };
     if (!data) return counts;
     counts.total = data.length;
     for (const row of data) {
       const status = row.status;
-      if (status === 'available') counts.available++;
-      else if (status === 'in-use') counts.inUse++;
-      else if (status === 'maintenance') counts.maintenance++;
-      else if (status === 'out-of-service') counts.outOfService++;
+      if (status === "available") counts.available++;
+      else if (status === "in-use") counts.inUse++;
+      else if (status === "maintenance") counts.maintenance++;
+      else if (status === "out-of-service") counts.outOfService++;
     }
     return counts;
   }
@@ -171,6 +193,17 @@ export class MachineRepository implements IMachineRepository {
     const { error } = await supabaseAdmin
       .from("machines")
       .update({ is_active: false, status: "out-of-service" })
+      .eq("id", id);
+
+    if (error) {
+      throw new DatabaseError(error);
+    }
+  }
+
+  async deleteMachine(id: string): Promise<void> {
+    const { error } = await supabaseAdmin
+      .from("machines")
+      .delete()
       .eq("id", id);
 
     if (error) {

@@ -11,6 +11,10 @@ export interface IUserAuthService {
     lastName: string,
     email: string,
     password: string,
-    role: "doctor" | "receptionist"
+    role: "doctor" | "receptionist",
+    phoneNumber?: string,
+    salary?: number,
+    specialization?: string,
+    isMedicalDirector?: boolean
   ): Promise<User>;
 }

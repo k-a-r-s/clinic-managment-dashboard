@@ -12,10 +12,16 @@ export interface AppointmentDoctorDto {
   [key: string]: any;
 }
 
+export interface AppointmentRoomDto {
+  id: string;
+  roomNumber: string;
+}
+
 export interface GetAppointmentByIdResponseDto {
   id: string;
   patient: AppointmentPatientDto | null;
   doctor: AppointmentDoctorDto | null;
+  room: AppointmentRoomDto | null;
   roomId: string | null;
   createdByReceptionistId: string | null;
   createdByDoctorId: string | null;

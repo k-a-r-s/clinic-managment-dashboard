@@ -12,6 +12,7 @@ import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { useAuth } from "../../../context/AuthContext";
 import { toast } from "react-hot-toast";
+import { updateProfile, changePassword } from "../api/settings.api";
 
 export function SettingsPage() {
   const { user } = useAuth();
@@ -39,11 +40,11 @@ export function SettingsPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Call API to update profile
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await updateProfile(profileData);
       toast.success("Profile updated successfully");
-    } catch (error) {
-      toast.error("Failed to update profile");
+    } catch (error: any) {
+      const message = error?.message || "Failed to update profile";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -64,16 +65,19 @@ export function SettingsPage() {
 
     setIsLoading(true);
     try {
-      // TODO: Call API to change password
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
       toast.success("Password changed successfully");
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
-    } catch (error) {
-      toast.error("Failed to change password");
+    } catch (error: any) {
+      const message = error?.message || "Failed to change password";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

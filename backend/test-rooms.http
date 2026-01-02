@@ -1,0 +1,54 @@
+### Test Rooms API Endpoints
+### Make sure your backend is running on localhost:3000
+
+@baseUrl = http://localhost:3000
+@token = YOUR_AUTH_TOKEN_HERE
+
+### 1. Get all rooms
+GET {{baseUrl}}/rooms
+Authorization: Bearer {{token}}
+
+### 2. Create a new room
+POST {{baseUrl}}/rooms
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roomNumber": "101",
+  "capacity": 2,
+  "type": "consultation",
+  "isAvailable": true
+}
+
+### 3. Get room by ID (replace with actual ID from create response)
+GET {{baseUrl}}/rooms/YOUR_ROOM_ID_HERE
+Authorization: Bearer {{token}}
+
+### 4. Update room
+PUT {{baseUrl}}/rooms/YOUR_ROOM_ID_HERE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roomNumber": "101A",
+  "capacity": 3,
+  "type": "consultation",
+  "isAvailable": true
+}
+
+### 5. Get available rooms
+GET {{baseUrl}}/rooms/available
+Authorization: Bearer {{token}}
+
+### 6. Update room availability
+PATCH {{baseUrl}}/rooms/YOUR_ROOM_ID_HERE/availability
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isAvailable": false
+}
+
+### 7. Delete room
+DELETE {{baseUrl}}/rooms/YOUR_ROOM_ID_HERE
+Authorization: Bearer {{token}}

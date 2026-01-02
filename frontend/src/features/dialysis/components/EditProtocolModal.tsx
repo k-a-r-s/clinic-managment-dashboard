@@ -70,9 +70,13 @@ export function EditProtocolModal({
 
     try {
       setIsLoading(true);
-      await updateDialysisProtocol(protocol.dialysisPatientId, formData);
+      if (!protocol.id) {
+        throw new Error("Protocol ID is missing");
+      }
+      await updateDialysisProtocol(protocol.id, formData);
       toast.success("Protocol updated successfully");
       onSuccess?.();
+      onClose();
     } catch (error) {
       console.error("Failed to update protocol:", error);
       toast.error("Failed to update protocol");
@@ -170,39 +174,40 @@ export function EditProtocolModal({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="targetWeight">Target Weight (kg) *</Label>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="targetWeight">Target Weight (kg)</Label>
               <Input
                 id="targetWeight"
                 type="number"
                 step="0.1"
                 min="0"
-                value={formData.targetWeightKg}
+                value={formData.targetWeightKg || ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    targetWeightKg: parseFloat(e.target.value) || 0,
+                    targetWeightKg: e.target.value
+                      ? parseFloat(e.target.value)
+                      : undefined,
                   })
                 }
-                required
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={formData.notes || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    notes: e.target.value,
-                  })
-                }
-                rows={3}
-                placeholder="Any additional notes or observations..."
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  notes: e.target.value,
+                })
+              }
+              rows={3}
+              placeholder="Any additional notes or observations..."
+            />
           </div>
 
           <DialogFooter>

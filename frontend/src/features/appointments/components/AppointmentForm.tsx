@@ -38,11 +38,10 @@ export function AppointmentForm({
 }: AppointmentFormProps) {
   const [formData, setFormData] = useState<AppointmentFormData>({
     appointmentDate: initialData.appointmentDate || "",
-    estimatedDuration: initialData.estimatedDuration || 0,
+    estimatedDurationInMinutes: initialData.estimatedDurationInMinutes || 30,
     doctorId: initialData.doctorId || "",
     patientId: initialData.patientId || "",
     status: initialData.status || "SCHEDULED",
-    reasonForVisit: initialData.reasonForVisit || "",
     roomId: initialData.roomId || "",
   });
 
@@ -67,8 +66,8 @@ export function AppointmentForm({
       newErrors.appointmentDate = "Date is required";
     }
 
-    if (!formData.estimatedDuration) {
-      newErrors.estimatedDuration = "Duration is required";
+    if (!formData.estimatedDurationInMinutes) {
+      newErrors.estimatedDurationInMinutes = "Duration is required";
     }
 
     if (!formData.doctorId) {
@@ -127,27 +126,32 @@ export function AppointmentForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="estimatedDuration">
+            <Label htmlFor="estimatedDurationInMinutes">
               Estimated Duration (minutes){" "}
               <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
               <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
-                id="estimatedDuration"
-                type="text"
+                id="estimatedDurationInMinutes"
+                type="number"
                 placeholder="30"
-                value={formData.estimatedDuration}
+                value={formData.estimatedDurationInMinutes}
                 onChange={(e) =>
-                  handleInputChange("estimatedDuration", e.target.value)
+                  handleInputChange(
+                    "estimatedDurationInMinutes",
+                    parseInt(e.target.value) || 0
+                  )
                 }
                 className={`pl-10 ${
-                  errors.estimatedDuration ? "border-red-500" : ""
+                  errors.estimatedDurationInMinutes ? "border-red-500" : ""
                 }`}
               />
             </div>
-            {errors.estimatedDuration && (
-              <p className="text-sm text-red-500">{errors.estimatedDuration}</p>
+            {errors.estimatedDurationInMinutes && (
+              <p className="text-sm text-red-500">
+                {errors.estimatedDurationInMinutes}
+              </p>
             )}
           </div>
 

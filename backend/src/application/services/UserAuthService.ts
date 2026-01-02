@@ -75,7 +75,11 @@ export class UserAuthService implements IUserAuthService {
     lastName: string,
     email: string,
     password: string,
-    role: "receptionist" | "doctor"
+    role: "receptionist" | "doctor",
+    phoneNumber?: string,
+    salary?: number,
+    specialization?: string,
+    isMedicalDirector?: boolean
   ): Promise<User> {
     Logger.info("🔐 Create user attempt", { email });
 
@@ -84,7 +88,11 @@ export class UserAuthService implements IUserAuthService {
       lastName,
       email,
       password,
-      role
+      role,
+      phoneNumber,
+      salary,
+      specialization,
+      isMedicalDirector
     );
   }
 }

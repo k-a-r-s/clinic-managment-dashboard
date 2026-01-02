@@ -5,6 +5,6 @@ export const updateRoomDto = z.object({
   capacity: z.coerce.number().int().positive().optional(),
   type: z.string().optional(),
   isAvailable: z.boolean().optional(),
-}).strict();
+});
 
 export type UpdateRoomDto = z.infer<typeof updateRoomDto>;

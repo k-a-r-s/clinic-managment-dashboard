@@ -1,12 +1,12 @@
 import { IAppointementsRepository } from "../../../domain/repositories/IAppointementRepository";
 
 export class GetAppointementsUseCase {
-    constructor(private appointementRepository: IAppointementsRepository) { }
+  constructor(private appointementRepository: IAppointementsRepository) {}
 
-    async execute(
-        view: "year" | "month" | "week" | "day",
-        filters?: { patientName?: string; doctorName?: string }
-    ) {
-        return this.appointementRepository.getAppointements(view, filters);
-    }
+  async execute(
+    view: "year" | "month" | "week" | "day" | "all" = "all",
+    filters?: { patientName?: string; doctorName?: string }
+  ) {
+    return this.appointementRepository.getAppointements(view, filters);
+  }
 }

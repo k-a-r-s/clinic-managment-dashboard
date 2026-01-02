@@ -1,14 +1,15 @@
-import { Router } from 'express';
-import { appointementController } from '../../config/container';
-import { authMiddleware } from '../middlewares/authMiddleware';
-import { asyncWrapper } from '../../shared/utils/asyncWrapper';
-import { requireRole } from '../middlewares/requireRole';
-import { validate } from '../middlewares/Validate';
-import { addAppointmentDto } from '../../application/dto/requests/addAppointementDto';
-import { createAppointmentHistoryDto } from '../../application/dto/requests/appointmentHistory/createAppointmentHistoryDto';
-import { updateAppointmentHistoryDto } from '../../application/dto/requests/appointmentHistory/updateAppointmentHistoryDto';
-import { completeAppointmentDto } from '../../application/dto/requests/appointmentHistory/completeAppointmentDto';
-import { Role } from '../../shared/lib/roles';
+import { Router } from "express";
+import { appointementController } from "../../config/container";
+import { authMiddleware } from "../middlewares/authMiddleware";
+import { asyncWrapper } from "../../shared/utils/asyncWrapper";
+import { requireRole } from "../middlewares/requireRole";
+import { validate } from "../middlewares/Validate";
+import { addAppointmentDto } from "../../application/dto/requests/addAppointementDto";
+import { updateAppointmentDto } from "../../application/dto/requests/updateAppointmentDto";
+import { createAppointmentHistoryDto } from "../../application/dto/requests/appointmentHistory/createAppointmentHistoryDto";
+import { updateAppointmentHistoryDto } from "../../application/dto/requests/appointmentHistory/updateAppointmentHistoryDto";
+import { completeAppointmentDto } from "../../application/dto/requests/appointmentHistory/completeAppointmentDto";
+import { Role } from "../../shared/lib/roles";
 
 const router = Router();
 
@@ -26,31 +27,23 @@ const router = Router();
  *         patientId:
  *           type: string
  *           format: uuid
-                            id:
-                                type: string
-                                format: uuid
-                            firstName:
-                                type: string
-                            lastName:
-                                type: string
+ *         doctorId:
+ *           type: string
+ *           format: uuid
+ *         appointmentDate:
+ *           type: string
  *           format: date-time
  *           description: Appointment date and time
- *         reason:
+ *         status:
  *           type: string
-                            id:
-                                type: string
-                                format: uuid
-                            firstName:
-                                type: string
-                            lastName:
-                                type: string
- *           nullable: true
- *           description: Additional notes
+ *           enum: [SCHEDULED, COMPLETED, CANCELED, NO_SHOW]
  *         roomId:
  *           type: string
  *           format: uuid
  *           nullable: true
  *           description: The room ID
+ *         estimatedDurationInMinutes:
+ *           type: integer
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -63,7 +56,8 @@ const router = Router();
  *         - patientId
  *         - doctorId
  *         - appointmentDate
- *         - reason
+ *         - estimatedDurationInMinutes
+ *         - status
  *       properties:
  *         patientId:
  *           type: string
@@ -73,24 +67,29 @@ const router = Router();
  *           type: string
  *           format: uuid
  *           example: 987fcdeb-51a2-43f1-b9c8-123456789abc
- *         appointmentDate:
- *           type: string
- *           format: date-time
- *           example: 2024-12-15T14:30:00.000Z
- *         reason:
- *           type: string
- *           example: Regular checkup
- *         status:
- *           type: string
- *           example: SCHEDULED
- *         notes:
- *           type: string
- *           nullable: true
- *           example: Patient requested afternoon slot
  *         roomId:
  *           type: string
  *           format: uuid
  *           nullable: true
+ *         createdByReceptionistId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         createdByDoctorId:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         appointmentDate:
+ *           type: string
+ *           format: date-time
+ *           example: 2024-12-15T14:30:00.000Z
+ *         estimatedDurationInMinutes:
+ *           type: integer
+ *           example: 30
+ *         status:
+ *           type: string
+ *           enum: [SCHEDULED, COMPLETED, CANCELED, NO_SHOW]
+ *           example: SCHEDULED
  *     AppointmentHistory:
  *       type: object
  *       properties:
@@ -166,40 +165,6 @@ const router = Router();
  *           type: number
  *         status:
  *           type: string
- *     CreateAppointmentRequest:
- *       type: object
- *       required:
- *         - patientId
- *         - doctorId
- *         - date
- *         - reason
- *       properties:
- *         patientId:
- *           type: string
- *           format: uuid
- *           example: 123e4567-e89b-12d3-a456-426614174000
- *         doctorId:
- *           type: string
- *           format: uuid
- *           example: 987fcdeb-51a2-43f1-b9c8-123456789abc
- *         date:
- *           type: string
- *           format: date-time
- *           example: 2024-12-15T14:30:00.000Z
- *         reason:
- *           type: string
- *           example: Regular checkup
- *         status:
- *           type: string
- *           example: scheduled
- *         notes:
- *           type: string
- *           nullable: true
- *           example: Patient requested afternoon slot
- *         roomId:
- *           type: string
- *           format: uuid
- *           nullable: true
  */
 
 /**
@@ -253,12 +218,13 @@ const router = Router();
  *         description: Conflict - room is already booked or not available for the requested time
  */
 router.post(
-    '/',
-    authMiddleware,
-    requireRole([Role.RECEPTIONIST, Role.DOCTOR, Role.ADMIN]),
-    validate(addAppointmentDto),
-    asyncWrapper(appointementController.createAppointment.bind(appointementController))
-
+  "/",
+  authMiddleware,
+  requireRole([Role.RECEPTIONIST, Role.DOCTOR, Role.ADMIN]),
+  validate(addAppointmentDto),
+  asyncWrapper(
+    appointementController.createAppointment.bind(appointementController)
+  )
 );
 
 /**
@@ -320,10 +286,12 @@ router.post(
  */
 // Get all appointments with optional view filter (year/month/week/day) and optional name filters
 router.get(
-    '/',
-    authMiddleware,
-    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
-    asyncWrapper(appointementController.getAllAppointments.bind(appointementController))
+  "/",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
+  asyncWrapper(
+    appointementController.getAllAppointments.bind(appointementController)
+  )
 );
 
 /**
@@ -369,12 +337,13 @@ router.get(
  */
 // Get appointment by ID
 router.get(
-    '/:appointmentId',
-    authMiddleware,
-    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
-    asyncWrapper(appointementController.getAppointmentById.bind(appointementController))
+  "/:appointmentId",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
+  asyncWrapper(
+    appointementController.getAppointmentById.bind(appointementController)
+  )
 );
-
 
 /**
  * @swagger
@@ -433,10 +402,12 @@ router.get(
  */
 // Get appointments by doctor ID
 router.get(
-    '/doctor/:doctorId',
-    authMiddleware,
-    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
-    asyncWrapper(appointementController.getAppointmentsByDoctor.bind(appointementController))
+  "/doctor/:doctorId",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
+  asyncWrapper(
+    appointementController.getAppointmentsByDoctor.bind(appointementController)
+  )
 );
 
 /**
@@ -496,10 +467,12 @@ router.get(
  */
 // Get appointments by patient ID
 router.get(
-    '/patient/:patientId',
-    authMiddleware,
-    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
-    asyncWrapper(appointementController.getAppointmentsByPatient.bind(appointementController))
+  "/patient/:patientId",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
+  asyncWrapper(
+    appointementController.getAppointmentsByPatient.bind(appointementController)
+  )
 );
 
 /**
@@ -545,10 +518,89 @@ router.get(
  */
 // Delete appointment
 router.delete(
-    '/:appointmentId',
-    authMiddleware,
-    requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
-    asyncWrapper(appointementController.deleteAppointment.bind(appointementController))
+  "/:appointmentId",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
+  asyncWrapper(
+    appointementController.deleteAppointment.bind(appointementController)
+  )
+);
+
+/**
+ * @swagger
+ * /appointments/{appointmentId}:
+ *   put:
+ *     summary: Update an appointment
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: appointmentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The appointment ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               patientId:
+ *                 type: string
+ *                 format: uuid
+ *               doctorId:
+ *                 type: string
+ *                 format: uuid
+ *               roomId:
+ *                 type: string
+ *                 format: uuid
+ *               appointmentDate:
+ *                 type: string
+ *                 format: date-time
+ *               estimatedDurationInMinutes:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *                 enum: [SCHEDULED, COMPLETED, CANCELED, NO_SHOW]
+ *     responses:
+ *       200:
+ *         description: Appointment updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Appointment updated successfully
+ *                 data:
+ *                   type: null
+ *                 error:
+ *                   type: null
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Appointment not found
+ */
+router.put(
+  "/:appointmentId",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.RECEPTIONIST, Role.ADMIN]),
+  validate(updateAppointmentDto),
+  asyncWrapper(
+    appointementController.updateAppointment.bind(appointementController)
+  )
 );
 
 /**
@@ -613,11 +665,15 @@ router.delete(
  */
 
 // update the medical file and also the appointment history after a appointment is completed
-router.post('/:appointmentId/complete',
-        authMiddleware,
-        requireRole([Role.DOCTOR, Role.ADMIN]),
-        validate(completeAppointmentDto),
-        asyncWrapper(appointementController.completeAppointment.bind(appointementController)));
+router.post(
+  "/:appointmentId/complete",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.ADMIN]),
+  validate(completeAppointmentDto),
+  asyncWrapper(
+    appointementController.completeAppointment.bind(appointementController)
+  )
+);
 
 /**
  * @swagger
@@ -657,11 +713,15 @@ router.post('/:appointmentId/complete',
  *         description: Unauthorized
  */
 router.get(
-    '/history/:appointmentId',
-    authMiddleware,
-    requireRole([Role.DOCTOR, Role.ADMIN]),
+  "/history/:appointmentId",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.ADMIN]),
 
-    asyncWrapper(appointementController.getHistoryByAppointmentId.bind(appointementController))
+  asyncWrapper(
+    appointementController.getHistoryByAppointmentId.bind(
+      appointementController
+    )
+  )
 );
 
 /**
@@ -702,11 +762,13 @@ router.get(
  *         description: Unauthorized
  */
 router.get(
-    '/history/patient/:patientId',
-    authMiddleware,
-    requireRole([Role.DOCTOR, Role.ADMIN]),
+  "/history/patient/:patientId",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.ADMIN]),
 
-    asyncWrapper(appointementController.getHistoriesByPatientId.bind(appointementController))
+  asyncWrapper(
+    appointementController.getHistoriesByPatientId.bind(appointementController)
+  )
 );
 
 /**
@@ -753,11 +815,13 @@ router.get(
  *         description: Unauthorized
  */
 router.patch(
-    '/history/:appointmentId',
-    authMiddleware,
-    requireRole([Role.DOCTOR, Role.ADMIN]),
-    validate(updateAppointmentHistoryDto),
-    asyncWrapper(appointementController.updateHistory.bind(appointementController))
+  "/history/:appointmentId",
+  authMiddleware,
+  requireRole([Role.DOCTOR, Role.ADMIN]),
+  validate(updateAppointmentHistoryDto),
+  asyncWrapper(
+    appointementController.updateHistory.bind(appointementController)
+  )
 );
 
 /**
@@ -800,10 +864,12 @@ router.patch(
  *         description: Forbidden - admin only
  */
 router.delete(
-    '/history/:appointmentId',
-    authMiddleware,
-    requireRole([Role.ADMIN]),
-    asyncWrapper(appointementController.deleteHistory.bind(appointementController))
+  "/history/:appointmentId",
+  authMiddleware,
+  requireRole([Role.ADMIN]),
+  asyncWrapper(
+    appointementController.deleteHistory.bind(appointementController)
+  )
 );
 
 export default router;

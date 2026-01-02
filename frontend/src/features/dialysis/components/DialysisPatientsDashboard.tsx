@@ -139,18 +139,6 @@ export function DialysisPatientsDashboard({
       ),
     },
     {
-      key: "nextSessionDate",
-      header: "Next Session",
-      accessor: "nextSessionDate" as keyof DialysisPatient,
-      render: (patient: DialysisPatient) => (
-        <span className="text-blue-600 font-medium">
-          {patient.nextSessionDate && patient.status === "active"
-            ? new Date(patient.nextSessionDate).toLocaleDateString()
-            : "—"}
-        </span>
-      ),
-    },
-    {
       key: "status",
       header: "Status",
       accessor: "status" as keyof DialysisPatient,

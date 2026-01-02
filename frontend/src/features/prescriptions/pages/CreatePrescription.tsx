@@ -35,7 +35,7 @@ import { getAppointments } from "../../appointments/api/appointments.api";
 import type {
   PrescriptionFormData,
   PrescriptionMedication,
-  AppointmentWithDetails,
+  Appointment,
 } from "../../../types";
 import { getPatients } from "../../patients/api/patients.api";
 import { getUsers } from "../../users/api/users.api";
@@ -63,11 +63,9 @@ export function CreatePrescription({
 
   const [patients, setPatients] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
-  const [appointments, setAppointments] = useState<AppointmentWithDetails[]>(
-    []
-  );
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<
-    AppointmentWithDetails[]
+    Appointment[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -393,13 +391,16 @@ export function CreatePrescription({
                       <option value="">No appointment</option>
                       {filteredAppointments.map((apt) => (
                         <option key={apt.id} value={apt.id.toString()}>
-                          #{apt.id} - {apt.patientName} with Dr.{" "}
-                          {apt.doctorName} at{" "}
-                          {new Date(
-                            apt.appointmentDate || apt.date
-                          ).toLocaleDateString()}
-                          {apt.reasonForVisit &&
-                            ` - ${apt.reasonForVisit.substring(0, 50)}...`}
+                          #{apt.id} -{" "}
+                          {apt.patient
+                            ? `${apt.patient.firstName} ${apt.patient.lastName}`
+                            : "Unknown"}{" "}
+                          with Dr.{" "}
+                          {apt.doctor
+                            ? `${apt.doctor.firstName} ${apt.doctor.lastName}`
+                            : "Unknown"}{" "}
+                          at{" "}
+                          {new Date(apt.appointmentDate).toLocaleDateString()}
                         </option>
                       ))}
                     </select>

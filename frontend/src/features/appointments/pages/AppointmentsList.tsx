@@ -16,11 +16,11 @@ import { Loader } from "../../../components/shared/Loader";
 import { DataTable } from "../../../components/shared/DataTable";
 import type { Column } from "../../../components/shared/DataTable";
 import { getAppointments } from "../api/appointments.api";
-import type { AppointmentWithDetails } from "../../../types";
+import type { Appointment } from "../../../types";
 
 interface AppointmentsListPageProps {
-  onViewAppointment?: (appointmentId: number) => void;
-  onEditAppointment?: (appointmentId: number) => void;
+  onViewAppointment?: (appointmentId: string) => void;
+  onEditAppointment?: (appointmentId: string) => void;
   onCreate?: () => void;
   onViewCalendar?: () => void;
 }
@@ -31,14 +31,12 @@ export function AppointmentsList({
   onCreate,
   onViewCalendar,
 }: AppointmentsListPageProps) {
-  const [appointments, setAppointments] = useState<AppointmentWithDetails[]>(
-    []
-  );
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<
-    number | null
+    string | null
   >(null);
 
   useEffect(() => {
@@ -60,29 +58,36 @@ export function AppointmentsList({
 
   // Filter appointments
   const filteredAppointments = appointments.filter((appointment) => {
-    const matchesSearch =
-      appointment.patientName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      appointment.doctorName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      appointment.reason?.toLowerCase().includes(searchTerm.toLowerCase());
+    try {
+      const patientName = appointment.patient
+        ? `${appointment.patient.firstName} ${appointment.patient.lastName}`
+        : "";
+      const doctorName = appointment.doctor
+        ? `${appointment.doctor.firstName} ${appointment.doctor.lastName}`
+        : "";
 
-    const matchesStatus =
-      statusFilter === "all" ||
-      appointment.status?.toLowerCase() === statusFilter.toLowerCase();
+      const matchesSearch =
+        patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doctorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (appointment.id || "").toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesStatus;
+      const matchesStatus =
+        statusFilter === "all" || appointment.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    } catch (error) {
+      console.error("Error filtering appointment:", appointment, error);
+      return false;
+    }
   });
 
-  const handleViewAppointment = (appointmentId: number) => {
+  const handleViewAppointment = (appointmentId: string) => {
     if (onViewAppointment) {
       onViewAppointment(appointmentId);
     }
   };
 
-  const handleEditAppointment = (appointmentId: number) => {
+  const handleEditAppointment = (appointmentId: string) => {
     if (onEditAppointment) {
       onEditAppointment(appointmentId);
     }
@@ -101,23 +106,29 @@ export function AppointmentsList({
   };
 
   const getStatusBadge = (status?: string) => {
-    switch (status?.toLowerCase()) {
-      case "scheduled":
+    switch (status) {
+      case "SCHEDULED":
         return (
           <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
             Scheduled
           </Badge>
         );
-      case "completed":
+      case "COMPLETED":
         return (
           <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
             Completed
           </Badge>
         );
-      case "canceled":
+      case "CANCELED":
         return (
           <Badge className="bg-red-50 text-red-700 border-red-200 text-xs">
             Canceled
+          </Badge>
+        );
+      case "NO_SHOW":
+        return (
+          <Badge className="bg-orange-50 text-orange-700 border-orange-200 text-xs">
+            No Show
           </Badge>
         );
       default:
@@ -138,13 +149,15 @@ export function AppointmentsList({
     });
   };
 
-  const appointmentColumns: Column<AppointmentWithDetails>[] = [
+  const appointmentColumns: Column<Appointment>[] = [
     {
       key: "id",
       header: "ID",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm text-gray-600">{appointment.id}</span>
+        <span className="text-sm text-gray-600">
+          {appointment.id.substring(0, 8)}...
+        </span>
       ),
     },
     {
@@ -152,7 +165,9 @@ export function AppointmentsList({
       header: "Date",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm">{formatDate(appointment.date)}</span>
+        <span className="text-sm">
+          {formatDate(appointment.appointmentDate)}
+        </span>
       ),
     },
     {
@@ -160,7 +175,11 @@ export function AppointmentsList({
       header: "Patient",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm font-medium">{appointment.patientName}</span>
+        <span className="text-sm font-medium">
+          {appointment.patient
+            ? `${appointment.patient.firstName} ${appointment.patient.lastName}`
+            : "N/A"}
+        </span>
       ),
     },
     {
@@ -168,7 +187,11 @@ export function AppointmentsList({
       header: "Doctor",
       className: "text-xs",
       render: (appointment) => (
-        <span className="text-sm">{appointment.doctorName}</span>
+        <span className="text-sm">
+          {appointment.doctor
+            ? `${appointment.doctor.firstName} ${appointment.doctor.lastName}`
+            : "N/A"}
+        </span>
       ),
     },
     {
@@ -178,7 +201,7 @@ export function AppointmentsList({
       render: (appointment) => (
         <div className="flex items-center gap-1 text-sm text-gray-600">
           <Clock className="w-3 h-3" />
-          {appointment.estimatedDuration} min
+          {appointment.estimatedDurationInMinutes} min
         </div>
       ),
     },
@@ -187,16 +210,6 @@ export function AppointmentsList({
       header: "Status",
       className: "text-xs",
       render: (appointment) => getStatusBadge(appointment.status),
-    },
-    {
-      key: "reason",
-      header: "Reason",
-      className: "text-xs",
-      render: (appointment) => (
-        <span className="text-sm text-gray-600 line-clamp-1">
-          {appointment.reason || "N/A"}
-        </span>
-      ),
     },
     {
       key: "actions",
@@ -255,9 +268,10 @@ export function AppointmentsList({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="canceled">Canceled</SelectItem>
+                <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="CANCELED">Canceled</SelectItem>
+                <SelectItem value="NO_SHOW">No Show</SelectItem>
               </SelectContent>
             </Select>
 

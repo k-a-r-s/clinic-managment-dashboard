@@ -53,21 +53,25 @@ export function UsersList({
 
   // Filter users
   const filteredUsers = users.filter((user) => {
-    const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-    const matchesSearch =
-      fullName.includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.id.toString().includes(searchTerm) ||
-      user.doctorDetails?.phoneNumber
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      user.receptionistDetails?.phoneNumber
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
+    try {
+      const fullName = `${user.firstName || ""} ${
+        user.lastName || ""
+      }`.toLowerCase();
+      const matchesSearch =
+        fullName.includes(searchTerm.toLowerCase()) ||
+        (user.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.id?.toString() || "").includes(searchTerm) ||
+        (user.phoneNumber || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-    const matchesRole = selectedRole === "all" || user.role === selectedRole;
+      const matchesRole = selectedRole === "all" || user.role === selectedRole;
 
-    return matchesSearch && matchesRole;
+      return matchesSearch && matchesRole;
+    } catch (error) {
+      console.error("Error filtering user:", user, error);
+      return false;
+    }
   });
 
   const handleViewUser = (userId: string) => {
@@ -117,22 +121,24 @@ export function UsersList({
         </div>
       ),
     },
-    {
-      key: "role",
-      header: "Role",
-      render: (user) => (
-        <Badge variant={user.role === "doctor" ? "default" : "secondary"}>
-          {user.role === "doctor" ? "Doctor" : "Receptionist"}
-        </Badge>
-      ),
-    },
+    ...(selectedRole === "all"
+      ? [
+          {
+            key: "role" as keyof User,
+            header: "Role",
+            render: (user: User) => (
+              <Badge variant={user.role === "doctor" ? "default" : "secondary"}>
+                {user.role === "doctor" ? "Doctor" : "Receptionist"}
+              </Badge>
+            ),
+          },
+        ]
+      : []),
     {
       key: "phone",
       header: "Phone",
       render: (user) => {
-        const phoneNumber =
-          user.doctorDetails?.phoneNumber ||
-          user.receptionistDetails?.phoneNumber;
+        const phoneNumber = user.phoneNumber;
         return phoneNumber ? (
           <div className="flex items-center gap-1 text-gray-700">
             <Phone className="w-3 h-3 text-gray-400" />
@@ -143,18 +149,22 @@ export function UsersList({
         );
       },
     },
-    {
-      key: "specialization",
-      header: "Specialization",
-      render: (user) =>
-        user.role === "doctor" && user.doctorDetails?.specialization ? (
-          <span className="text-sm text-gray-700">
-            {user.doctorDetails.specialization}
-          </span>
-        ) : (
-          <span className="text-gray-400">—</span>
-        ),
-    },
+    ...(selectedRole === "doctor"
+      ? [
+          {
+            key: "specialization" as keyof User,
+            header: "Specialization",
+            render: (user: User) =>
+              user.role === "doctor" && user.specialization ? (
+                <span className="text-sm text-gray-700">
+                  {user.specialization}
+                </span>
+              ) : (
+                <span className="text-gray-400">—</span>
+              ),
+          },
+        ]
+      : []),
     {
       key: "actions",
       header: "Actions",

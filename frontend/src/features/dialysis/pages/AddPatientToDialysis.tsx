@@ -21,20 +21,17 @@ import {
 } from "../../../components/ui/select";
 import { Loader } from "../../../components/ui/loader";
 import { toast } from "react-hot-toast";
+import { getPatients } from "../../patients/api/patients.api";
+import {
+  createDialysisPatient,
+  createDialysisProtocol,
+} from "../api/dialysis.api";
+import type { Patient } from "../../patients/types/patient.types";
 
 interface AddPatientToDialysisProps {
   onBack: () => void;
   onSuccess: () => void;
 }
-
-// Mock patient list - replace with actual API call
-const mockPatients = [
-  { id: "p1", name: "Ahmed Benali" },
-  { id: "p2", name: "Sara Khalil" },
-  { id: "p3", name: "Mohamed Alami" },
-  { id: "p4", name: "Fatima Zahra" },
-  { id: "p5", name: "Youssef Idrissi" },
-];
 
 export function AddPatientToDialysis({
   onBack,
@@ -42,7 +39,8 @@ export function AddPatientToDialysis({
 }: AddPatientToDialysisProps) {
   const [selectedPatient, setSelectedPatient] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredPatients, setFilteredPatients] = useState(mockPatients);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [dialysisType, setDialysisType] = useState<
     "hemodialysis" | "peritoneal"
   >("hemodialysis");
@@ -53,17 +51,37 @@ export function AddPatientToDialysis({
   >("fistula");
   const [targetWeight, setTargetWeight] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPatients, setIsLoadingPatients] = useState(true);
+
+  // Load patients on mount
+  useEffect(() => {
+    const loadPatients = async () => {
+      try {
+        const data = await getPatients();
+        setPatients(data);
+        setFilteredPatients(data);
+      } catch (error) {
+        console.error("Failed to load patients:", error);
+        toast.error("Failed to load patients");
+      } finally {
+        setIsLoadingPatients(false);
+      }
+    };
+    loadPatients();
+  }, []);
 
   useEffect(() => {
     if (searchQuery) {
-      const filtered = mockPatients.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      const filtered = patients.filter((p) =>
+        `${p.firstName} ${p.lastName}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
       );
       setFilteredPatients(filtered);
     } else {
-      setFilteredPatients(mockPatients);
+      setFilteredPatients(patients);
     }
-  }, [searchQuery]);
+  }, [searchQuery, patients]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,10 +98,23 @@ export function AddPatientToDialysis({
 
     try {
       setIsLoading(true);
-      // Here you would call the API to add patient to dialysis
-      // await addPatientToDialysis({ patientId: selectedPatient, ... });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      // Create dialysis patient
+      const dialysisPatient = await createDialysisPatient({
+        patientId: selectedPatient,
+        startDate: new Date().toISOString().split("T")[0],
+        status: "active",
+      });
+
+      // Create protocol
+      await createDialysisProtocol({
+        dialysisPatientId: dialysisPatient.id,
+        dialysisType,
+        sessionsPerWeek,
+        sessionDurationMinutes: sessionDuration,
+        accessType,
+        targetWeightKg: parseFloat(targetWeight),
+      });
 
       toast.success("Patient added to dialysis program successfully");
       onSuccess();
@@ -137,14 +168,22 @@ export function AddPatientToDialysis({
               className="pl-10 mb-2"
             />
           </div>
-          <Select value={selectedPatient} onValueChange={setSelectedPatient}>
+          <Select
+            value={selectedPatient}
+            onValueChange={setSelectedPatient}
+            disabled={isLoadingPatients}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Choose a patient" />
+              <SelectValue
+                placeholder={
+                  isLoadingPatients ? "Loading patients..." : "Choose a patient"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               {filteredPatients.map((patient) => (
                 <SelectItem key={patient.id} value={patient.id}>
-                  {patient.name}
+                  {patient.firstName} {patient.lastName}
                 </SelectItem>
               ))}
             </SelectContent>

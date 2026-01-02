@@ -16,6 +16,8 @@ import roomRouter from "./interface/routes/room.route";
 import machineRouter from "./interface/routes/machine.route";
 import statsRouter from "./interface/routes/stats.route";
 import receptionistRouter from "./interface/routes/receptionist.route";
+import prescriptionRouter from "./interface/routes/prescription.route";
+import dialysisRouter from "./interface/routes/dialysis.route";
 const app = express();
 app.use(helmet());
 app.use(
@@ -99,6 +101,12 @@ app.use("/stats", statsRouter);
 
 // Receptionists
 app.use("/receptionists", receptionistRouter);
+
+// Prescriptions
+app.use("/prescriptions", prescriptionRouter);
+
+// Dialysis
+app.use("/dialysis", dialysisRouter);
 
 app.use(errorHandler);
 // Start the server

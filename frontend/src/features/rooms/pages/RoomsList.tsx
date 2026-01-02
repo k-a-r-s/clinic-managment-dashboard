@@ -187,7 +187,7 @@ export function RoomsList({ onCreateNew, onEditRoom }: RoomsListProps) {
       {/* Page Header */}
       <PageHeader
         title="Rooms Management"
-        subtitle="Manage clinic rooms, capacity, and availability"
+        subtitle="Manage all rooms in the clinic"
       />
 
       {/* Main Content Card */}

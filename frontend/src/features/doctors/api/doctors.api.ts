@@ -2,11 +2,10 @@ import axiosInstance from "../../../lib/axios";
 import type { Doctor, DoctorFormData } from "../../../types";
 
 export const getDoctors = async (): Promise<Doctor[]> => {
-  const response = await axiosInstance.get("/doctors");
+  const response = await axiosInstance.get("/doctors?limit=1000");
   const body = response.data as any;
-  console.log("Raw doctors data from API:", body);
 
-  // Response may be paginated: { total, doctors } or direct array
+  // Response is { total, doctors }
   const raw = Array.isArray(body) ? body : body?.doctors ?? [];
 
   // Map server shape (snake_case) to frontend shape (camelCase)

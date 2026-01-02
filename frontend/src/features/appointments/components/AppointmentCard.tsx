@@ -22,13 +22,10 @@ import { Textarea } from "../../../components/ui/textarea";
 import { Badge } from "../../../components/ui/badge";
 import { FormCard } from "../../../components/shared/FormCard";
 import { PageHeader } from "../../../components/shared/PageHeader";
-import type {
-  AppointmentWithDetails,
-  AppointmentFormData,
-} from "../../../types";
+import type { Appointment, AppointmentFormData } from "../../../types";
 
 interface AppointmentCardProps {
-  appointment: AppointmentWithDetails;
+  appointment: Appointment;
   isEditMode: boolean;
   formData: AppointmentFormData;
   onEdit: () => void;
@@ -41,26 +38,33 @@ interface AppointmentCardProps {
   ) => void;
   doctors?: Array<{ id: string; name: string }>;
   patients?: Array<{ id: string; name: string }>;
+  rooms?: Array<{ id: string; roomNumber: string }>;
 }
 
 const getStatusBadge = (status?: string) => {
-  switch (status?.toLowerCase()) {
-    case "scheduled":
+  switch (status) {
+    case "SCHEDULED":
       return (
         <Badge className="bg-blue-50 text-blue-700 border-blue-200">
           Scheduled
         </Badge>
       );
-    case "completed":
+    case "COMPLETED":
       return (
         <Badge className="bg-green-50 text-green-700 border-green-200">
           Completed
         </Badge>
       );
-    case "canceled":
+    case "CANCELED":
       return (
         <Badge className="bg-red-50 text-red-700 border-red-200">
           Canceled
+        </Badge>
+      );
+    case "NO_SHOW":
+      return (
+        <Badge className="bg-orange-50 text-orange-700 border-orange-200">
+          No Show
         </Badge>
       );
     default:
@@ -83,6 +87,7 @@ export function AppointmentCard({
   onFormChange,
   doctors = [],
   patients = [],
+  rooms = [],
 }: AppointmentCardProps) {
   return (
     <>
@@ -137,13 +142,17 @@ export function AppointmentCard({
               <Input
                 id="date"
                 type="date"
-                value={formData.date}
-                onChange={(e) => onFormChange("date", e.target.value)}
+                value={formData.appointmentDate}
+                onChange={(e) =>
+                  onFormChange("appointmentDate", e.target.value)
+                }
               />
             ) : (
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
                 <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                <p className="text-sm text-gray-900">{formData.date}</p>
+                <p className="text-sm text-gray-900">
+                  {new Date(appointment.appointmentDate).toLocaleDateString()}
+                </p>
               </div>
             )}
           </div>
@@ -153,16 +162,20 @@ export function AppointmentCard({
             {isEditMode ? (
               <Input
                 id="duration"
-                value={formData.estimatedDuration}
+                type="number"
+                value={formData.estimatedDurationInMinutes}
                 onChange={(e) =>
-                  onFormChange("estimatedDuration", e.target.value)
+                  onFormChange(
+                    "estimatedDurationInMinutes",
+                    parseInt(e.target.value) || 30
+                  )
                 }
               />
             ) : (
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
                 <Clock className="w-4 h-4 mr-2 text-gray-400" />
                 <p className="text-sm text-gray-900">
-                  {formData.estimatedDuration} min
+                  {appointment.estimatedDurationInMinutes} min
                 </p>
               </div>
             )}
@@ -179,14 +192,15 @@ export function AppointmentCard({
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="canceled">Canceled</SelectItem>
+                  <SelectItem value="SCHEDULED">Scheduled</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="CANCELED">Canceled</SelectItem>
+                  <SelectItem value="NO_SHOW">No Show</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                {getStatusBadge(formData.status)}
+                {getStatusBadge(appointment.status)}
               </div>
             )}
           </div>
@@ -213,7 +227,9 @@ export function AppointmentCard({
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
                 <UserCheck className="w-4 h-4 mr-2 text-gray-400" />
                 <p className="text-sm text-gray-900">
-                  {appointment.doctorName}
+                  {appointment.doctor
+                    ? `${appointment.doctor.firstName} ${appointment.doctor.lastName}`
+                    : "N/A"}
                 </p>
               </div>
             )}
@@ -241,7 +257,9 @@ export function AppointmentCard({
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
                 <User className="w-4 h-4 mr-2 text-gray-400" />
                 <p className="text-sm text-gray-900">
-                  {appointment.patientName}
+                  {appointment.patient
+                    ? `${appointment.patient.firstName} ${appointment.patient.lastName}`
+                    : "N/A"}
                 </p>
               </div>
             )}
@@ -250,33 +268,26 @@ export function AppointmentCard({
           <div className="space-y-2">
             <Label htmlFor="room">Room Number</Label>
             {isEditMode ? (
-              <Input
-                id="room"
-                type="number"
-                value={formData.roomNumber}
-                onChange={(e) =>
-                  onFormChange("roomNumber", parseInt(e.target.value) || 0)
-                }
-              />
+              <Select
+                value={formData.roomId}
+                onValueChange={(value) => onFormChange("roomId", value)}
+              >
+                <SelectTrigger id="room">
+                  <SelectValue placeholder="Select room" />
+                </SelectTrigger>
+                <SelectContent>
+                  {rooms.map((room) => (
+                    <SelectItem key={room.id} value={room.id}>
+                      {room.roomNumber}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : (
               <div className="bg-gray-50 h-9 rounded-lg px-3 flex items-center">
-                <p className="text-sm text-gray-900">{formData.roomNumber}</p>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2 md:col-span-2 lg:col-span-3">
-            <Label htmlFor="reason">Reason</Label>
-            {isEditMode ? (
-              <Textarea
-                id="reason"
-                value={formData.reason}
-                onChange={(e) => onFormChange("reason", e.target.value)}
-                className="min-h-[100px]"
-              />
-            ) : (
-              <div className="bg-gray-50 rounded-lg px-3 py-2">
-                <p className="text-sm text-gray-900">{formData.reason}</p>
+                <p className="text-sm text-gray-900">
+                  {appointment.room ? appointment.room.roomNumber : "N/A"}
+                </p>
               </div>
             )}
           </div>

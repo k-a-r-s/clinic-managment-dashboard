@@ -24,7 +24,7 @@ import { SearchBar } from "../../../components/shared/SearchBar";
 import { Loader } from "../../../components/shared/Loader";
 import { DataTable } from "../../../components/shared/DataTable";
 import type { Column } from "../../../components/shared/DataTable";
-import { getMachines } from "../api/machines.api";
+import { getMachines, deactivateMachine } from "../api/machines.api";
 import { toast } from "react-hot-toast";
 import type { Machine } from "../../../types";
 
@@ -82,6 +82,20 @@ export function MachinesList({
   const handleEditMachine = (machineId: string) => {
     if (onEditMachine) {
       onEditMachine(machineId);
+    }
+  };
+
+  const handleDeactivateMachine = async (machineId: string) => {
+    if (!confirm("Are you sure you want to deactivate this machine?")) {
+      return;
+    }
+    try {
+      await deactivateMachine(machineId);
+      toast.success("Machine deactivated successfully");
+      loadMachines();
+    } catch (error) {
+      console.error("Failed to deactivate machine:", error);
+      toast.error("Failed to deactivate machine");
     }
   };
 
@@ -228,6 +242,17 @@ export function MachinesList({
             <Edit className="w-4 h-4 mr-1" />
             Edit
           </Button>
+          {machine.isActive !== false && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => handleDeactivateMachine(machine.id)}
+              className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <XCircle className="w-4 h-4 mr-1" />
+              Deactivate
+            </Button>
+          )}
         </div>
       ),
     },

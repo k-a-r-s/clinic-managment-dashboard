@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
-import type { AppointmentWithDetails } from "../../../types";
+import type { Appointment } from "../../../types";
 import { getAppointments } from "../api/appointments.api";
 import { toast } from "react-hot-toast";
 
@@ -15,7 +15,7 @@ import { toast } from "react-hot-toast";
 // stored in state below
 
 interface CalendarViewProps {
-  onViewAppointment?: (appointmentId: number) => void;
+  onViewAppointment?: (appointmentId: string) => void;
   onCreate?: () => void;
   onBackToList?: () => void;
 }
@@ -27,9 +27,7 @@ export function CalendarView({
 }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<"month" | "week" | "day">("month");
-  const [appointments, setAppointments] = useState<AppointmentWithDetails[]>(
-    []
-  );
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
     const loadAppointments = async () => {
@@ -180,9 +178,15 @@ export function CalendarView({
                     }
                     className="text-xs p-1 rounded bg-[#1C8CA8] text-white cursor-pointer hover:bg-[#157A93] truncate"
                   >
-                    <div className="font-medium">{apt.patientName}</div>
+                    <div className="font-medium">
+                      {apt.patient
+                        ? `${apt.patient.firstName} ${apt.patient.lastName}`
+                        : "N/A"}
+                    </div>
                     <div className="text-[10px] opacity-90">
-                      {apt.doctorName}
+                      {apt.doctor
+                        ? `${apt.doctor.firstName} ${apt.doctor.lastName}`
+                        : "N/A"}
                     </div>
                   </div>
                 ))}
@@ -264,10 +268,15 @@ export function CalendarView({
                           className="text-xs p-2 mb-1 rounded bg-[#1C8CA8] text-white cursor-pointer hover:bg-[#157A93]"
                         >
                           <div className="font-medium truncate">
-                            {apt.patientName}
+                            {apt.patient
+                              ? `${apt.patient.firstName} ${apt.patient.lastName}`
+                              : "N/A"}
                           </div>
                           <div className="text-[10px] opacity-90 truncate">
-                            Dr. {apt.doctorName}
+                            Dr.{" "}
+                            {apt.doctor
+                              ? `${apt.doctor.firstName} ${apt.doctor.lastName}`
+                              : "N/A"}
                           </div>
                         </div>
                       ))}
@@ -316,19 +325,21 @@ export function CalendarView({
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-semibold">
-                            {apt.patientName}
+                            {apt.patient
+                              ? `${apt.patient.firstName} ${apt.patient.lastName}`
+                              : "N/A"}
                           </span>
                           <Badge className="bg-white/20 text-white border-white/30">
                             {apt.status}
                           </Badge>
                         </div>
                         <div className="text-sm opacity-90">
-                          <div>Doctor: {apt.doctorName}</div>
-                          {apt.reasonForVisit && (
-                            <div className="mt-1 text-xs opacity-80">
-                              {apt.reasonForVisit}
-                            </div>
-                          )}
+                          <div>
+                            Doctor:{" "}
+                            {apt.doctor
+                              ? `${apt.doctor.firstName} ${apt.doctor.lastName}`
+                              : "N/A"}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -343,19 +354,21 @@ export function CalendarView({
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-semibold">
-                            {apt.patientName}
+                            {apt.patient
+                              ? `${apt.patient.firstName} ${apt.patient.lastName}`
+                              : "N/A"}
                           </span>
                           <Badge className="bg-white/20 text-white border-white/30">
                             {apt.status}
                           </Badge>
                         </div>
                         <div className="text-sm opacity-90">
-                          <div>Doctor: {apt.doctorName}</div>
-                          {apt.reasonForVisit && (
-                            <div className="mt-1 text-xs opacity-80">
-                              {apt.reasonForVisit}
-                            </div>
-                          )}
+                          <div>
+                            Doctor:{" "}
+                            {apt.doctor
+                              ? `${apt.doctor.firstName} ${apt.doctor.lastName}`
+                              : "N/A"}
+                          </div>
                         </div>
                       </div>
                     ))}

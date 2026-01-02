@@ -37,12 +37,21 @@ export const createRoom = async (data: {
   isAvailable?: boolean;
 }): Promise<Room> => {
   const response = await axiosInstance.post("/rooms", {
-    room_number: data.roomNumber,
+    roomNumber: data.roomNumber,
     capacity: data.capacity,
     type: data.type,
-    is_available: data.isAvailable,
+    isAvailable: data.isAvailable,
   });
-  return response.data?.data ?? response.data;
+  const r = response.data?.data ?? response.data;
+  return {
+    id: r.id,
+    roomNumber: r.room_number ?? r.roomNumber,
+    capacity: r.capacity ?? undefined,
+    type: r.type ?? undefined,
+    isAvailable: r.is_available ?? r.isAvailable ?? true,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
 };
 
 export const updateRoom = async (
@@ -54,16 +63,39 @@ export const updateRoom = async (
     isAvailable?: boolean;
   }
 ): Promise<Room> => {
-  const response = await axiosInstance.put(`/rooms/${id}`, {
-    room_number: data.roomNumber,
+  const response = await axiosInstance.post(`/rooms/${id}`, {
+    roomNumber: data.roomNumber,
     capacity: data.capacity,
     type: data.type,
-    is_available: data.isAvailable,
+    isAvailable: data.isAvailable,
   });
-  return response.data?.data ?? response.data;
+  const r = response.data?.data ?? response.data;
+  return {
+    id: r.id,
+    roomNumber: r.room_number ?? r.roomNumber,
+    capacity: r.capacity ?? undefined,
+    type: r.type ?? undefined,
+    isAvailable: r.is_available ?? r.isAvailable ?? true,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
 };
 
 export const getAvailableRooms = async (): Promise<Room[]> => {
   const response = await axiosInstance.get("/rooms/available");
-  return response.data?.data ?? response.data;
+  const body = response.data;
+  const raw = Array.isArray(body) ? body : body?.data ?? [];
+  return (raw || []).map((r: any) => ({
+    id: r.id,
+    roomNumber: r.room_number ?? r.roomNumber,
+    capacity: r.capacity ?? undefined,
+    type: r.type ?? undefined,
+    isAvailable: r.is_available ?? r.isAvailable ?? true,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  }));
+};
+
+export const deleteRoom = async (id: string): Promise<void> => {
+  await axiosInstance.delete(`/rooms/${id}`);
 };

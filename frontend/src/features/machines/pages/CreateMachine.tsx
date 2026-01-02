@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Wrench, Calendar, MapPin, Building, Package } from "lucide-react";
+import {
+  Wrench,
+  Calendar,
+  MapPin,
+  Building,
+  Package,
+  Trash2,
+} from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,6 +29,7 @@ import {
   createMachine,
   updateMachine,
   getMachineById,
+  deleteMachine,
 } from "../api/machines.api";
 import { getRooms } from "../../rooms/api/rooms.api";
 import { toast } from "react-hot-toast";
@@ -84,7 +92,7 @@ export function CreateMachine({
         status: machine.status,
         lastMaintenanceDate: machine.lastMaintenanceDate || "",
         nextMaintenanceDate: machine.nextMaintenanceDate || "",
-        roomId: machine.room || "",
+        roomId: machine.roomId || "",
         isActive: machine.isActive ?? true,
       });
     } catch (error) {
@@ -145,6 +153,30 @@ export function CreateMachine({
       console.error("Failed to save machine:", error);
       setError("Failed to save machine. Please try again.");
       toast.error("Failed to save machine");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!machineId) return;
+    if (
+      !confirm(
+        "Are you sure you want to delete this machine? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+    try {
+      setIsLoading(true);
+      await deleteMachine(machineId);
+      toast.success("Machine deleted successfully");
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Failed to delete machine:", error);
+      toast.error("Failed to delete machine");
     } finally {
       setIsLoading(false);
     }
@@ -347,24 +379,38 @@ export function CreateMachine({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onCancel}
-                  disabled={isLoading}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading
-                    ? machineId
-                      ? "Updating..."
-                      : "Creating..."
-                    : machineId
-                    ? "Update Machine"
-                    : "Create Machine"}
-                </Button>
+              <div className="flex items-center justify-between gap-3 pt-4 border-t">
+                {machineId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDelete}
+                    disabled={isLoading}
+                    className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Machine
+                  </Button>
+                )}
+                <div className="flex items-center gap-3 ml-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onCancel}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading
+                      ? machineId
+                        ? "Updating..."
+                        : "Creating..."
+                      : machineId
+                      ? "Update Machine"
+                      : "Create Machine"}
+                  </Button>
+                </div>
               </div>
             </form>
           </CardContent>

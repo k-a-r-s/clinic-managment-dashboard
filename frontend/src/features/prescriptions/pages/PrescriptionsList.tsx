@@ -100,18 +100,16 @@ export function PrescriptionsList({
         <div className="flex items-center gap-2">
           <User className="w-4 h-4 text-gray-400" />
           <span className="font-medium text-gray-900">
-            {prescription.patientName || `Patient #${prescription.patientId}`}
+            {prescription.patientName}
           </span>
         </div>
       ),
     },
     {
       key: "doctor",
-      header: "Prescribed By",
+      header: "Doctor",
       render: (prescription) => (
-        <span className="text-sm text-gray-700">
-          {prescription.doctorName || `Doctor #${prescription.doctorId}`}
-        </span>
+        <span className="text-sm text-gray-700">{prescription.doctorName}</span>
       ),
     },
     {

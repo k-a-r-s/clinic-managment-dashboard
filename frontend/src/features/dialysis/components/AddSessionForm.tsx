@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, AlertTriangle } from "lucide-react";
+import { Calendar, AlertTriangle, Weight, Activity } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -28,7 +28,16 @@ export function AddSessionForm({
   onCancel,
   onSuccess,
 }: AddSessionFormProps) {
-  const [formData, setFormData] = useState<SessionFormData>({
+  const [formData, setFormData] = useState<
+    SessionFormData & {
+      preWeight?: number;
+      postWeight?: number;
+      preSystolic?: number;
+      preDiastolic?: number;
+      postSystolic?: number;
+      postDiastolic?: number;
+    }
+  >({
     sessionDate: new Date().toISOString().split("T")[0],
     durationMinutes: 240,
     completed: true,
@@ -36,6 +45,13 @@ export function AddSessionForm({
     notes: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const calculateUltrafiltration = () => {
+    if (formData.preWeight && formData.postWeight) {
+      return (formData.preWeight - formData.postWeight).toFixed(2);
+    }
+    return "0.00";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

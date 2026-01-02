@@ -204,31 +204,43 @@ export interface Room {
 
 // Appointment Types
 export interface Appointment {
-  id: number;
-  patientId: number;
-  doctorId: number;
-  roomId?: number;
+  id: string;
+  patientId: string;
+  doctorId: string;
+  roomId?: string;
   createdByReceptionistId?: string;
   createdByDoctorId?: string;
   appointmentDate: string;
-  estimatedDuration: number; // in minutes
-  actualDuration?: number;
-  status: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
-  notes?: string;
-  reasonForVisit?: string;
+  estimatedDurationInMinutes: number;
+  status: "SCHEDULED" | "COMPLETED" | "CANCELED" | "NO_SHOW";
   createdAt?: string;
   updatedAt?: string;
+  // Populated fields from backend
+  patient?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+  doctor?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+  room?: {
+    id: string;
+    roomNumber: string;
+  } | null;
 }
 
 export interface AppointmentFormData {
   patientId: string;
   doctorId: string;
   roomId?: string;
+  createdByReceptionistId?: string;
+  createdByDoctorId?: string;
   appointmentDate: string;
-  estimatedDuration: number;
-  status?: "SCHEDULED" | "in-progress" | "COMPLETED" | "CANCELED" | "no-show";
-  notes?: string;
-  reasonForVisit?: string;
+  estimatedDurationInMinutes: number;
+  status?: "SCHEDULED" | "COMPLETED" | "CANCELED" | "NO_SHOW";
 }
 
 export interface AppointmentWithDetails extends Appointment {

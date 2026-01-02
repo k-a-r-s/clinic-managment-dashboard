@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Users, Tag } from "lucide-react";
+import { MapPin, Users, Tag, Trash2 } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,7 +18,12 @@ import {
   CardTitle,
 } from "../../../components/ui/card";
 import { PageHeader } from "../../../components/shared/PageHeader";
-import { createRoom, updateRoom, getRoomById } from "../api/rooms.api";
+import {
+  createRoom,
+  updateRoom,
+  getRoomById,
+  deleteRoom,
+} from "../api/rooms.api";
 import { toast } from "react-hot-toast";
 import type { Room } from "../../../types";
 import { useEffect } from "react";
@@ -96,10 +101,13 @@ export function CreateRoom({ roomId, onCancel, onSuccess }: CreateRoomProps) {
       if (onSuccess) {
         onSuccess();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save room:", error);
-      setError("Failed to save room. Please try again.");
-      toast.error("Failed to save room");
+      setError(
+        error?.response?.data?.message ||
+          "Failed to save room. Please try again."
+      );
+      toast.error(error?.response?.data?.message || "Failed to save room");
     } finally {
       setIsLoading(false);
     }
@@ -107,6 +115,28 @@ export function CreateRoom({ roomId, onCancel, onSuccess }: CreateRoomProps) {
 
   const handleChange = (field: string, value: string | boolean) => {
     setFormData({ ...formData, [field]: value });
+  };
+
+  const handleDelete = async () => {
+    if (!roomId) return;
+
+    if (!confirm("Are you sure you want to delete this room?")) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await deleteRoom(roomId);
+      toast.success("Room deleted successfully");
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Failed to delete room:", error);
+      toast.error("Failed to delete room");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -214,24 +244,38 @@ export function CreateRoom({ roomId, onCancel, onSuccess }: CreateRoomProps) {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onCancel}
-                  disabled={isLoading}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading
-                    ? roomId
-                      ? "Updating..."
-                      : "Creating..."
-                    : roomId
-                    ? "Update Room"
-                    : "Create Room"}
-                </Button>
+              <div className="flex items-center justify-between gap-3 pt-4 border-t">
+                {roomId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDelete}
+                    disabled={isLoading}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Room
+                  </Button>
+                )}
+                <div className="flex items-center gap-3 ml-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onCancel}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading
+                      ? roomId
+                        ? "Updating..."
+                        : "Creating..."
+                      : roomId
+                      ? "Update Room"
+                      : "Create Room"}
+                  </Button>
+                </div>
               </div>
             </form>
           </CardContent>

@@ -2,9 +2,15 @@ import { Request, Response } from "express";
 import { UserAuthService } from "../../application/services/UserAuthService";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { ResponseFormatter } from "../utils/ResponseFormatter";
+import { ChangePasswordUseCase } from "../../application/use-cases/users/ChangePasswordUseCase";
+import { UpdateCurrentUserUseCase } from "../../application/use-cases/users/UpdateCurrentUserUseCase";
 
 export class AuthController {
-  constructor(private userAuthService: UserAuthService) { }
+  constructor(
+    private userAuthService: UserAuthService,
+    private changePasswordUseCase?: ChangePasswordUseCase,
+    private updateCurrentUserUseCase?: UpdateCurrentUserUseCase
+  ) {}
 
   async login(req: Request, res: Response) {
     const { email, password } = req.body;
@@ -33,7 +39,11 @@ export class AuthController {
     const { refreshToken, accessToken, ...dataWithoutTokens } =
       responseJson.data;
 
-    return ResponseFormatter.success(res, dataWithoutTokens, "Login successful");
+    return ResponseFormatter.success(
+      res,
+      dataWithoutTokens,
+      "Login successful"
+    );
   }
 
   async logout(req: AuthRequest, res: Response) {
@@ -108,11 +118,89 @@ export class AuthController {
     });
 
     // Return minimal response (no tokens in body)
-    return ResponseFormatter.success(res, null, "Tokens refreshed successfully");
+    return ResponseFormatter.success(
+      res,
+      null,
+      "Tokens refreshed successfully"
+    );
   }
 
   async getMe(req: AuthRequest, res: Response) {
     const { token, ...userWithoutToken } = req.user || {};
-    return ResponseFormatter.success(res, userWithoutToken, "User retrieved successfully");
+    return ResponseFormatter.success(
+      res,
+      userWithoutToken,
+      "User retrieved successfully"
+    );
+  }
+
+  async updateProfile(req: AuthRequest, res: Response) {
+    if (!this.updateCurrentUserUseCase) {
+      return ResponseFormatter.error(
+        res,
+        {
+          type: "InternalServerError",
+          message: "Update profile not available",
+        },
+        500,
+        "Update profile not available"
+      );
+    }
+
+    const userId = req.user?.id;
+    if (!userId) {
+      return ResponseFormatter.error(
+        res,
+        { type: "AuthenticationError", message: "User not authenticated" },
+        401,
+        "User not authenticated"
+      );
+    }
+
+    const updatedUser = await this.updateCurrentUserUseCase.execute(
+      userId,
+      req.body
+    );
+    return ResponseFormatter.success(
+      res,
+      updatedUser,
+      "Profile updated successfully"
+    );
+  }
+
+  async changePassword(req: AuthRequest, res: Response) {
+    if (!this.changePasswordUseCase) {
+      return ResponseFormatter.error(
+        res,
+        {
+          type: "InternalServerError",
+          message: "Change password not available",
+        },
+        500,
+        "Change password not available"
+      );
+    }
+
+    const userId = req.user?.id;
+    if (!userId) {
+      return ResponseFormatter.error(
+        res,
+        { type: "AuthenticationError", message: "User not authenticated" },
+        401,
+        "User not authenticated"
+      );
+    }
+
+    const { currentPassword, newPassword } = req.body;
+    await this.changePasswordUseCase.execute(
+      userId,
+      currentPassword,
+      newPassword
+    );
+    return ResponseFormatter.success(
+      res,
+      null,
+      "Password changed successfully"
+    );
   }
 }

@@ -3,7 +3,7 @@ export interface MachineProps {
   machineId: string;
   manufacturer?: string | null;
   model?: string | null;
-  status: 'available' | 'in-use' | 'maintenance' | 'out-of-service';
+  status: "available" | "in-use" | "maintenance" | "out-of-service";
   lastMaintenanceDate: string; // YYYY-MM-DD
   nextMaintenanceDate: string; // YYYY-MM-DD
   isActive: boolean;
@@ -32,7 +32,7 @@ export class Machine {
     return this.props.model;
   }
 
-  public getStatus(): MachineProps['status'] {
+  public getStatus(): MachineProps["status"] {
     return this.props.status;
   }
 
@@ -43,7 +43,6 @@ export class Machine {
   public getNextMaintenanceDate(): string {
     return this.props.nextMaintenanceDate;
   }
-
 
   public getIsActive(): boolean {
     return this.props.isActive;
@@ -64,6 +63,7 @@ export class Machine {
       nextMaintenanceDate: this.props.nextMaintenanceDate,
       isActive: this.props.isActive,
       roomId: this.props.roomId,
+      room: (this.props as any).room ?? null,
       createdAt: this.props.createdAt,
       updatedAt: this.props.updatedAt,
     };

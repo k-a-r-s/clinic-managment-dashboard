@@ -13,7 +13,7 @@ export function syncPrescriptionToMedicalFile(
   prescription: Prescription,
   currentMedicalFile: MedicalFile
 ): MedicalFile {
-  const updatedMedications = [...currentMedicalFile.medications];
+  const updatedMedications = [...(currentMedicalFile.medications || [])];
 
   // Process each medication from the prescription
   for (const prescMed of prescription.medications) {
@@ -106,7 +106,7 @@ export function removePrescriptionFromMedicalFile(
   prescriptionId: string,
   currentMedicalFile: MedicalFile
 ): MedicalFile {
-  const updatedMedications = currentMedicalFile.medications
+  const updatedMedications = (currentMedicalFile.medications || [])
     .map((med) => {
       const filteredHistory = med.history.filter(
         (hist) => hist.prescriptionId !== prescriptionId

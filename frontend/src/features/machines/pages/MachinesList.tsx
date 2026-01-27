@@ -154,27 +154,7 @@ export function MachinesList({
   };
 
   const machineColumns: Column<Machine>[] = [
-    {
-      key: "id",
-      header: "ID",
-      render: (machine) => (
-        <span className="font-mono text-xs text-gray-600">
-          #{machine.id.slice(0, 8)}
-        </span>
-      ),
-    },
-    {
-      key: "machineId",
-      header: "Machine ID",
-      render: (machine) => (
-        <div className="flex items-center gap-2">
-          <Wrench className="w-4 h-4 text-gray-400" />
-          <span className="font-medium text-gray-900">
-            {machine.machineId || "—"}
-          </span>
-        </div>
-      ),
-    },
+
     {
       key: "manufacturer",
       header: "Manufacturer",

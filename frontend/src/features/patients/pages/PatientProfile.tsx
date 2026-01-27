@@ -93,7 +93,7 @@ export function PatientProfile({
     emergencyContactPhone: "",
   });
 
-  const [medicalFile, setMedicalFile] = useState<MedicalFile>({
+  const defaultMedicalFile: MedicalFile = {
     nephropathyInfo: {
       initialNephropathy: "",
       diagnosisDate: "",
@@ -118,7 +118,9 @@ export function PatientProfile({
     vaccinations: [],
     labResults: [],
     clinicalSummary: "",
-  });
+  };
+
+  const [medicalFile, setMedicalFile] = useState<MedicalFile>(defaultMedicalFile);
 
   useEffect(() => {
     loadPatient();
@@ -147,7 +149,18 @@ export function PatientProfile({
 
       // Load medical file if it exists
       if (data.medicalFile) {
-        setMedicalFile(data.medicalFile);
+        setMedicalFile({
+          ...defaultMedicalFile,
+          ...data.medicalFile,
+          nephropathyInfo: {
+            ...defaultMedicalFile.nephropathyInfo,
+            ...(data.medicalFile.nephropathyInfo || {}),
+          },
+          dialysisProtocol: {
+            ...defaultMedicalFile.dialysisProtocol,
+            ...(data.medicalFile.dialysisProtocol || {}),
+          },
+        });
       }
     } catch (error) {
       console.error("Failed to load patient:", error);
@@ -190,35 +203,21 @@ export function PatientProfile({
 
       // Reset medical file to original values
       if (patient.medicalFile) {
-        setMedicalFile(patient.medicalFile);
+        setMedicalFile({
+          ...defaultMedicalFile,
+          ...patient.medicalFile,
+          nephropathyInfo: {
+            ...defaultMedicalFile.nephropathyInfo,
+            ...(patient.medicalFile.nephropathyInfo || {}),
+          },
+          dialysisProtocol: {
+            ...defaultMedicalFile.dialysisProtocol,
+            ...(patient.medicalFile.dialysisProtocol || {}),
+          },
+        });
       } else {
         // Reset to empty state if no medical file exists
-        setMedicalFile({
-          nephropathyInfo: {
-            initialNephropathy: "",
-            diagnosisDate: "",
-            firstDialysisDate: "",
-            careStartDate: "",
-          },
-          vascularAccess: [],
-          dialysisProtocol: {
-            dialysisDays: [],
-            sessionsPerWeek: 3,
-            generator: "",
-            sessionDuration: "",
-            dialyser: "",
-            needle: "",
-            bloodFlow: "",
-            anticoagulation: "",
-            dryWeight: "",
-            interDialyticWeightGain: "",
-            incidents: [],
-          },
-          medications: [],
-          vaccinations: [],
-          labResults: [],
-          clinicalSummary: "",
-        });
+        setMedicalFile(defaultMedicalFile);
       }
     }
     setIsEditMode(false);
@@ -227,7 +226,18 @@ export function PatientProfile({
   const handleCancelMedical = () => {
     // Reset medical file to original values when canceling
     if (patient?.medicalFile) {
-      setMedicalFile(patient.medicalFile);
+      setMedicalFile({
+        ...defaultMedicalFile,
+        ...patient.medicalFile,
+        nephropathyInfo: {
+          ...defaultMedicalFile.nephropathyInfo,
+          ...(patient.medicalFile.nephropathyInfo || {}),
+        },
+        dialysisProtocol: {
+          ...defaultMedicalFile.dialysisProtocol,
+          ...(patient.medicalFile.dialysisProtocol || {}),
+        },
+      });
     }
     setIsEditModeMedical(false);
   };

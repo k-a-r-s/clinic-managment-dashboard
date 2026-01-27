@@ -3,9 +3,9 @@ import { AlertCircle } from "lucide-react"
 import { useState, useEffect } from "react"
 import { toast } from "react-hot-toast"
 import { getMachines, updateMachine } from "../api/machines.api"
-import AddMachineModal from "./AddMachineModal" 
+import AddMachineModal from "./AddMachineModal"
 
-interface Machine { 
+interface Machine {
   id: string
   machineId?: string
   room: string
@@ -122,10 +122,11 @@ export default function MachinesTable({
   selectedStatus,
   refreshKey,
   onAddMachine,
+  onRefresh,
 }: MachinesTableProps) {
   const [machines, setMachines] = useState<Machine[]>(initialMachines)
   // Deactivate flow removed from table UI. Use Edit -> set status to 'out-of-service' to deactivate.
-  const [editModal, setEditModal] = useState<{isOpen: boolean; machineData: Machine | null}>({
+  const [editModal, setEditModal] = useState<{ isOpen: boolean; machineData: Machine | null }>({
     isOpen: false,
     machineData: null
   })
@@ -179,7 +180,7 @@ export default function MachinesTable({
         // Keep the true DB UUID as `id` (used for updates/deletes) and expose
         // the human-friendly `machineId` separately for display (e.g. "HD-MAC-101").
         id: m.id,
-        machineId: m.machineId ?? m.machine_id ?? m.id,
+        machineId: m.machineId ?? (m as any).machine_id ?? m.id,
         // m.room is stored as room id (UUID) — keep it as `room` and add `roomDisplay`
         room: m.room ?? "",
         roomDisplay: roomLookup.get(m.room) ?? m.room ?? "",
@@ -218,13 +219,13 @@ export default function MachinesTable({
     const doUpdate = async () => {
       try {
         await updateMachine(data.id, {
-              roomId: data.room,
-              status: data.status,
-              lastMaintenanceDate: new Date(data.lastMaintenance).toISOString(),
-              nextMaintenanceDate: new Date(data.nextMaintenance).toISOString(),
-              manufacturer: data.manufacturer,
-              model: data.model,
-            })
+          roomId: data.room,
+          status: data.status,
+          lastMaintenanceDate: new Date(data.lastMaintenance).toISOString(),
+          nextMaintenanceDate: new Date(data.nextMaintenance).toISOString(),
+          manufacturer: data.manufacturer,
+          model: data.model,
+        })
         toast.success('Machine updated')
         loadMachines()
         onRefresh && onRefresh()
@@ -257,12 +258,7 @@ export default function MachinesTable({
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <Monitor className="w-4 h-4" />
-                    Machine ID
-                  </div>
-                </th>
+
                 {/* Serial Number column removed per requirement */}
                 <th className="px-6 py-3 text-left">
                   <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
@@ -295,13 +291,8 @@ export default function MachinesTable({
                 const status = statusConfig[machine.status]
                 return (
                   <tr key={machine.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${status.dotColor}`}></div>
-                        <span className="font-semibold text-gray-900">{machine.machineId ?? machine.id}</span>
-                      </div>
-                    </td>
-                    
+
+
                     <td className="px-6 py-4 text-gray-900 text-sm">{machine.roomDisplay ?? machine.room}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -329,7 +320,7 @@ export default function MachinesTable({
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           onClick={() => handleEdit(machine)}
                           className="inline-flex items-center gap-1.5 text-teal-600 hover:text-teal-700 text-sm font-medium"
                         >

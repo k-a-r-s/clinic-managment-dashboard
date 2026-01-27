@@ -14,7 +14,7 @@ export const getPatients = async (): Promise<Patient[]> => {
   return body?.data ?? body;
 };
 
-export const getPatientById = async (id: string): Promise<PatientFormData> => {
+export const getPatientById = async (id: string | number): Promise<Patient> => {
   // Return mock data with medical file information
   // return new Promise((resolve, reject) => {
   // setTimeout(() => {
@@ -54,14 +54,14 @@ export const createPatient = async (
 };
 
 export const updatePatient = async (
-  id: string,
+  id: string | number,
   data: Partial<PatientFormData>
 ): Promise<Patient> => {
   const response = await axiosInstance.put(`/patients/${id}`, data);
   return response.data;
 };
 
-export const deletePatient = async (id: string): Promise<void> => {
+export const deletePatient = async (id: string | number): Promise<void> => {
   await axiosInstance.delete(`/patients/${id}`);
 };
 

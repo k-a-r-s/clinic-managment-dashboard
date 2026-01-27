@@ -84,15 +84,7 @@ export function PrescriptionsList({
   };
 
   const prescriptionColumns: Column<Prescription>[] = [
-    {
-      key: "id",
-      header: "ID",
-      render: (prescription) => (
-        <span className="font-mono text-xs text-gray-600">
-          #{prescription.id}
-        </span>
-      ),
-    },
+
     {
       key: "patient",
       header: "Patient",

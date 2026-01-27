@@ -141,15 +141,7 @@ export function RoomsList({ onCreateNew, onEditRoom }: RoomsListProps) {
       header: "Status",
       render: (room) => getAvailabilityBadge(room.isAvailable ?? true),
     },
-    {
-      key: "createdAt",
-      header: "Created",
-      render: (room) => (
-        <span className="text-sm text-gray-600">
-          {room.createdAt ? new Date(room.createdAt).toLocaleDateString() : "—"}
-        </span>
-      ),
-    },
+
     {
       key: "actions",
       header: "Actions",

@@ -1,6 +1,6 @@
-import { DialysisPatient } from "../entities/DialysisPatient";
-import { DialysisProtocol } from "../entities/DialysisProtocol";
-import { DialysisSession } from "../entities/DialysisSession";
+import { DialysisPatient, DialysisPatientProps } from "../entities/DialysisPatient";
+import { DialysisProtocol, DialysisProtocolProps } from "../entities/DialysisProtocol";
+import { DialysisSession, DialysisSessionProps } from "../entities/DialysisSession";
 
 export interface IDialysisRepository {
   // Dialysis Patients
@@ -11,7 +11,7 @@ export interface IDialysisRepository {
   }): Promise<DialysisPatient[]>;
   updateDialysisPatient(
     id: string,
-    data: Partial<DialysisPatient>
+    data: Partial<DialysisPatientProps>
   ): Promise<DialysisPatient>;
   deleteDialysisPatient(id: string): Promise<void>;
 
@@ -22,7 +22,7 @@ export interface IDialysisRepository {
   ): Promise<DialysisProtocol | null>;
   updateProtocol(
     id: string,
-    data: Partial<DialysisProtocol>
+    data: Partial<DialysisProtocolProps>
   ): Promise<DialysisProtocol>;
   deleteProtocol(id: string): Promise<void>;
 
@@ -32,7 +32,7 @@ export interface IDialysisRepository {
   getSessionsByPatientId(dialysisPatientId: string): Promise<DialysisSession[]>;
   updateSession(
     id: string,
-    data: Partial<DialysisSession>
+    data: Partial<DialysisSessionProps>
   ): Promise<DialysisSession>;
   deleteSession(id: string): Promise<void>;
 }

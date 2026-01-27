@@ -3,9 +3,6 @@ import React, { createContext, useContext, useEffect, useState, type ReactNode }
 import { authApi } from "../features/auth/api/authApi";
 import type { UserProfile } from "../types";
 
-// --------------------
-// Types
-// --------------------
 
 interface AuthContextType {
   user: UserProfile | null;

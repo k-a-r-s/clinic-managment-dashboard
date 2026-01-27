@@ -654,17 +654,17 @@ router.put(
  *                   type: string
  *                 data:
  *                   type: null
- *                 error:
- *                   type: null
  *       400:
- *         description: Bad request or validation error
+ *         description: Validation error
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - Doctor or Admin only
+ *         description: Forbidden - Doctor or Admin role required
+ *       404:
+ *         description: Appointment not found
+ *       409:
+ *         description: Conflict - Appointment is not in SCHEDULED status
  */
-
-// update the medical file and also the appointment history after a appointment is completed
 router.post(
   "/:appointmentId/complete",
   authMiddleware,
@@ -677,9 +677,9 @@ router.post(
 
 /**
  * @swagger
- * /appointments/history/{appointmentId}:
+ * /appointments/{appointmentId}/history:
  *   get:
- *     summary: Get result/history for an appointment
+ *     summary: Get appointment history
  *     tags: [Appointments]
  *     security:
  *       - bearerAuth: []
@@ -701,22 +701,15 @@ router.post(
  *               properties:
  *                 success:
  *                   type: boolean
- *                 message:
- *                   type: string
  *                 data:
  *                   $ref: '#/components/schemas/AppointmentHistory'
- *                 error:
- *                   type: null
  *       404:
- *         description: Appointment history not found
- *       401:
- *         description: Unauthorized
+ *         description: History not found
  */
 router.get(
-  "/history/:appointmentId",
+  "/:appointmentId/history",
   authMiddleware,
-  requireRole([Role.DOCTOR, Role.ADMIN]),
-
+  requireRole([Role.DOCTOR, Role.ADMIN, Role.RECEPTIONIST]),
   asyncWrapper(
     appointementController.getHistoryByAppointmentId.bind(
       appointementController
@@ -726,56 +719,9 @@ router.get(
 
 /**
  * @swagger
- * /appointments/history/patient/{patientId}:
- *   get:
- *     summary: Get all appointment results/history for a patient
- *     tags: [Appointments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: patientId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: The patient ID
- *     responses:
- *       200:
- *         description: Appointment histories retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/AppointmentHistory'
- *                 error:
- *                   type: null
- *       401:
- *         description: Unauthorized
- */
-router.get(
-  "/history/patient/:patientId",
-  authMiddleware,
-  requireRole([Role.DOCTOR, Role.ADMIN]),
-
-  asyncWrapper(
-    appointementController.getHistoriesByPatientId.bind(appointementController)
-  )
-);
-
-/**
- * @swagger
- * /appointments/history/{appointmentId}:
- *   patch:
- *     summary: Update appointment results/history data
+ * /appointments/{appointmentId}/history:
+ *   put:
+ *     summary: Update appointment history
  *     tags: [Appointments]
  *     security:
  *       - bearerAuth: []
@@ -796,39 +742,22 @@ router.get(
  *     responses:
  *       200:
  *         description: Appointment history updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   $ref: '#/components/schemas/AppointmentHistory'
- *                 error:
- *                   type: null
- *       400:
- *         description: Bad request
- *       401:
- *         description: Unauthorized
+ *       404:
+ *         description: History not found
  */
-router.patch(
-  "/history/:appointmentId",
+router.put(
+  "/:appointmentId/history",
   authMiddleware,
   requireRole([Role.DOCTOR, Role.ADMIN]),
   validate(updateAppointmentHistoryDto),
-  asyncWrapper(
-    appointementController.updateHistory.bind(appointementController)
-  )
+  asyncWrapper(appointementController.updateHistory.bind(appointementController))
 );
 
 /**
  * @swagger
- * /appointments/history/{appointmentId}:
+ * /appointments/{appointmentId}/history:
  *   delete:
- *     summary: Delete appointment results/history record
+ *     summary: Delete appointment history
  *     tags: [Appointments]
  *     security:
  *       - bearerAuth: []
@@ -843,33 +772,14 @@ router.patch(
  *     responses:
  *       200:
  *         description: Appointment history deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: null
- *                 error:
- *                   type: null
  *       404:
- *         description: Appointment history not found
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden - admin only
+ *         description: History not found
  */
 router.delete(
-  "/history/:appointmentId",
+  "/:appointmentId/history",
   authMiddleware,
   requireRole([Role.ADMIN]),
-  asyncWrapper(
-    appointementController.deleteHistory.bind(appointementController)
-  )
+  asyncWrapper(appointementController.deleteHistory.bind(appointementController))
 );
 
 export default router;

@@ -465,6 +465,3 @@ container.register(
   "GetAppointmentsPerDayUseCase",
   getAppointmentsPerDayUseCase
 );
-
-// convenience helpers
-// (get/has methods are implemented on the class above)

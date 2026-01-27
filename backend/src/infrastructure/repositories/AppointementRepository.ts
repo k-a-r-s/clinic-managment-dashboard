@@ -49,84 +49,55 @@ export class AppointementRepository implements IAppointementsRepository {
   async getAppointmentById(
     appointmentId: string
   ): Promise<GetAppointmentByIdResponseDto | null> {
-    // Get appointment without JOINs
-    const { data: appointment, error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("appointments")
-      .select("*")
+      .select(
+        "*,patients!inner(id,first_name, last_name), doctors!inner(id,profiles!inner(first_name, last_name))"
+      )
       .eq("id", appointmentId)
       .single();
 
     if (error) {
       throw new DatabaseError(`Error fetching appointment: ${error.message}`);
     }
-    if (!appointment) {
-      return null;
-    }
+    if (!data) return null;
 
-    // Fetch patient details separately
-    let patient = null;
-    if (appointment.patient_id) {
-      const { data: patientData } = await supabaseAdmin
-        .from("patients")
-        .select("id, first_name, last_name")
-        .eq("id", appointment.patient_id)
-        .single();
-
-      if (patientData) {
-        patient = {
-          id: patientData.id,
-          firstName: patientData.first_name,
-          lastName: patientData.last_name,
-        };
-      }
-    }
-
-    // Fetch doctor details separately
-    let doctor = null;
-    if (appointment.doctor_id) {
-      const { data: doctorData } = await supabaseAdmin
-        .from("doctors")
-        .select("id, profiles(first_name, last_name)")
-        .eq("id", appointment.doctor_id)
-        .single();
-
-      if (doctorData && doctorData.profiles) {
-        doctor = {
-          id: appointment.doctor_id,
-          firstName: doctorData.profiles.first_name,
-          lastName: doctorData.profiles.last_name,
-        };
-      }
-    }
-
-    // Fetch room details separately
+    // Fetch room details separately if linked
     let room = null;
-    if (appointment.room_id) {
+    if (data.room_id) {
       const { data: roomData } = await supabaseAdmin
         .from("rooms")
         .select("id, room_number")
-        .eq("id", appointment.room_id)
+        .eq("id", data.room_id)
         .single();
-
       if (roomData) {
-        room = {
-          id: roomData.id,
-          roomNumber: roomData.room_number,
-        };
+        room = { id: roomData.id, roomNumber: roomData.room_number };
       }
     }
 
     const result: GetAppointmentByIdResponseDto = {
-      id: appointment.id,
-      patient,
-      doctor,
-      room,
-      roomId: appointment.room_id ?? null,
-      createdByReceptionistId: appointment.created_by_receptionist_id ?? null,
-      createdByDoctorId: appointment.created_by_doctor_id ?? null,
-      appointmentDate: new Date(appointment.appointment_date),
-      estimatedDurationInMinutes: appointment.estimated_duration ?? null,
-      status: appointment.status,
+      id: data.id,
+      patient: data.patients
+        ? {
+          id: data.patients.id,
+          firstName: data.patients.first_name,
+          lastName: data.patients.last_name,
+        }
+        : null,
+      doctor: data.doctors
+        ? {
+          id: data.doctor_id,
+          firstName: data.doctors.profiles.first_name,
+          lastName: data.doctors.profiles.last_name,
+        }
+        : null,
+      roomId: data.room_id ?? null,
+      room: room,
+      createdByReceptionistId: data.created_by_receptionist_id ?? null,
+      createdByDoctorId: data.created_by_doctor_id ?? null,
+      appointmentDate: new Date(data.appointment_date),
+      estimatedDurationInMinutes: data.estimated_duration ?? null,
+      status: data.status,
     };
 
     return result;
@@ -188,17 +159,17 @@ export class AppointementRepository implements IAppointementsRepository {
       id: item.id,
       patient: item.patients
         ? {
-            id: item.patients.id,
-            firstName: item.patients.first_name,
-            lastName: item.patients.last_name,
-          }
+          id: item.patients.id,
+          firstName: item.patients.first_name,
+          lastName: item.patients.last_name,
+        }
         : null,
       doctor: item.doctors
         ? {
-            id: item.doctor_id,
-            firstName: item.doctors.profiles.first_name,
-            lastName: item.doctors.profiles.last_name,
-          }
+          id: item.doctor_id,
+          firstName: item.doctors.profiles.first_name,
+          lastName: item.doctors.profiles.last_name,
+        }
         : null,
       roomId: item.room_id ?? null,
       createdByReceptionistId: item.created_by_receptionist_id ?? null,
@@ -266,17 +237,17 @@ export class AppointementRepository implements IAppointementsRepository {
       id: item.id,
       patient: item.patients
         ? {
-            id: item.patients.id,
-            firstName: item.patients.first_name,
-            lastName: item.patients.last_name,
-          }
+          id: item.patients.id,
+          firstName: item.patients.first_name,
+          lastName: item.patients.last_name,
+        }
         : null,
       doctor: item.doctors
         ? {
-            id: item.doctor_id,
-            firstName: item.doctors.profiles.first_name,
-            lastName: item.doctors.profiles.last_name,
-          }
+          id: item.doctor_id,
+          firstName: item.doctors.profiles.first_name,
+          lastName: item.doctors.profiles.last_name,
+        }
         : null,
       roomId: item.room_id ?? null,
       createdByReceptionistId: item.created_by_receptionist_id ?? null,
@@ -434,11 +405,16 @@ export class AppointementRepository implements IAppointementsRepository {
           .single();
 
         if (doctorData && doctorData.profiles) {
-          doctor = {
-            id: appointment.doctor_id,
-            firstName: doctorData.profiles.first_name,
-            lastName: doctorData.profiles.last_name,
-          };
+          const profile = Array.isArray(doctorData.profiles)
+            ? doctorData.profiles[0]
+            : doctorData.profiles;
+          if (profile) {
+            doctor = {
+              id: appointment.doctor_id,
+              firstName: profile.first_name,
+              lastName: profile.last_name,
+            };
+          }
         }
       }
 

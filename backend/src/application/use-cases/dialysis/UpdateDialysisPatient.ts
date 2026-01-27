@@ -1,12 +1,12 @@
 import { IDialysisRepository } from "../../../domain/repositories/IDialysisRepository";
 
 export class UpdateDialysisPatient {
-  constructor(private dialysisRepository: IDialysisRepository) {}
+  constructor(private dialysisRepository: IDialysisRepository) { }
 
   async execute(
     id: string,
     data: {
-      status?: string;
+      status?: "active" | "paused" | "stopped";
       notes?: string;
     }
   ) {

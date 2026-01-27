@@ -4,7 +4,7 @@ import { UpdatePrescriptionDto } from "../../application/dto/requests/updatePres
 import { GetPrescriptionResponseDto } from "../../application/dto/responses/prescriptions/getPrescription";
 import { supabaseAdmin } from "../database/supabase";
 import { DatabaseError } from "../errors/DatabaseError";
-import { Logger } from "../../shared/utils/Logger";
+import { Logger } from "../../shared/utils/logger";
 
 export class PrescriptionRepository implements IPrescriptionRepository {
   async createPrescription(
@@ -60,7 +60,7 @@ export class PrescriptionRepository implements IPrescriptionRepository {
           });
           throw new DatabaseError(
             medicationsError.message ||
-              "Failed to create prescription medications"
+            "Failed to create prescription medications"
           );
         }
       }
@@ -142,11 +142,16 @@ export class PrescriptionRepository implements IPrescriptionRepository {
             .single();
 
           if (doctorData && doctorData.profiles) {
-            doctor = {
-              id: prescription.doctor_id,
-              firstName: doctorData.profiles.first_name,
-              lastName: doctorData.profiles.last_name,
-            };
+            const profile = Array.isArray(doctorData.profiles)
+              ? doctorData.profiles[0]
+              : doctorData.profiles;
+            if (profile) {
+              doctor = {
+                id: prescription.doctor_id,
+                firstName: profile.first_name,
+                lastName: profile.last_name,
+              };
+            }
           }
         }
 
@@ -243,11 +248,16 @@ export class PrescriptionRepository implements IPrescriptionRepository {
           .single();
 
         if (doctorData && doctorData.profiles) {
-          doctor = {
-            id: prescription.doctor_id,
-            firstName: doctorData.profiles.first_name,
-            lastName: doctorData.profiles.last_name,
-          };
+          const profile = Array.isArray(doctorData.profiles)
+            ? doctorData.profiles[0]
+            : doctorData.profiles;
+          if (profile) {
+            doctor = {
+              id: prescription.doctor_id,
+              firstName: profile.first_name,
+              lastName: profile.last_name,
+            };
+          }
         }
       }
 
@@ -347,11 +357,16 @@ export class PrescriptionRepository implements IPrescriptionRepository {
             .single();
 
           if (doctorData && doctorData.profiles) {
-            doctor = {
-              id: prescription.doctor_id,
-              firstName: doctorData.profiles.first_name,
-              lastName: doctorData.profiles.last_name,
-            };
+            const profile = Array.isArray(doctorData.profiles)
+              ? doctorData.profiles[0]
+              : doctorData.profiles;
+            if (profile) {
+              doctor = {
+                id: prescription.doctor_id,
+                firstName: profile.first_name,
+                lastName: profile.last_name,
+              };
+            }
           }
         }
 

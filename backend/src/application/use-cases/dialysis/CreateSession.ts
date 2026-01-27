@@ -8,7 +8,7 @@ export class CreateSession {
   constructor(
     private dialysisRepository: IDialysisRepository,
     private medicalFileRepository: IMedicalFileRepository
-  ) {}
+  ) { }
 
   async execute(data: CreateSessionDto): Promise<DialysisSession> {
     const session = new DialysisSession({
@@ -34,18 +34,18 @@ export class CreateSession {
       if (dialysisPatient) {
         const medicalFile =
           await this.medicalFileRepository.getMedicalFileByPatientId(
-            dialysisPatient.patientId
+            dialysisPatient.getPatientId()
           );
 
         if (medicalFile) {
           const existingSessions = medicalFile.data?.dialysisSessions || [];
           const sessionRecord = {
-            id: createdSession.id,
-            date: createdSession.sessionDate,
-            duration: createdSession.durationMinutes,
-            completed: createdSession.completed,
-            complications: createdSession.complications,
-            notes: createdSession.notes,
+            id: createdSession.getId(),
+            date: createdSession.getSessionDate(),
+            duration: createdSession.getDurationMinutes(),
+            completed: createdSession.getCompleted(),
+            complications: createdSession.getComplications(),
+            notes: createdSession.getNotes(),
           };
 
           await this.medicalFileRepository.updateMedicalFile(medicalFile.id, {

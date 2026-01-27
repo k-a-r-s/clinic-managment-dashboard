@@ -28,7 +28,7 @@ export class AppointementController {
     private updateAppointmentHistoryUseCase: UpdateAppointmentHistoryUseCase,
     private deleteAppointmentHistoryUseCase: DeleteAppointmentHistoryUseCase,
     private appointmentCompletedUseCase: AppointmentCompletedUseCase
-  ) {}
+  ) { }
 
   async createAppointment(request: AuthRequest, response: Response) {
     const { body } = request;

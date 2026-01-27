@@ -67,8 +67,8 @@ const router = Router();
 router.post(
   "/",
   validate(createPrescriptionDto),
-  asyncWrapper((req, res) =>
-    prescriptionController.createPrescription(req, res)
+  asyncWrapper(
+    prescriptionController.createPrescription.bind(prescriptionController)
   )
 );
 
@@ -85,7 +85,7 @@ router.post(
  */
 router.get(
   "/",
-  asyncWrapper((req, res) => prescriptionController.getPrescriptions(req, res))
+  asyncWrapper(prescriptionController.getPrescriptions.bind(prescriptionController))
 );
 
 /**
@@ -110,8 +110,8 @@ router.get(
  */
 router.get(
   "/:id",
-  asyncWrapper((req, res) =>
-    prescriptionController.getPrescriptionById(req, res)
+  asyncWrapper(
+    prescriptionController.getPrescriptionById.bind(prescriptionController)
   )
 );
 
@@ -135,8 +135,10 @@ router.get(
  */
 router.get(
   "/patient/:patientId",
-  asyncWrapper((req, res) =>
-    prescriptionController.getPrescriptionsByPatientId(req, res)
+  asyncWrapper(
+    prescriptionController.getPrescriptionsByPatientId.bind(
+      prescriptionController
+    )
   )
 );
 
@@ -197,8 +199,8 @@ router.get(
 router.put(
   "/:id",
   validate(updatePrescriptionDto),
-  asyncWrapper((req, res) =>
-    prescriptionController.updatePrescription(req, res)
+  asyncWrapper(
+    prescriptionController.updatePrescription.bind(prescriptionController)
   )
 );
 
@@ -224,8 +226,8 @@ router.put(
  */
 router.delete(
   "/:id",
-  asyncWrapper((req, res) =>
-    prescriptionController.deletePrescription(req, res)
+  asyncWrapper(
+    prescriptionController.deletePrescription.bind(prescriptionController)
   )
 );
 

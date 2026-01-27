@@ -10,7 +10,7 @@ export class AuthController {
     private userAuthService: UserAuthService,
     private changePasswordUseCase?: ChangePasswordUseCase,
     private updateCurrentUserUseCase?: UpdateCurrentUserUseCase
-  ) {}
+  ) { }
 
   async login(req: Request, res: Response) {
     const { email, password } = req.body;

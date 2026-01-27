@@ -9,6 +9,10 @@ export interface IAppointementsRepository {
     appointmentId: string,
     updateData: UpdateAppointmentDto
   ): Promise<null>;
+  updateAppointementStatus(
+    appointementId: string,
+    status: string
+  ): Promise<null>;
   getAppointmentById(
     appointmentId: string
   ): Promise<GetAppointmentByIdResponseDto | null>;

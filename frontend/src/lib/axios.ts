@@ -13,7 +13,7 @@ import type { ApiSuccessResponse, ApiErrorResponse } from "../types";
  */
 const axiosInstance = axios.create({
   baseURL: "http://localhost:3000",
-  timeout: 10000,
+  timeout: 30000,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -48,8 +48,7 @@ axiosInstance.interceptors.response.use(
     const body = response.data as ApiSuccessResponse | ApiErrorResponse;
 
     console.group(
-      `OK HTTP Response: ${response.config.method?.toUpperCase()} ${
-        response.config.url
+      `OK HTTP Response: ${response.config.method?.toUpperCase()} ${response.config.url
       }`
     );
     console.log("Status:", response.status);
@@ -84,8 +83,7 @@ axiosInstance.interceptors.response.use(
 
   (error) => {
     console.group(
-      `HTTP Error: ${error.config?.method?.toUpperCase()} ${
-        error.config?.url
+      `HTTP Error: ${error.config?.method?.toUpperCase()} ${error.config?.url
       }`
     );
     console.log("Status:", error.response?.status);

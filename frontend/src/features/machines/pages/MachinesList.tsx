@@ -304,7 +304,7 @@ export function MachinesList({
         </div>
 
         {/* Machines Table */}
-        <div>
+        <div className="w-full overflow-x-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader size="lg" />

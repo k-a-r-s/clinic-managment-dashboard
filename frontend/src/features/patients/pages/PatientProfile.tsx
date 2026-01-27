@@ -25,6 +25,7 @@ import {
   getPatientById,
   updatePatient,
   deletePatient,
+  updateMedicalFile as updateMedicalFileApi,
 } from "../api/patients.api";
 import type { Patient, PatientFormData, MedicalFile } from "../../../types";
 
@@ -224,7 +225,30 @@ export function PatientProfile({
   };
 
   const handleCancelMedical = () => {
+    // Reset medical file to original values when canceling
+    if (patient?.medicalFile) {
+      setMedicalFile(patient.medicalFile);
+    }
     setIsEditModeMedical(false);
+  };
+
+  const handleSaveMedical = async () => {
+    if (!patient?.medicalFileId) {
+      toast.error("No medical file found for this patient");
+      return;
+    }
+
+    try {
+      // Save the medical file to the database
+      await updateMedicalFileApi(patient.medicalFileId, medicalFile);
+      toast.success("Medical file updated successfully");
+      setIsEditModeMedical(false);
+      // Reload patient data to get the updated medical file from the database
+      await loadPatient();
+    } catch (error) {
+      console.error("Failed to update medical file:", error);
+      toast.error("Failed to update medical file");
+    }
   };
 
   const handleDelete = async () => {
@@ -594,11 +618,19 @@ export function PatientProfile({
           {isEditModeMedical ? (
             <>
               <Button
+                variant="outline"
                 onClick={handleCancelMedical}
+                className="gap-2 bg-white border-gray-200"
+              >
+                <X className="w-4 h-4" />
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveMedical}
                 className="gap-2 bg-[#1C8CA8] hover:bg-[#157A93]"
               >
                 <Save className="w-4 h-4" />
-                Done
+                Save Medical File
               </Button>
             </>
           ) : (

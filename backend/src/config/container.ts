@@ -161,7 +161,10 @@ const deleteMedicalFileUseCase = new DeleteMedicalFileUseCase(
 );
 
 // Use Cases - Patient
-const getPatientByIdUseCase = new GetPatientByIdUseCase(patientRepository);
+const getPatientByIdUseCase = new GetPatientByIdUseCase(
+  patientRepository,
+  medicalFileRepository
+);
 const deletePatientByIdUseCase = new DeletePatientByIdUseCase(
   patientRepository
 );
@@ -184,6 +187,7 @@ const addPatientUseCase = new AddPatientUseCase(
 // Use Cases - Appointment
 const addAppointementUseCase = new AddAppointementUseCase(
   appointementRepository,
+  medicalFileRepository,
   roomRepository
 );
 const getAppointementsUseCase = new GetAppointementsUseCase(

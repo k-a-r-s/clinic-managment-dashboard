@@ -38,6 +38,7 @@ export interface Patient {
   updatedAt?: string;
   // Medical file data (if included in response)
   medicalFile?: MedicalFile;
+  medicalFileId?: string;
 }
 
 export interface MedicalFile {

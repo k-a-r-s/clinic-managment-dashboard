@@ -14,6 +14,7 @@ export interface GetPatientResponseDto {
   emergencyContactName: string;
   emergencyContactPhone: string;
   medicalFileId: string | null;
+  medicalFile?: any; // The medical file data if available
 }
 
 export type GetPatientByIdResponseDto = GetPatientResponseDto;
